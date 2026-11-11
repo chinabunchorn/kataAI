@@ -1,11 +1,11 @@
 # Infrastructure Specification — Sandboxed AI Code Execution Platform
 
 **Project:** Sandboxed AI Code Execution Using Kata Containers  
-**Document version:** 0.1.0  
+**Document version:** 0.2.0  
 **Last updated:** 2026-11-11  
 **Environment:** Development / University Course Laboratory  
 **Milestone:** M1 — Kubernetes and Kata Containers Infrastructure  
-**Status:** Initial infrastructure verified; Kubernetes installation pending
+**Status:** M1 technical verification passed; final documentation and operational checks pending
 
 ---
 
@@ -83,16 +83,16 @@ flowchart TB
 
 | Component | Deployment location | Status |
 |---|---|---|
-| Web frontend | Local development machine | Confirmed |
-| FastAPI backend | Local development machine | Confirmed |
-| llama.cpp inference server | Local development machine | Confirmed |
-| LLM model | Local development machine | Pending selection |
-| Application and dataset storage | Local development machine | Confirmed location; technology pending |
-| Kubernetes control plane | OpenStack Ubuntu VM | Planned |
-| Kubernetes worker | Same OpenStack VM | Planned |
-| containerd | OpenStack Ubuntu VM | Planned |
-| Kata Containers | OpenStack Ubuntu VM | Planned |
-| Python execution workload | Disposable Kata VM | Confirmed architecture |
+| Web frontend | Local Windows PC | Confirmed |
+| FastAPI backend | Local Windows PC | Confirmed |
+| llama.cpp inference server | Local Windows PC | Confirmed |
+| LLM model | Local Windows PC | Pending selection |
+| Application and dataset storage | Local Windows PC | Confirmed location; technology pending |
+| Kubernetes control plane | OpenStack Ubuntu VM | Verified |
+| Kubernetes worker | Same OpenStack VM | Verified |
+| containerd | OpenStack Ubuntu VM | Verified |
+| Kata Containers | OpenStack Ubuntu VM | Verified |
+| Python execution workload | Disposable Kata VM | Verified with trusted fixture |
 
 The initial implementation uses a single-node Kubernetes cluster where the control plane and worker share the same OpenStack VM.
 
@@ -120,7 +120,9 @@ The LLM and FastAPI backend do not run inside Kata Containers.
 | Virtual disk | 24 GB | Verified |
 | Root filesystem | `/dev/vda1` | Verified |
 | Root filesystem size | 23 GB | Verified |
-| Available root storage | Approximately 21 GB | Verified at initial inspection |
+| Initial available storage | Approximately 21 GB | Verified |
+| Latest available storage | Approximately 14 GB | Verified 2026-11-11 |
+| Latest disk utilization | 42% | Verified 2026-11-11 |
 | Swap | Disabled (0 B) | Verified |
 | Virtualization platform | KVM | Verified |
 | SSH login account | `ubuntu` | Verified |
@@ -148,9 +150,18 @@ Filesystem  Size  Used  Avail  Use%
 /dev/vda1    23G  1.9G    21G    9%
 ```
 
+Latest recorded filesystem usage, after Kubernetes, Calico, and Kata installation:
+
+```text
+Filesystem  Size  Used  Avail  Use%  Mounted on
+/dev/vda1    23G  9.2G    14G   42%  /
+```
+
 ### 3.3 Storage strategy
 
-The initial VM has approximately 21 GB available, sufficient to begin the single-node Kubernetes and Kata feasibility experiments.
+The initial VM had approximately 21 GB available, sufficient to begin the single-node Kubernetes and Kata feasibility experiments.
+
+After installation and infrastructure testing, approximately 14 GB remains available.
 
 The project will initially avoid resizing the disk unless installation or workload testing demonstrates insufficient capacity.
 
@@ -241,9 +252,22 @@ INFO: /dev/kvm exists
 KVM acceleration can be used
 ```
 
-**Status: Verified — KVM device and acceleration checks passed.**
+**Status: Verified — nested Kata VM execution successful.**
 
-A successful actual Kata guest VM boot is still required to complete the nested-virtualization feasibility assessment.
+A Kata-backed Pod successfully launched a QEMU/KVM guest VM.
+
+Verification evidence:
+
+- Host kernel: `6.8.0-71-generic`
+- Kata guest kernel: `6.18.56`
+- Hypervisor binary: `/opt/kata/bin/qemu-system-x86_64`
+- QEMU version: `11.0.1 (kata-static)`
+- Hardware acceleration: `accel=kvm`
+- Guest vCPU configuration: 1 vCPU
+- Guest initial memory configuration: 2 GiB
+- Pod deletion terminated the corresponding QEMU process.
+
+The successful nested VM execution confirms that the OpenStack environment supports the selected Kata/QEMU workload.
 
 ### 4.3 Required kernel modules
 
@@ -294,7 +318,8 @@ br_netfilter
 | IP assignment | DHCP | Verified |
 | DHCP server address observed | `10.77.10.100` | Verified |
 | OpenStack metadata endpoint | `169.254.169.254` | Verified route |
-| Floating IP | Not recorded in current configuration | Pending |
+| SSH-reachable external address | `172.31.1.57` | Verified connection |
+| Floating IP association | Exact Neutron configuration not recorded | Pending |
 | OpenStack network name | `kata-network` | Planned name; verify in Horizon |
 | Subnet name | `kata-subnet` | Planned name; verify in Horizon |
 | Router name | `kata-router` | Planned name; verify in Horizon |
@@ -334,7 +359,7 @@ flowchart TB
 
 The external connection may use a Floating IP, VPN, or another approved access mechanism.
 
-The exact Floating IP and router resource identifiers have not yet been recorded.
+SSH connectivity was verified using `172.31.1.57`. The complete Floating IP association and router resource identifiers have not yet been recorded.
 
 ### 5.4 Network security principles
 
@@ -351,19 +376,38 @@ The exact Floating IP and router resource identifiers have not yet been recorded
 
 Kubernetes introduces virtual Pod and Service networks separate from the OpenStack subnet.
 
-### 6.1 Planned cluster network ranges
+### 6.1 Cluster network ranges
 
-| Network | CIDR | Status |
+The actual network ranges were retrieved from the Kubernetes `kubeadm-config` ConfigMap.
+
+| Network | CIDR / Address | Status |
 |---|---|---|
 | OpenStack subnet | `10.77.10.0/24` | Verified |
-| Kubernetes Pod CIDR | `10.244.0.0/16` | Planned |
-| Kubernetes Service CIDR | `10.96.0.0/12` | Planned |
-| Kubernetes node IP | `10.77.10.138` | Currently verified; DHCP |
-| DNS Service IP | To be determined | Pending |
+| Kubernetes Pod CIDR | `10.244.0.0/16` | Verified |
+| Kubernetes Service CIDR | `10.96.0.0/12` | Verified |
+| Kubernetes node IP | `10.77.10.138` | Verified; DHCP |
+| DNS Service IP | `10.96.0.10` | Verified |
+| Kubernetes DNS domain | `cluster.local` | Verified |
 
-The planned Pod and Service CIDRs do not overlap the routes observed on `katavm`.
+Configuration source:
 
-They must also be checked against relevant VPN, university, and external networks before cluster initialization.
+```bash
+kubectl -n kube-system get cm kubeadm-config \
+  -o jsonpath='{.data.ClusterConfiguration}'
+```
+
+Relevant configuration:
+
+```yaml
+networking:
+  dnsDomain: cluster.local
+  podSubnet: 10.244.0.0/16
+  serviceSubnet: 10.96.0.0/12
+```
+
+The actual Pod and Service CIDRs do not overlap the routes observed on `katavm`.
+
+Overlaps with any additional university or VPN networks have not been independently audited.
 
 ### 6.2 Network MTU
 
@@ -373,15 +417,29 @@ Observed OpenStack interface MTU:
 ens3: 1450
 ```
 
-Planned CNI: Calico.
+Installed CNI: Calico.
+
+The Calico node image was verified as:
+
+```text
+quay.io/calico/node:v3.33.0
+```
+
+The Tigera Operator reported:
+
+- Calico: Available, not progressing, not degraded.
+- IP pools: Available, not progressing, not degraded.
+- Tiers: Available, not progressing, not degraded.
+
+The Kubernetes node reached `Ready`, and both CoreDNS Pods were operational.
 
 If Calico uses IPv4 VXLAN encapsulation over this interface, a candidate workload MTU is approximately 1400 bytes.
 
-The final value must be verified from the actual CNI configuration and tested using real Pod traffic.
+The final effective workload MTU must still be verified from the installed configuration and tested using real Pod traffic.
 
 ### 6.3 Kubernetes topology
 
-The MVP will use:
+The MVP uses:
 
 - One Kubernetes control-plane node.
 - One Kubernetes worker role on the same machine.
@@ -391,47 +449,75 @@ The MVP will use:
 
 This topology is intended for a course laboratory, not production hosting.
 
+**Status: Single-node Kubernetes topology verified operational.**
+
 ---
 
 ## 7. Ports and Communication
 
 The following table defines the expected communication paths and exposure policy.
 
-**This is not a list of currently open firewall ports.**
+**This is not a complete audit of currently open firewall ports.**
 
 ### 7.1 Application and infrastructure ports
 
 | Service | Port / protocol | Source → Destination | Exposure | Status |
 |---|---|---|---|---|
 | SSH | TCP 22 | Authorized laptops → OpenStack VM | Restricted | In use |
-| Kubernetes API | TCP 6443 | Local FastAPI → Kubernetes via secure tunnel | Private | Planned |
-| etcd client | TCP 2379–2380 | Kubernetes control-plane components | Internal only | Planned |
-| Kubelet API | TCP 10250 | Authorized control-plane components → kubelet | Internal only | Planned |
-| kube-scheduler | TCP 10259 | Local control-plane management | Internal only | Planned |
-| kube-controller-manager | TCP 10257 | Local control-plane management | Internal only | Planned |
+| Kubernetes API | TCP 6443 | Windows PC → Kubernetes through SSH tunnel | Private | Verified |
+| etcd client | TCP 2379–2380 | Kubernetes control-plane components | Internal only | etcd running; exposure not audited |
+| Kubelet API | TCP 10250 | Authorized control-plane components → kubelet | Internal only | kubelet operational; exposure not audited |
+| kube-scheduler | TCP 10259 | Local control-plane management | Internal only | Component running |
+| kube-controller-manager | TCP 10257 | Local control-plane management | Internal only | Component running |
 | HTTPS downloads | TCP 443 | VM → package registries | Outbound | Verified for selected endpoints |
 | HTTP downloads | TCP 80 | VM → approved endpoints, if required | Outbound | Pending |
 | DNS | UDP/TCP 53 | VM → configured DNS resolvers | Required outbound | DNS resolution verified |
-| Calico VXLAN | UDP 4789 | Kubernetes node-to-node traffic | Internal only, if applicable | Planned; single-node cluster |
+| Calico VXLAN | UDP 4789 | Kubernetes node-to-node traffic | Internal only, if applicable | CNI operational; exposure not audited |
 
 Additional ports must be documented if required by the selected CNI configuration.
 
 ### 7.2 Local application ports
-
-These values have not been selected.
 
 | Component | Port | Binding policy |
 |---|---|---|
 | FastAPI | Pending | Localhost by default |
 | Frontend development server | Pending | Localhost by default |
 | llama.cpp HTTP server | Pending | Localhost by default |
-| Local Kubernetes API tunnel | Pending | Localhost only |
+| Local Kubernetes API tunnel | TCP 16443 | `127.0.0.1` on Windows PC; verified |
 
 Do not assume that common development ports are the final project configuration.
 
-### 7.3 Kubernetes API access from the laptop
+### 7.3 Kubernetes API access from the local development machine
 
-The project intends to use a secure SSH tunnel or equivalent private network connection.
+The Windows development PC successfully established an SSH tunnel to the Kubernetes API running on `katavm`.
+
+Verified connection:
+
+- Remote SSH endpoint: `172.31.1.57:22`
+- Kubernetes API endpoint on the VM: `127.0.0.1:6443`
+- Windows local tunnel endpoint: `127.0.0.1:16443`
+- API version returned: `v1.37.2`
+- Kubernetes CA certificate copied to Windows
+- TLS certificate validation succeeded
+- Restricted Kubernetes ServiceAccount authenticated successfully
+
+Verified tunnel command:
+
+```powershell
+ssh -N -L 127.0.0.1:16443:127.0.0.1:6443 ubuntu@172.31.1.57
+```
+
+Verified HTTPS request:
+
+```powershell
+curl.exe --ssl-revoke-best-effort `
+  --cacert "$env:USERPROFILE\.kube\katavm-ca.crt" `
+  https://127.0.0.1:16443/version
+```
+
+The `--ssl-revoke-best-effort` option was required because Windows Schannel could not obtain certificate revocation information.
+
+It does not disable certificate-chain or hostname verification.
 
 Conceptual route:
 
@@ -451,14 +537,16 @@ OpenStack Ubuntu VM
 Kubernetes Control Plane
 ```
 
-A localhost port-forward configuration will be documented after the actual API server certificate and connection method are verified.
+A dedicated read-only ServiceAccount was verified for initial remote access.
 
 Production-style credential separation is required even for the course demonstration:
 
 - The application must not use unrestricted cluster-admin credentials.
-- A dedicated Kubernetes identity must be created.
+- A dedicated Kubernetes identity must be used.
 - Permissions must be limited to the required resources and namespace.
 - Kubernetes credentials and SSH private keys must not be committed to Git.
+
+The final execution-service identity and credential renewal mechanism remain pending.
 
 ---
 
@@ -541,30 +629,37 @@ HTTP/2 302
 
 The response was an HTTP redirect.
 
-Actual APT repository access and package downloads must still be tested during installation.
+Subsequent successful installation of containerd and Kubernetes packages confirmed that the required package downloads were accessible during setup.
 
 ---
 
 ## 10. Software Stack
 
-### 10.1 Planned infrastructure software
+### 10.1 Installed infrastructure software
 
 | Component | Version / implementation | Status |
 |---|---|---|
-| Ubuntu Server | 24.04.3 LTS | Installed |
-| KVM | Ubuntu kernel modules | Available |
-| containerd | 2.1+ | Planned |
-| Kubernetes | v1.37 release series | Proposed |
-| kubeadm | Matching Kubernetes version | Planned |
-| kubelet | Matching Kubernetes version | Planned |
-| kubectl | Matching Kubernetes version | Planned |
-| Calico | v3.33 | Proposed |
-| Helm | Version to be recorded | Planned |
-| Kata Containers | Compatible release to be pinned | Planned |
-| Kata runtime | `kata-qemu-runtime-rs` | Proposed |
-| Hypervisor | QEMU/KVM | Proposed |
+| Ubuntu Server | 24.04.3 LTS | Verified |
+| Host kernel | `6.8.0-71-generic` | Verified |
+| KVM | Intel KVM | Verified |
+| containerd | 2.4.2 | Verified |
+| Kubernetes | 1.37.2 | Verified |
+| kubeadm | 1.37.2 | Verified |
+| kubelet | 1.37.2 | Verified |
+| kubectl | 1.37.2 | Verified |
+| Calico node image | `quay.io/calico/node:v3.33.0` | Verified |
+| Helm | `v4.3.1+gc0d08d0` | Verified |
+| Kata Containers | Installed release; exact chart version pending | Operational |
+| Kata runtime | `kata-qemu-runtime-rs` | Verified |
+| Hypervisor | QEMU/KVM | Verified |
+| QEMU | `11.0.1 (kata-static)` | Verified |
+| Kata guest kernel | `6.18.56` | Verified |
 
-Exact versions must be recorded after installation.
+The exact installed Kata Helm chart version remains pending because `helm list -n kata-system -o wide` returned an unsupported output-format error.
+
+The Kata runtime itself was successfully registered and tested. The RuntimeClass was verified by inspecting a running Pod.
+
+Host-side QEMU process inspection confirmed nested virtualization using KVM acceleration.
 
 ### 10.2 Local application stack
 
@@ -611,7 +706,7 @@ sequenceDiagram
     API-->>User: Answer and execution status
 ```
 
-This is the target workflow, not an already completed deployment.
+This is the target full application workflow. The underlying Kata execution and input/output feasibility have been demonstrated, but model orchestration and FastAPI integration have not yet been implemented.
 
 ### 11.2 Execution requirements
 
@@ -630,7 +725,7 @@ The application must fail closed when Kata is unavailable.
 
 ### 11.3 Data transport
 
-The precise input and output transport mechanisms have not been selected.
+The precise production input and output transport mechanisms have not been selected.
 
 Candidate approaches include:
 
@@ -640,6 +735,31 @@ Candidate approaches include:
 - A separately managed bounded artifact channel for larger outputs.
 
 These approaches must be tested on the actual Kata configuration before being finalized.
+
+### 11.4 M1 Input/Output Feasibility Result
+
+A trusted Kubernetes Job using `kata-qemu-runtime-rs` successfully executed a Python script with a staged synthetic CSV.
+
+The test used a ConfigMap to supply the script and dataset through a read-only volume mount.
+
+Expected structured result:
+
+```json
+{
+  "product": "Notebook",
+  "october_units": 120,
+  "november_units": 80,
+  "change_units": -40
+}
+```
+
+The retrieved output matched the expected JSON.
+
+**Status: Verified for the trusted fixture.**
+
+This demonstrates the feasibility of staging input files and retrieving structured results through Kubernetes.
+
+The final production input/output transport, automated schema validation, output limits, and durable artifact handling remain undecided.
 
 ---
 
@@ -669,22 +789,26 @@ Kata provides a guest-kernel isolation boundary, but the security of the host, h
 
 | Control | Requirement | Status |
 |---|---|---|
-| Kata execution | Required for generated Python | Planned |
-| Dedicated namespace | Isolate execution resources | Planned |
-| Kubernetes RBAC | Restrict execution-service permissions | Planned |
+| Kata execution | Required for generated Python | Verified for trusted workloads |
+| Dedicated namespace | Isolate execution resources | `kata-lab` created |
+| Kubernetes RBAC | Restrict execution-service permissions | Read-only ServiceAccount verified; write permissions pending |
 | Restricted Pod security | Reject privileged configurations | Planned |
-| Non-root process | Required for runner | Planned |
-| No privilege escalation | Required | Planned |
+| Non-root process | Required for runner | Tested in diagnostic Pod; general enforcement pending |
+| No privilege escalation | Required | Tested in diagnostic Pod; general enforcement pending |
 | No application credentials | Required | Planned |
-| No Kubernetes API token | Disable automatic token mounting | Planned |
-| Read-only inputs | Required | Planned |
-| Network restriction | Deny unapproved access | Planned |
-| CPU and memory limits | Required | Pending values |
-| Execution deadline | Required | Pending value |
-| Output size limit | Required | Pending value |
-| Resource cleanup | Required | Planned |
+| No Kubernetes API token | Disable automatic token mounting | Verified in test manifests; enforcement pending |
+| Read-only inputs | Required | Verified in trusted fixture |
+| Network restriction | Deny unapproved access | Default-deny tests passed; comprehensive hardening pending |
+| CPU and memory limits | Required | Test limits used; final values pending |
+| Execution deadline | Required | Configured in trusted Job; timeout behavior not verified |
+| Output size limit | Required | Pending |
+| Resource cleanup | Required | Kata Pod/VM teardown verified; full reconciliation pending |
 
-NetworkPolicy enforcement must be tested with the chosen CNI and Kata runtime.
+NetworkPolicy enforcement was tested with Calico and the Kata runtime.
+
+The initial controlled Pod-to-Service test succeeded before applying default-deny policy and timed out afterward.
+
+Additional TCP probes against the Kubernetes API, OpenStack metadata endpoint, and public internet also timed out.
 
 Default-deny NetworkPolicy alone is not sufficient proof that every sensitive node-local network path is inaccessible.
 
@@ -727,38 +851,38 @@ This section is updated as installation proceeds.
 | Stage | Description | Status |
 |---|---|---|
 | M1.1 | Provision Linux VM | Verified |
-| M1.2 | Verify KVM capabilities | Initial checks passed |
+| M1.2 | Verify KVM capabilities | Verified |
 | M1.3 | Configure kernel networking | Verified |
 | M1.4 | Verify outbound connectivity | Verified |
-| M1.5 | Install containerd | Not started |
-| M1.6 | Install Kubernetes | Not started |
-| M1.7 | Install Calico | Not started |
-| M1.8 | Verify normal Kubernetes Pod | Not started |
-| M1.9 | Install Kata Containers | Not started |
-| M1.10 | Launch Kata-backed Pod | Not started |
-| M1.11 | Verify guest VM identity and teardown | Not started |
-| M1.12 | Verify trusted input/output transfer | Not started |
-| M1.13 | Verify basic workload network restrictions | Not started |
-| M1.14 | Verify secure remote API access | Not started |
+| M1.5 | Install containerd | Verified — 2.4.2 |
+| M1.6 | Install Kubernetes | Verified — 1.37.2 |
+| M1.7 | Install Calico | Verified — node image v3.33.0 |
+| M1.8 | Verify normal Kubernetes Pod | Passed |
+| M1.9 | Install Kata Containers | Verified operational |
+| M1.10 | Launch Kata-backed Pod | Passed |
+| M1.11 | Verify guest VM identity and teardown | Passed |
+| M1.12 | Verify trusted input/output transfer | Passed |
+| M1.13 | Verify basic workload network restrictions | Passed |
+| M1.14 | Verify secure remote API access | Passed |
+| M1.15 | Verify restricted Kubernetes authentication | Passed |
+| M1.16 | Verify fail-closed runtime selection | Passed for unavailable handler |
+| M1.17 | Record final versions and infrastructure evidence | In progress |
 
 ### 13.2 Installation version record
 
-Populate after each component is installed.
-
 | Component | Installed version | Configuration location | Verification |
 |---|---|---|---|
-| containerd | Pending | `/etc/containerd/config.toml` | Pending |
-| kubeadm | Pending | `/etc/kubernetes/` | Pending |
-| kubelet | Pending | `/var/lib/kubelet/` | Pending |
-| kubectl | Pending | User kubeconfig | Pending |
-| Calico | Pending | Kubernetes resources | Pending |
-| Helm | Pending | CLI / Helm release metadata | Pending |
-| Kata | Pending | Runtime-specific installation paths | Pending |
-| QEMU | Pending | Kata-selected hypervisor | Pending |
+| containerd | 2.4.2 | `/etc/containerd/config.toml` | Service active; CRI healthy; systemd cgroups enabled |
+| kubeadm | 1.37.2 | `/etc/kubernetes/` | Verified |
+| kubelet | 1.37.2 | `/var/lib/kubelet/` | Node Ready |
+| kubectl | 1.37.2 | User kubeconfig | Verified |
+| Calico node | v3.33.0 | Kubernetes DaemonSet | Image tag and operator health verified |
+| Helm | v4.3.1 | Helm CLI / release metadata | Verified |
+| Kata | Pending exact chart version | `/opt/kata/` and containerd integration | Kata RuntimeClass executed successfully |
+| QEMU | 11.0.1 (kata-static) | `/opt/kata/bin/qemu-system-x86_64` | Verified |
+| Kata guest kernel | 6.18.56 | `/opt/kata/share/kata-containers/` | Verified |
 
 ### 13.3 Cluster verification commands
-
-Run once Kubernetes is installed.
 
 ```bash
 kubectl get nodes -o wide
@@ -796,6 +920,222 @@ The team must record:
 - Confirmation of VM teardown.
 
 The presence of a RuntimeClass alone is insufficient proof of VM-backed execution.
+
+### 13.6 Kata Guest VM Verification
+
+**Date:** 2026-11-11  
+**Status:** PASSED
+
+Test Pod: `kata-test`
+
+Pod UID:
+
+`0f0ca484-4230-4af5-9ba0-271be0804b97`
+
+Selected RuntimeClass:
+
+`kata-qemu-runtime-rs`
+
+Host kernel:
+
+`6.8.0-71-generic`
+
+Guest kernel:
+
+`6.18.56`
+
+Observed QEMU process:
+
+- PID: `19873`
+- Binary: `/opt/kata/bin/qemu-system-x86_64`
+- Version: `11.0.1 (kata-static)` (verified subsequently)
+- Machine: `q35`
+- Acceleration: `kvm`
+- vCPU configuration: 1
+- Initial memory: 2 GiB
+- Guest kernel image: `vmlinux-6.18.56-208`
+
+The Pod's guest kernel differed from the Ubuntu host kernel.
+
+The running QEMU process confirmed that Kata launched a nested virtual machine.
+
+Following `kubectl delete pod kata-test --wait=true`, the corresponding QEMU process was no longer present.
+
+**Conclusion:** Nested Kata VM creation, execution, and process teardown were successfully demonstrated.
+
+### 13.7 Trusted Python Execution
+
+**Date:** 2026-11-11  
+**Status:** PASSED
+
+Test Job: `kata-csv-test`
+
+RuntimeClass: `kata-qemu-runtime-rs`
+
+Inputs:
+
+- `data.csv`
+- `script.py`
+
+Input staging: Kubernetes ConfigMap mounted at `/inputs`.
+
+The Python script calculated the largest absolute sales drop from October to November.
+
+Expected result:
+
+```json
+{
+  "product": "Notebook",
+  "october_units": 120,
+  "november_units": 80,
+  "change_units": -40
+}
+```
+
+The observed result matched the expected JSON.
+
+**Conclusion:** Kubernetes successfully executed a trusted Python program inside Kata with staged CSV input and returned a structured result.
+
+This test does not establish production output-size enforcement or full cleanup reconciliation.
+
+### 13.8 Network Isolation Verification
+
+**Date:** 2026-11-11  
+**Status:** PASSED for tested destinations
+
+Namespace: `kata-lab`
+
+NetworkPolicy: `default-deny`
+
+#### Pod-to-Service connectivity
+
+Controlled destination:
+
+`10.97.64.178:8080`
+
+Before applying NetworkPolicy:
+
+```text
+reachable
+```
+
+After applying default-deny NetworkPolicy:
+
+```text
+wget: download timed out
+command terminated with exit code 1
+```
+
+#### Sensitive network endpoint probes
+
+| Destination | Address / port | Observed result |
+|---|---|---|
+| Kubernetes API Service | Service ClusterIP:443 | Timeout |
+| Kubernetes node API | 10.77.10.138:6443 | Timeout |
+| OpenStack metadata | 169.254.169.254:80 | Timeout |
+| Public internet | 1.1.1.1:443 | Timeout |
+
+All four TCP connection attempts failed with `TimeoutError`.
+
+**Conclusion:** Network restrictions were effective against the tested endpoints.
+
+**Limitation:** These results do not prove that every network path is blocked or establish which specific enforcement layer caused each timeout.
+
+Additional security testing remains necessary before executing untrusted AI-generated programs.
+
+### 13.9 Remote Kubernetes Access
+
+**Date:** 2026-11-11  
+**Status:** PASSED
+
+Development environment: Windows PC
+
+Remote infrastructure: OpenStack `katavm`
+
+Verified connection:
+
+```text
+Windows localhost:16443
+        |
+        | SSH tunnel
+        v
+OpenStack katavm
+        |
+        v
+Kubernetes API localhost:6443
+```
+
+The remote SSH endpoint used during testing was `172.31.1.57`.
+
+The Kubernetes API returned version `v1.37.2` through the tunnel.
+
+The Kubernetes CA certificate was transferred to Windows.
+
+TLS validation succeeded using:
+
+```powershell
+curl.exe --ssl-revoke-best-effort `
+  --cacert "$env:USERPROFILE\.kube\katavm-ca.crt" `
+  https://127.0.0.1:16443/version
+```
+
+#### Kubernetes authentication
+
+Namespace: `kata-lab`
+
+ServiceAccount: `kata-client-readonly`
+
+Role: `kata-client-reader`
+
+RoleBinding: `kata-client-reader-binding`
+
+Verified authorization:
+
+| Operation | Result |
+|---|---|
+| List Pods | Allowed |
+| Read Jobs | Allowed |
+| Create Jobs | Denied |
+| Delete Pods | Denied |
+
+A temporary ServiceAccount token authenticated successfully from Windows.
+
+**Conclusion:** Remote Kubernetes connectivity, TLS certificate validation, ServiceAccount authentication, and namespace-scoped read-only RBAC were verified.
+
+The application still requires a suitable long-term credential lifecycle and restricted execution permissions.
+
+### 13.10 Fail-Closed Runtime Verification
+
+**Date:** 2026-11-11  
+**Status:** PASSED
+
+Test configuration:
+
+- RuntimeClass: `kata-unavailable-test`
+- Handler: `kata-handler-not-installed`
+- Namespace: `kata-lab`
+- Pod: `kata-failclosed-test`
+
+Observed behavior:
+
+1. Kubernetes accepted and scheduled the Pod.
+2. kubelet attempted to create the Pod sandbox.
+3. containerd could not find the requested runtime handler.
+4. Sandbox creation failed.
+5. The Pod remained unready with no container ID.
+
+Observed error:
+
+```text
+FailedCreatePodSandBox:
+no runtime for "kata-handler-not-installed" is configured
+```
+
+No successful execution or fallback to the default `runc` runtime was observed.
+
+**Conclusion:** Kubernetes/containerd failed closed for an unavailable runtime handler.
+
+**Limitation:** Failure of an actual configured Kata runtime after handler selection has not yet been tested.
 
 ---
 
@@ -886,20 +1226,20 @@ After the infrastructure is installed, reboot testing should confirm:
 
 | ID | Decision | Current position |
 |---|---|---|
-| D01 | OpenStack root disk capacity | Retain 24 GB initially |
-| D02 | Exact Kubernetes patch version | Pending installation |
-| D03 | Exact containerd version | Pending installation |
-| D04 | Calico version and configuration | v3.33 proposed |
-| D05 | Final Pod CIDR | `10.244.0.0/16` proposed |
-| D06 | Final Service CIDR | `10.96.0.0/12` proposed |
+| D01 | OpenStack root disk capacity | Retain 24 GB initially; 14 GB currently available |
+| D02 | Exact Kubernetes patch version | 1.37.2 verified |
+| D03 | Exact containerd version | 2.4.2 verified |
+| D04 | Calico version and configuration | Node image v3.33.0 verified; exact effective network configuration partially pending |
+| D05 | Final Pod CIDR | `10.244.0.0/16` verified |
+| D06 | Final Service CIDR | `10.96.0.0/12` verified |
 | D07 | Final Calico MTU | Pending verification |
-| D08 | Kata Containers release | Pending selection |
-| D09 | Input staging strategy | Pending |
-| D10 | Result collection mechanism | Pending |
+| D08 | Kata Containers release | Installed and operational; exact Helm chart version pending |
+| D09 | Input staging strategy | ConfigMap tested successfully; final approach pending |
+| D10 | Result collection mechanism | JSON output retrieved; final mechanism pending |
 | D11 | Runner resource limits | Pending |
-| D12 | Sandbox network restrictions | Pending implementation and testing |
-| D13 | Remote Kubernetes API access | SSH tunnel proposed |
-| D14 | Kubernetes application identity and RBAC | Pending |
+| D12 | Sandbox network restrictions | Calico default-deny tests passed; complete security policy pending |
+| D13 | Remote Kubernetes API access | Windows SSH tunnel and TLS verified |
+| D14 | Kubernetes application identity and RBAC | Read-only ServiceAccount verified; execution-service permissions pending |
 | D15 | LLM model | Pending |
 | D16 | Frontend framework | Pending |
 | D17 | Local application data storage | Pending |
@@ -911,7 +1251,7 @@ Decisions must be recorded with their rationale and verification evidence when f
 
 ## 16. Milestone 1 Acceptance Criteria
 
-M1 is complete only when all the following conditions are demonstrated.
+M1 technical feasibility has been demonstrated. Final documentation, repeatability, and operational checks remain.
 
 ### Infrastructure
 
@@ -922,35 +1262,42 @@ M1 is complete only when all the following conditions are demonstrated.
 - [x] Required networking and virtualization modules loaded.
 - [x] IPv4 forwarding enabled.
 - [x] Outbound DNS and HTTPS connectivity verified.
-- [ ] Kubernetes node reaches `Ready`.
-- [ ] Normal Kubernetes Pod executes successfully.
+- [x] Kubernetes node reaches `Ready`.
+- [x] Normal Kubernetes Pod executes successfully.
 
 ### Kata Containers
 
-- [ ] Compatible Kata runtime installed.
-- [ ] Approved Kata RuntimeClass registered.
-- [ ] Kubernetes Job launches using Kata.
-- [ ] Node-side evidence confirms a real Kata guest VM.
-- [ ] Trusted Python fixture produces the expected result.
-- [ ] Authorized input can be staged and read inside Kata.
-- [ ] Bounded result can be retrieved and validated.
-- [ ] Completed workload and associated VM are cleaned up.
+- [x] Compatible Kata runtime installed and operational.
+- [x] Approved Kata RuntimeClass registered.
+- [x] Kubernetes Job launches using Kata.
+- [x] Node-side evidence confirms a real Kata guest VM.
+- [x] Trusted Python fixture produces the expected result.
+- [x] Authorized input can be staged and read inside Kata.
+- [x] Structured JSON result retrieved and checked against expected output.
+- [x] Kata VM process teardown verified after Pod deletion.
+- [ ] Complete Job and temporary staging-resource cleanup independently verified.
+- [ ] Automated output-size and schema enforcement implemented.
 
 ### Security and connectivity
 
-- [ ] Unauthorized workload execution is rejected.
-- [ ] Required basic network isolation is verified.
-- [ ] Kata unavailability does not trigger execution through another runtime.
-- [ ] Local development machine reaches the Kubernetes API securely.
-- [ ] Credentials are restricted and stored outside the repository.
+- [x] Unauthorized Job creation denied for the read-only ServiceAccount.
+- [x] Basic network isolation verified for tested destinations.
+- [x] Unavailable runtime handler fails without observed fallback.
+- [x] Local development machine reaches Kubernetes through an SSH tunnel.
+- [x] TLS certificate validation verified.
+- [x] Namespace-scoped read-only authentication and RBAC verified.
+- [ ] Long-term application credential lifecycle finalized.
+- [ ] Complete sandbox security policy and admission enforcement verified.
+- [ ] Real configured Kata runtime failure-injection test completed.
 
 ### Reproducibility
 
-- [ ] Exact installed component versions recorded.
-- [ ] Infrastructure configuration documented.
-- [ ] Installation commands recorded.
-- [ ] Known limitations documented.
-- [ ] Another team member can reproduce the trusted execution test.
+- [ ] Exact versions of all installed infrastructure components recorded.
+- [x] Initial infrastructure configuration documented.
+- [ ] Complete reproducible installation guide finalized.
+- [x] Known limitations documented.
+- [ ] Reboot and recovery tests completed.
+- [ ] Another team member independently reproduces the trusted execution test.
 
 ---
 
@@ -958,15 +1305,17 @@ M1 is complete only when all the following conditions are demonstrated.
 
 As of this document version:
 
-1. KVM availability is confirmed, but a nested Kata guest VM has not yet been launched.
-2. Kubernetes and Kata Containers have not yet been installed.
-3. The VM has limited disk capacity, requiring storage monitoring.
+1. A nested Kata/QEMU guest VM has been successfully launched, but reboot recovery and more advanced failure scenarios remain untested.
+2. Kubernetes v1.37.2, containerd v2.4.2, Calico node image v3.33.0, Helm v4.3.1, and QEMU 11.0.1 are verified. The exact installed Kata Helm chart version remains to be recorded.
+3. The VM has limited disk capacity, requiring storage monitoring. Approximately 14 GB was available at the latest inspection.
 4. The OpenStack private IP is DHCP-assigned.
-5. The exact external access and Floating IP configuration has not been recorded.
-6. The Kubernetes Pod and Service networks remain proposed.
-7. The trusted runner's input/output transport has not been selected.
-8. Sandbox security and network isolation have not yet been verified.
-9. The exact llama.cpp model and frontend implementation remain undecided.
+5. Remote SSH connectivity through `172.31.1.57` is verified, but the complete Neutron resource inventory has not been recorded.
+6. The Kubernetes Pod and Service CIDRs are verified. The effective Calico workload MTU still requires inspection.
+7. ConfigMap-based input staging and JSON output retrieval were tested using a trusted fixture. Final transport, limits, and cleanup reconciliation are not yet finalized.
+8. Network isolation succeeded for tested endpoints. These tests do not establish complete protection against every network path or host-level attack.
+9. Read-only ServiceAccount authentication is verified. Restricted Job creation and application credential lifecycle management remain pending.
+10. Fail-closed behavior was demonstrated for an unconfigured runtime handler, not for every possible Kata runtime failure.
+11. The exact llama.cpp model and frontend implementation remain undecided.
 
 These limitations must be revisited as the project progresses.
 
@@ -1007,6 +1356,7 @@ These limitations must be revisited as the project progresses.
 | Version | Date | Description |
 |---|---|---|
 | 0.1.0 | 2026-11-11 | Initial infrastructure inventory, verified KVM/network findings, planned Kubernetes/Kata configuration, and M1 acceptance criteria |
+| 0.2.0 | 2026-11-11 | Recorded Kubernetes/containerd installation, Calico readiness, Kata VM verification, trusted Python execution, network isolation, remote API authentication, and fail-closed runtime verification |
 
 ---
 
