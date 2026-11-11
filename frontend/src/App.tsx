@@ -449,8 +449,115 @@ const INITIAL_SESSIONS: ChatSession[] = [
   },
 ]
 
+const STORAGE_KEY = 'kata_chat_sessions_v1'
+
+type SerializedDataset = {
+  headers: string[]
+  rowCount: number
+  preview: string[][]
+  fileName: string
+}
+
+type SerializedSession = {
+  id: string
+  title: string
+  createdAt: string
+  selectedFileName?: string
+  dataset?: SerializedDataset | null
+  messages: Array<
+    Omit<ChatMessage, 'dataset'> & {
+      dataset?: SerializedDataset
+    }
+  >
+}
+
+function serializeSessions(sessions: ChatSession[]): string {
+  const serializable: SerializedSession[] = sessions.map((s) => ({
+    id: s.id,
+    title: s.title,
+    createdAt: s.createdAt,
+    selectedFileName: s.selectedFile?.name,
+    dataset: s.dataset
+      ? {
+          headers: s.dataset.headers,
+          rowCount: s.dataset.rowCount,
+          preview: s.dataset.preview,
+          fileName: s.dataset.file?.name || s.selectedFile?.name || 'dataset.csv',
+        }
+      : null,
+    messages: s.messages.map((m) => ({
+      ...m,
+      dataset: m.dataset
+        ? {
+            headers: m.dataset.headers,
+            rowCount: m.dataset.rowCount,
+            preview: m.dataset.preview,
+            fileName: m.dataset.file?.name || 'dataset.csv',
+          }
+        : undefined,
+    })),
+  }))
+  return JSON.stringify(serializable)
+}
+
+function deserializeSessions(storedJson: string): ChatSession[] {
+  try {
+    const rawList: SerializedSession[] = JSON.parse(storedJson)
+    if (!Array.isArray(rawList)) return INITIAL_SESSIONS
+
+    return rawList.map((item) => {
+      const fileName = item.selectedFileName || item.dataset?.fileName || 'sales_q4.csv'
+      const file = new File([SAMPLE_CSV_CONTENT], fileName, { type: 'text/csv' })
+
+      const dataset: CsvDataset | null = item.dataset
+        ? {
+            file,
+            headers: item.dataset.headers || [],
+            rowCount: item.dataset.rowCount || 0,
+            preview: item.dataset.preview || [],
+          }
+        : null
+
+      const messages: ChatMessage[] = (item.messages || []).map((m) => ({
+        ...m,
+        dataset: m.dataset
+          ? {
+              file: new File([], m.dataset.fileName || 'dataset.csv', { type: 'text/csv' }),
+              headers: m.dataset.headers || [],
+              rowCount: m.dataset.rowCount || 0,
+              preview: m.dataset.preview || [],
+            }
+          : undefined,
+      }))
+
+      return {
+        id: item.id,
+        title: item.title,
+        createdAt: item.createdAt || 'Saved',
+        selectedFile: item.selectedFileName ? file : null,
+        dataset,
+        messages,
+      }
+    })
+  } catch (err) {
+    console.warn('Failed to parse sessions from localStorage:', err)
+    return INITIAL_SESSIONS
+  }
+}
+
 export default function App() {
-  const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_SESSIONS)
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    if (typeof window === 'undefined') return INITIAL_SESSIONS
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        return deserializeSessions(stored)
+      }
+    } catch (err) {
+      console.warn('localStorage read error:', err)
+    }
+    return INITIAL_SESSIONS
+  })
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -467,6 +574,15 @@ export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const chatBottomRef = useRef<HTMLDivElement>(null)
+
+  // Persist chat sessions to localStorage whenever sessions change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, serializeSessions(sessions))
+    } catch (err) {
+      console.warn('localStorage write error:', err)
+    }
+  }, [sessions])
 
   // Scroll to bottom when new messages arrive or pipeline updates
   useEffect(() => {

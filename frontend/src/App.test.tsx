@@ -103,4 +103,21 @@ describe('KataAI Gemini-style Chat UI', () => {
     await user.click(screen.getByTitle('Start new chat'))
     expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
   })
+
+  it('persists chat sessions to localStorage across component mounts', () => {
+    localStorage.clear()
+    const { unmount } = render(<App />)
+
+    // Verify localStorage has been populated with default sessions
+    const stored = localStorage.getItem('kata_chat_sessions_v1')
+    expect(stored).toBeTruthy()
+    expect(stored).toContain('Q4 Sales Drop Analysis')
+    expect(stored).toContain('Understanding Kata Containers Analogy')
+
+    unmount()
+
+    // Remounting should read from localStorage cleanly
+    render(<App />)
+    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+  })
 })
