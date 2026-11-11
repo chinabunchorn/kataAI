@@ -50,6 +50,69 @@ only a non-whitespace `code` string of at most 16,384 UTF-8 bytes. This shape an
 limit are local test decisions, not an agreed external contract. Error names are
 likewise provisional. Do not treat this validator as a sandbox.
 
+## Provisional B2 CSV intake core (not wired to HTTP)
+
+`app.csv_intake.validate_csv(source, limits)` consumes a caller-owned binary
+file-like object or iterable of byte chunks once and returns immutable
+`CsvMetadata(columns, byte_size, row_count)` only after successful EOF. It does
+not close the stream, use filenames or client hints, retain rows, persist files,
+connect to a database, call a model, or execute CSV text. It does not implement
+an upload endpoint. Valid `/v1/requests` still returns 503. Header names are
+untrusted data, not safe HTML, SQL, spreadsheet formulas, or model instructions.
+
+All rules are **provisional**, not frontend/teammate-approved. Default inclusive
+limits are 10,000,000 bytes (decimal, including BOM), 100,000 data records,
+256 columns, and 65,536 Unicode code points per decoded field (after unescaping);
+`CsvLimits` allows positive integer overrides, but `max_bytes` cannot exceed the
+hard 10,000,000-byte ceiling. Decimal versus binary MB is still
+open. Observed source bytes, not hints, determine acceptance. The first record
+is the required header; its names are returned verbatim, must contain a
+non-whitespace character, and must be unique by exact Unicode string equality
+(no trimming, case folding, or normalization). Header-only files are accepted
+with zero data rows. Every record must have exactly the header width. A truly
+blank unquoted physical record is rejected regardless of width; an explicitly
+quoted empty field is allowed as a one-column data record. No automatic
+delimiter or encoding detection is done.
+
+The exact grammar is provisional, not an agreed CSV contract. It is
+comma-separated, UTF-8 only with an optional initial UTF-8 BOM;
+a later U+FEFF is ordinary field content. NUL is forbidden. LF, CRLF, and CR
+end records outside quotes. A quote may start only at the start of a field;
+doubled quotes inside a quoted field decode to one quote; quoted fields may
+contain commas and arbitrary line breaks. After a closing quote only a comma,
+record ending, escaped quote, or EOF is allowed. Unterminated quotes and quotes
+in unquoted fields are rejected. Spaces are significant and there is no escape
+character. This deliberately strict grammar is not a claim of full RFC 4180
+compliance or parity with other CSV engines.
+
+The implementation uses an incremental UTF-8 decoder and a small state machine,
+not `csv.reader` or `TextIOWrapper`, and never mutates `csv.field_size_limit`.
+The stdlib CSV reader's process-global field cap, permissive strict-mode grammar,
+and potential whole physical-line/logical-record buffering are unsuitable for
+these independent per-call policies. Byte input is requested in 65,536-byte
+reads, and large returned chunks are checked against remaining budget *before*
+decoding, then decoded in slices. A producer can already have allocated an
+oversized chunk before returning it; this code cannot prevent that allocation.
+Peak memory is not a 64 KB or constant-memory guarantee: retained header strings,
+Python object overhead, decoding, caller buffers, and concurrency add overhead
+bounded by the configured limits. The validator cannot enforce source-side
+buffering, deadlines, blocking reads, or concurrent request limits; sources can
+block indefinitely and the byte limit is not a duration limit. Future transport
+wiring must enforce those controls separately. More than 1,024 total empty
+iterable chunks are rejected to avoid no-progress amplification. Stream reads
+returning empty bytes signify EOF; non-byte chunks and source errors fail safely.
+
+Errors are `CsvIntakeError` with a stable `code` of `INVALID_UPLOAD`,
+`UPLOAD_TOO_LARGE`, or `UNSUPPORTED_ENCODING` and fixed content-free messages.
+For a complete byte stream, precedence is `UPLOAD_TOO_LARGE` over
+`UNSUPPORTED_ENCODING` over `INVALID_UPLOAD`. After syntax or encoding failure,
+scanning continues to EOF or the byte limit; source errors or invalid chunks
+before that point produce `INVALID_UPLOAD` because the input is unavailable.
+No source exception or raw row is included in the public error. Never log source
+inputs, headers, traceback locals, or exception internals; traceback frames can
+retain sensitive input even when the rendered exception is sanitized. No error is
+a substitute for transport-level controls.
+
 ## Python 3.12 setup and checks
 
 From `backend/`:
