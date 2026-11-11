@@ -2,7 +2,8 @@
 
 This is a provisional, incomplete B1 prototype. `GET /health` reports process
 health, not model, executor, or isolation readiness. There is no real model,
-code execution, persistence, migration, or remote provider. Fake outcomes are
+code execution, application persistence, or remote provider. A provisional
+metadata-only migration exists, but the application does not use it. Fake outcomes are
 preset and are not computation or benchmark measurements. The in-process
 example wires provisional ports, but is not exposed as an HTTP execution
 endpoint. No generated code is evaluated.
@@ -69,3 +70,77 @@ suite is offline after installation. Loopback binding is intentional but alone
 is not a browser-origin/CSRF security policy; do not expose this skeleton on a
 network. The real execution feature remains disabled pending the isolation and
 infrastructure gates in the implementation plan.
+
+## Provisional database migration foundation
+
+This migration is **not B2**: there are no upload/download/delete endpoints,
+filesystem operations, database-backed repositories, queue, or history wiring.
+`/v1/requests` still returns 503 for valid input. The provisional `datasets`
+table contains a caller-supplied UUID primary key, a separately generated unique
+UUID storage key (never a path), a bounded display name, creation time, and an
+`active`/`deleted` tombstone with a matching deletion timestamp. Producers must
+generate opaque IDs and sanitize display names before insertion; constraints are
+only a defensive minimum, not HTML escaping or a complete Unicode/confusable
+policy. The deleted row can eventually be referenced by retained history; no
+history schema, deletion semantics, file/DB atomicity, race protection, or
+automatic cleanup is implemented. Downgrades remove the table and its data and
+are not a production rollback strategy. Schema, policies and API are provisional.
+
+Alembic requires an explicitly supplied `DATABASE_URL` with PostgreSQL username,
+database, and either a TCP host or an absolute Unix-socket directory. No default
+URL/database is provided. Only `host` (socket directory) and `port` query
+parameters are accepted; TLS/query configuration is not yet designed. Alembic
+errors intentionally avoid displaying connection details, so check configuration
+and server status separately. Never put credentials in repository files, command
+history, logs or a checked-in URL. URLs in environment variables may be exposed
+to privileged local processes; use appropriate secret handling. All inherited
+`PG*` environment variables, including empty values and SSL settings, are rejected
+before URL use in migrations (including offline SQL) and live tests. Unset them
+in the invoking process; they are never silently stripped or displayed. This
+restriction does not configure TLS: assess transport security and other libpq or
+system configuration separately, and verify the target before any migration.
+
+For disposable targets only, after explicitly provisioning an empty, isolated
+PostgreSQL instance and setting `DATABASE_URL` securely:
+
+```sh
+# Inspect SQL without connecting; still requires an explicit DATABASE_URL.
+python -m alembic upgrade head --sql
+# This modifies the database identified by DATABASE_URL. Verify it first.
+python -m alembic upgrade head
+```
+
+## PostgreSQL integration tests: explicit opt-in only
+
+Normal `python -m pytest -q` is offline and skips live tests even if a database
+URL happens to be present. Provision a **separate disposable PostgreSQL instance**
+and empty database yourself first; never use a real, shared, or production DB.
+For example a CI PostgreSQL service can use a dedicated empty database, or a
+locally provisioned private PostgreSQL instance can use a socket directory
+accessible only to its owner. Do not point tests at your ordinary local server.
+The flag, explicit guard, and URL are all required:
+
+```sh
+unset PYTHONPATH PYTHONHOME
+# Examples without passwords: use only with your own isolated instance.
+# TCP:    export TEST_DATABASE_URL='postgresql+psycopg://kataai_test@127.0.0.1:55432/kataai_disposable'
+# Socket: export TEST_DATABASE_URL='postgresql+psycopg://kataai_test@/kataai_disposable?host=/tmp/PRIVATE_SOCKET_DIR&port=55432'
+export KATAAI_DISPOSABLE_DB=1
+python -m pytest -q -m live_postgres --run-live-postgres
+```
+
+This exact CI command fails with a usage error when either guard or URL is
+missing, rather than silently skipping. A connection or migration failure also
+fails the suite. The suite generates uniquely named schemas and sets its
+search path so both application tables and `alembic_version` live there. Cleanup
+uses transactional `RESTRICT` drops for those known tables and the test schema.
+External dependencies that block table removal or independent unexpected objects
+in the test schema make cleanup fail and roll back. PostgreSQL can still remove
+objects automatically dependent on a dropped table, such as its indexes and
+triggers. A test also explicitly removes its own dependent view and separate
+schema using `RESTRICT`. Cleanup never drops a database. A crash or cleanup failure
+can leave test schemas behind; destroy the entire disposable instance using the
+provisioning system after tests.
+The opt-in guard is an operator assertion, **not a technical proof of
+isolation**. The test user must have schema create/drop privileges only in the
+intended disposable DB. Tests do not start, stop, or destroy PostgreSQL.

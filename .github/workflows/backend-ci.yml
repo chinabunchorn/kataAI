@@ -24,3 +24,35 @@ jobs:
         run: python -m ruff check .
       - name: Run offline tests
         run: python -m pytest -q
+
+  postgres-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: kataai_ci
+          POSTGRES_PASSWORD: kataai_ci_only
+          POSTGRES_DB: kataai_disposable
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U kataai_ci -d kataai_disposable"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      KATAAI_DISPOSABLE_DB: '1'
+      TEST_DATABASE_URL: postgresql+psycopg://kataai_ci:kataai_ci_only@localhost:5432/kataai_disposable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install backend and test dependencies
+        run: python -m pip install -e '.[dev]'
+      - name: Test migrations against disposable PostgreSQL
+        run: python -m pytest -q -m live_postgres --run-live-postgres

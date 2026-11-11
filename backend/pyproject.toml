@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "kataai-backend"
 version = "0.0.1"
 requires-python = ">=3.12,<3.13"
-dependencies = ["fastapi==0.115.8", "uvicorn==0.34.0"]
+dependencies = ["fastapi==0.115.8", "uvicorn==0.34.0", "SQLAlchemy==2.0.40", "alembic==1.15.2", "psycopg[binary]==3.2.6"]
 
 [project.optional-dependencies]
 dev = ["pytest==8.3.4", "httpx==0.28.1", "ruff==0.9.6", "anyio==4.9.0"]
@@ -16,6 +16,7 @@ include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = ["live_postgres: requires an explicitly provisioned disposable PostgreSQL instance"]
 
 [tool.ruff]
 target-version = "py312"
