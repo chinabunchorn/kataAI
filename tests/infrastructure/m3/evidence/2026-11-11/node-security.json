@@ -1,0 +1,24 @@
+{
+  "run_id": "m3-security-20261111-1046",
+  "observed_running_at": "2026-11-11T10:43:22Z",
+  "job_uid": "da338119-577d-401f-b97a-9e83a233aeb2",
+  "pod_uid": "c44aec53-fef1-41a4-8880-30397d13a24f",
+  "pod_name": "m3-security-20261111-1046-9crxd",
+  "sandbox_id": "ce3eaaa1122da3e4cbb7846c0079fa9cae2017c775c19a902c7bfd05a41d30ba",
+  "runtime": "io.containerd.kata-qemu-runtime-rs.v2",
+  "shim_pid": 67713,
+  "qemu_pid": 67736,
+  "qemu_parent_pid": 67713,
+  "acceleration": "kvm",
+  "guest_kernel": "6.18.56",
+  "observed_cleanup_at": "2026-11-11T10:43:51Z",
+  "exact_pids_absent": true,
+  "kata_run_directory_absent": true,
+  "kubelet_pod_directory_absent": true,
+  "sandbox_metadata_absent": true,
+  "namespace_inventory_after_cleanup": [
+    "configmap/kube-root-ca.crt"
+  ],
+  "source": "Read-only SSH observations recorded in this implementation chat: live Pod JSON, ctr sandboxes ls, ps, exact PID/path checks and ctr sandbox-not-found response",
+  "scope": "One live correlated security run; other cases have separate Pod/runtime/image/termination snapshots, not independent live QEMU captures"
+}

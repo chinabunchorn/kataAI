@@ -241,6 +241,13 @@ flowchart TD
 
 ## M3 — Harden the fixed Python runner and its staging/result channels
 
+**Implementation update (2026-11-11):** Runner contract defaults were explicitly
+approved in [M3 design revision 1](docs/milestone-3-design.md). Implementation,
+image release and actual-Kata observations are tracked in
+[M3 acceptance](docs/infrastructure/M3_ACCEPTANCE.md). **M3 remains incomplete:**
+the configured 16 MiB scratch boundary failed a bounded 20 MiB guest write probe.
+No infrastructure/security configuration was changed to bypass that failure.
+
 **Definition:** Produce the exact, versioned runtime artifact and file channels that a Kata Job can use **without guest network access**. Execute only trusted fixture code at this stage.
 
 **Tasks**

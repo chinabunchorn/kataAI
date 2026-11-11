@@ -1576,3 +1576,19 @@ These limitations must be revisited as the project progresses.
 ---
 
 **Maintenance requirement:** Update this document whenever infrastructure configuration, network addressing, software versions, runtime policies, or verified capabilities change. Keep secrets and credential material outside version control.
+
+## 20. M3 implementation handoff (2026-11-11)
+
+The user approved [M3 runner contract revision 1](../milestone-3-design.md).
+Runner, staging/result adapters, fixed Job construction and trusted test assets
+are now prepared; [M3 acceptance and build blockers](M3_ACCEPTANCE.md) are tracked
+separately. Read-only inspection reconfirmed the existing RuntimeClass/default-deny
+policy and identified the cached approved Python base as 3.12.16 (Debian trixie).
+No Kubernetes/containerd/Kata/Calico settings, RBAC or M1 test evidence were changed.
+New M3 actual-Kata tests passed non-root staging/result collection, bounded result
+validation, selected network probes and error paths; a live shim/QEMU/KVM was
+correlated and its teardown observed. **M3 remains blocked:** the requested 16 MiB
+memory emptyDir allowed a bounded 20 MiB write, and a follow-up showed node mount
+`size=16384k` versus guest capacity 100,691,968 bytes. Do not infer storage
+enforcement from YAML or mark M3 complete. Exact passed/failed/unrun records are
+linked above; no M1 evidence or underlying infrastructure was overwritten.
