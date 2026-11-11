@@ -1,57 +1,74 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import App from './App'
 
-describe('KataAI landing page', () => {
-  it('opens with the KataAI wordmark and an invitation to the workspace, not a developer inspector', () => {
+describe('KataAI Gemini-style Chat UI', () => {
+  it('renders the welcome screen with KataAI brand and greeting', () => {
     render(<App />)
-    expect(screen.getByRole('heading', { level: 1, name: 'KataAI' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Start exploring' })).toHaveAttribute(
-      'href',
-      '#workspace',
-    )
-    expect(screen.queryByText('REQUEST INSPECTOR')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Copy JSON' })).not.toBeInTheDocument()
+    expect(screen.getByText('KataAI')).toBeInTheDocument()
+    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+    expect(
+      screen.getByText(/We will test and run the generated Python code inside an isolated/i),
+    ).toBeInTheDocument()
+    expect(screen.getByTitle('Attach CSV file')).toBeInTheDocument()
   })
 
-  it('checks the real inputs and shows a simple confirmation without rendering a payload schema', async () => {
+  it('populates sample CSV when clicking Use Sample Data and allows typing question', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.type(screen.getByLabelText('Your question'), 'Which product fell most?')
-    await user.upload(
-      screen.getByLabelText('Choose CSV file'),
-      new File(['product,units\nPen,45'], 'sales.csv', { type: 'text/csv' }),
-    )
-    await screen.findByText('sales.csv')
-    await user.click(screen.getByRole('button', { name: 'Check my request' }))
-    expect(
-      await screen.findByRole('heading', { name: 'Your request is ready.' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByText('Nothing has been sent. Backend integration is not connected yet.'),
-    ).toBeInTheDocument()
-    expect(screen.queryByTestId('payload-json')).not.toBeInTheDocument()
-    expect(screen.queryByText(/schema_version|client_request_id/)).not.toBeInTheDocument()
-    await user.type(screen.getByLabelText('Your question'), ' More detail.')
-    expect(
-      screen.queryByRole('heading', { name: 'Your request is ready.' }),
-    ).not.toBeInTheDocument()
+    await user.click(screen.getByTitle('Load sample sales data'))
+    expect(screen.getByText('sales_q4.csv')).toBeInTheDocument()
+
+    const textarea = screen.getByPlaceholderText(/Ask a question about this CSV/i)
+    await user.type(textarea, 'Which product fell the most?')
+    expect(textarea).toHaveValue('Which product fell the most?')
   })
 
-  it('retains usable sample inputs and reset without any fake analysis', async () => {
+  it('runs the 5-step background pipeline and displays the answer and JSON result', async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole('button', { name: 'Try an example question' }))
-    await user.click(screen.getByRole('button', { name: 'Use sample CSV' }))
-    await screen.findByText('sample-sales.csv')
-    await user.click(screen.getByRole('button', { name: 'Check my request' }))
-    await screen.findByRole('heading', { name: 'Your request is ready.' })
-    await user.click(screen.getByRole('button', { name: 'Reset draft' }))
-    expect(screen.getByLabelText('Your question')).toHaveValue('')
-    expect(screen.queryByText('sample-sales.csv')).not.toBeInTheDocument()
+    await user.click(screen.getByTitle('Load sample sales data'))
+
+    const textarea = screen.getByPlaceholderText(/Ask a question about this CSV/i)
+    await user.type(
+      textarea,
+      'Which product had the largest absolute drop in sales from October to November?',
+    )
+
+    const sendBtn = screen.getByTitle('Send question')
+    await user.click(sendBtn)
+
+    // The user's message should appear in chat
     expect(
-      screen.queryByRole('heading', { name: 'Your request is ready.' }),
-    ).not.toBeInTheDocument()
+      screen.getByText(
+        'Which product had the largest absolute drop in sales from October to November?',
+      ),
+    ).toBeInTheDocument()
+
+    // The pipeline container should appear showing execution steps
+    expect(await screen.findByText(/Running Sandbox Pipeline/i)).toBeInTheDocument()
+
+    // Wait for the simulated pipeline to finish and show the answer
+    await waitFor(
+      () => {
+        expect(screen.getByText(/Sandboxed Execution Complete/i)).toBeInTheDocument()
+        expect(screen.getByText(/Notebook sales dropped the most/i)).toBeInTheDocument()
+        expect(screen.getByText('Generated Python Code')).toBeInTheDocument()
+        expect(screen.getByText('Validated JSON Output')).toBeInTheDocument()
+      },
+      { timeout: 5000 },
+    )
+  })
+
+  it('resets the chat and returns to welcome screen when clicking reset', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByTitle('Load sample sales data'))
+    expect(screen.getByText('sales_q4.csv')).toBeInTheDocument()
+
+    await user.click(screen.getByTitle('Start new analysis'))
+    expect(screen.queryByText('sales_q4.csv')).not.toBeInTheDocument()
+    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
   })
 })
