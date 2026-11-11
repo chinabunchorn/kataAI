@@ -1,0 +1,21 @@
+{
+  "observed_on": "2026-11-11",
+  "host": "katavm",
+  "operation": "read-only version, binary hash and existing configuration inspection",
+  "shim_path": "/opt/kata/runtime-rs/bin/containerd-shim-kata-v2",
+  "shim_version": "4.3.1",
+  "shim_revision": "03cf2ec06a5d302f23af811744f6bcea49988bfb",
+  "shim_sha256": "c9a43977c61ff649c8233efd9ce6cf28e0bf777523071e838b8ebc3362f57016",
+  "configuration_path": "/opt/kata/share/defaults/kata-containers/runtime-rs/runtimes/qemu-runtime-rs/configuration-qemu-runtime-rs.toml",
+  "emptydir_mode": "shared-fs",
+  "source_findings": {
+    "tmpfs_emptydir_conversion": "src/libs/kata-sys-util/src/k8s.rs:19-80",
+    "volume_dispatch": "src/runtime-rs/crates/resource/src/volume/mod.rs:108-123",
+    "guest_tmpfs_storage_without_size": "src/runtime-rs/crates/resource/src/volume/ephemeral_volume.rs:37-77",
+    "same_revision_agent_initial_option_handling": "src/agent/src/storage/ephemeral_handler.rs:49-83"
+  },
+  "guest_agent_binary_independently_fingerprinted": false,
+  "new_candidate_executions": 0,
+  "infrastructure_configuration_changed": false,
+  "m3_scratch_acceptance_passed": false
+}

@@ -18,6 +18,9 @@
   20 MiB probe, which must not be relabeled as successful resource enforcement.
 - `final-inventory.json`: final namespace/runtime/process observations and node
   versus guest scratch mount-capacity discrepancy.
+- `scratch-runtime-investigation.json`: follow-up read-only shim version/revision,
+  binary fingerprint and pinned source locations identifying omitted guest size
+  propagation. See the [investigation](../../../../../docs/infrastructure/M3_SCRATCH_INVESTIGATION.md).
 
 Host-only command `python -B -m unittest discover -s tests/unit/runner -v` passed
 39 tests on Python 3.13.15. Trusted-source syntax and the PowerShell build script

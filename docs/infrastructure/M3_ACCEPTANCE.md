@@ -82,7 +82,9 @@ programs. These checks do not replace the separate image/Kata observations.
 
 No M1 test assets/evidence, RBAC, Kubernetes/containerd/Kata/Calico configurations
 were changed. M3 created only run-scoped Jobs/ConfigMaps and added runner image
-cache entries; only trusted fixtures executed inside Kata. No commits or pushes.
+cache entries; only trusted fixtures executed inside Kata. The initial work made
+no commits or pushes; the user subsequently authorized commit `f7f8d06` and the
+read-only [scratch investigation](M3_SCRATCH_INVESTIGATION.md). Nothing was pushed.
 
 ## Live observations and blocker
 
@@ -125,6 +127,11 @@ At 10:56:58Z the corresponding node mount for Pod
 `5d52cafa-dc92-4e4b-9e05-b9a5abbfe452` had `size=16384k`.
 This establishes a host/guest mount-capacity mismatch; it does not establish which
 specific runtime implementation line causes it.
+
+Follow-up source inspection has now identified the size-propagation omission at
+the installed shim's reported revision: it creates a guest tmpfs storage request
+with group metadata but no size limit. See the pinned source trace and evidence
+limits in [M3 scratch investigation](M3_SCRATCH_INVESTIGATION.md). No fix was deployed.
 
 This is consistent with the upstream discussion of [memory-backed emptyDir size
 limits](https://github.com/kata-containers/kata-containers/issues/10897), but that
