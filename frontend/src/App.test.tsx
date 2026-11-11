@@ -6,7 +6,7 @@ import App from './App'
 describe('KataAI Gemini-style Chat UI', () => {
   it('renders the welcome screen with KataAI brand and greeting', () => {
     render(<App />)
-    expect(screen.getByText('KataAI')).toBeInTheDocument()
+    expect(screen.getAllByText('KataAI')[0]).toBeInTheDocument()
     expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
     expect(
       screen.getByText(/We will test and run the generated Python code inside an isolated/i),
@@ -69,6 +69,38 @@ describe('KataAI Gemini-style Chat UI', () => {
 
     await user.click(screen.getByTitle('Start new analysis'))
     expect(screen.queryByText('sales_q4.csv')).not.toBeInTheDocument()
+    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+  })
+
+  it('toggles chat history sidebar and switches between sessions', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    // Initially in empty state
+    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+
+    // Click the sidebar toggle button or KataAI button to open history
+    await user.click(screen.getByTitle('Click to toggle chat history'))
+
+    // Chat history items should be in the sidebar
+    expect(screen.getByText('Q4 Sales Drop Analysis')).toBeInTheDocument()
+    expect(screen.getByText('Understanding Kata Containers Analogy')).toBeInTheDocument()
+    expect(screen.getByText('Policy & Dataset Binding Limits')).toBeInTheDocument()
+
+    // Click on the past session
+    await user.click(screen.getByText('Q4 Sales Drop Analysis'))
+
+    // The session's question and answers should now be visible in the chat area
+    expect(
+      screen.getByText(
+        'Which product had the largest absolute drop in sales from October to November?',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Notebook sales dropped the most/i)).toBeInTheDocument()
+    expect(screen.getByText('Generated Python Code')).toBeInTheDocument()
+
+    // Click New Chat to start fresh
+    await user.click(screen.getByTitle('Start new chat'))
     expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
   })
 })

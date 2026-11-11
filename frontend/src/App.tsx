@@ -16,10 +16,14 @@ import {
   FileSpreadsheet,
   Layers,
   LoaderCircle,
+  MessageSquare,
+  PanelLeft,
+  PanelLeftClose,
   Plus,
   RotateCcw,
   Table,
   Terminal,
+  Trash2,
   X,
 } from 'lucide-react'
 import { inspectCsv } from './lib/csv'
@@ -115,6 +119,15 @@ type ChatMessage = {
   }
 }
 
+export type ChatSession = {
+  id: string
+  title: string
+  createdAt: string
+  messages: ChatMessage[]
+  selectedFile: File | null
+  dataset: CsvDataset | null
+}
+
 const INITIAL_PIPELINE_STEPS: PipelineStep[] = [
   {
     id: 1,
@@ -153,7 +166,293 @@ const INITIAL_PIPELINE_STEPS: PipelineStep[] = [
   },
 ]
 
+const INITIAL_SESSIONS: ChatSession[] = [
+  {
+    id: 'session-q4-sales',
+    title: 'Q4 Sales Drop Analysis',
+    createdAt: 'Today',
+    selectedFile: DEFAULT_SAMPLE_FILE,
+    dataset: {
+      file: DEFAULT_SAMPLE_FILE,
+      headers: ['product', 'month', 'units'],
+      rowCount: 4,
+      preview: [
+        ['Notebook', 'October', '120'],
+        ['Notebook', 'November', '80'],
+        ['Pen', 'October', '50'],
+        ['Pen', 'November', '45'],
+      ],
+    },
+    messages: [
+      {
+        id: 'msg-user-1',
+        sender: 'user',
+        question: 'Which product had the largest absolute drop in sales from October to November?',
+        timestamp: '14:20',
+        dataset: {
+          file: DEFAULT_SAMPLE_FILE,
+          headers: ['product', 'month', 'units'],
+          rowCount: 4,
+          preview: [
+            ['Notebook', 'October', '120'],
+            ['Notebook', 'November', '80'],
+            ['Pen', 'October', '50'],
+            ['Pen', 'November', '45'],
+          ],
+        },
+      },
+      {
+        id: 'msg-assistant-1',
+        sender: 'assistant',
+        question: 'Which product had the largest absolute drop in sales from October to November?',
+        timestamp: '14:20',
+        pipeline: {
+          steps: [
+            {
+              id: 1,
+              title: 'Code Generation',
+              subtitle: 'Generating Python script based on CSV column schema',
+              component: 'llama.cpp (Local)',
+              status: 'completed',
+              durationMs: 450,
+            },
+            {
+              id: 2,
+              title: 'Policy & Tool Validation',
+              subtitle: 'Validating tool contract, dataset binding and limits',
+              component: 'FastAPI Coordinator',
+              status: 'completed',
+              durationMs: 300,
+            },
+            {
+              id: 3,
+              title: 'Kubernetes Kata Job Provisioning',
+              subtitle: 'Dispatching disposable Pod with RuntimeClass: kata-qemu',
+              component: 'OpenStack K8s API',
+              status: 'completed',
+              durationMs: 600,
+            },
+            {
+              id: 4,
+              title: 'MicroVM Sandboxed Execution',
+              subtitle: 'Executing Python inside isolated guest kernel without network',
+              component: 'Kata Containers VM',
+              status: 'completed',
+              durationMs: 500,
+            },
+            {
+              id: 5,
+              title: 'Result Extraction & Summarization',
+              subtitle: 'Collecting validated JSON and generating natural explanation',
+              component: 'llama.cpp (Summarizer)',
+              status: 'completed',
+              durationMs: 400,
+            },
+          ],
+          isComplete: true,
+          activeStepIndex: 5,
+          totalDurationMs: 2250,
+        },
+        result: {
+          answer:
+            'Notebook sales dropped the most between October and November, falling from 120 units to 80 units (an absolute drop of 40 units). Pen sales had a smaller decrease of 5 units.',
+          pythonCode: DEFAULT_GENERATED_PYTHON_CODE,
+          json: {
+            product: 'Notebook',
+            october_units: 120,
+            november_units: 80,
+            change_units: -40,
+          },
+          memoryUsage: '42 MB',
+          telemetry: {
+            runtime: 'kata-qemu (MicroVM)',
+            guestKernel: '6.1.102-kata',
+            networkStatus: 'Egress Denied (Default-Deny CNI)',
+            jobUid: 'job-kata-8f4b2a',
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'session-kata-isolation',
+    title: 'Understanding Kata Containers Analogy',
+    createdAt: 'Yesterday',
+    selectedFile: null,
+    dataset: null,
+    messages: [
+      {
+        id: 'msg-user-2',
+        sender: 'user',
+        question: 'How does Kata Containers isolate Python code from the host system?',
+        timestamp: 'Yesterday',
+      },
+      {
+        id: 'msg-assistant-2',
+        sender: 'assistant',
+        question: 'How does Kata Containers isolate Python code from the host system?',
+        timestamp: 'Yesterday',
+        pipeline: {
+          steps: [
+            {
+              id: 1,
+              title: 'Code Generation',
+              subtitle: 'Generating Python script based on CSV column schema',
+              component: 'llama.cpp (Local)',
+              status: 'completed',
+              durationMs: 400,
+            },
+            {
+              id: 2,
+              title: 'Policy & Tool Validation',
+              subtitle: 'Validating tool contract, dataset binding and limits',
+              component: 'FastAPI Coordinator',
+              status: 'completed',
+              durationMs: 300,
+            },
+            {
+              id: 3,
+              title: 'Kubernetes Kata Job Provisioning',
+              subtitle: 'Dispatching disposable Pod with RuntimeClass: kata-qemu',
+              component: 'OpenStack K8s API',
+              status: 'completed',
+              durationMs: 500,
+            },
+            {
+              id: 4,
+              title: 'MicroVM Sandboxed Execution',
+              subtitle: 'Executing Python inside isolated guest kernel without network',
+              component: 'Kata Containers VM',
+              status: 'completed',
+              durationMs: 450,
+            },
+            {
+              id: 5,
+              title: 'Result Extraction & Summarization',
+              subtitle: 'Collecting validated JSON and generating natural explanation',
+              component: 'llama.cpp (Summarizer)',
+              status: 'completed',
+              durationMs: 350,
+            },
+          ],
+          isComplete: true,
+          activeStepIndex: 5,
+          totalDurationMs: 2000,
+        },
+        result: {
+          answer:
+            'Kata Containers provides second-layer defense by launching each untrusted execution pod inside a dedicated QEMU MicroVM with an isolated guest kernel (6.1.102-kata). Host privilege escalation, raw hardware access, and container breakout attacks are halted at the hypervisor boundary. In addition, default-deny CNI blocks all outbound traffic.',
+          pythonCode: `# Security isolation sandbox test\nimport sys\nimport os\n\nprint("Running inside Kata MicroVM guest kernel:", os.uname().release)\n`,
+          json: {
+            isolation_type: 'Hardware Virtualization (MicroVM)',
+            hypervisor: 'QEMU 8.2 / KVM',
+            guest_kernel: '6.1.102-kata',
+            network_egress: 'DENIED',
+            tamper_proof: true,
+          },
+          memoryUsage: '38 MB',
+          telemetry: {
+            runtime: 'kata-qemu (MicroVM)',
+            guestKernel: '6.1.102-kata',
+            networkStatus: 'Egress Denied (Default-Deny CNI)',
+            jobUid: 'job-kata-iso-99',
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'session-policy-limits',
+    title: 'Policy & Dataset Binding Limits',
+    createdAt: 'Previous 7 days',
+    selectedFile: null,
+    dataset: null,
+    messages: [
+      {
+        id: 'msg-user-3',
+        sender: 'user',
+        question: 'What are the intake policy restrictions on uploaded datasets and runtime memory?',
+        timestamp: '3 days ago',
+      },
+      {
+        id: 'msg-assistant-3',
+        sender: 'assistant',
+        question: 'What are the intake policy restrictions on uploaded datasets and runtime memory?',
+        timestamp: '3 days ago',
+        pipeline: {
+          steps: [
+            {
+              id: 1,
+              title: 'Code Generation',
+              subtitle: 'Generating Python script based on CSV column schema',
+              component: 'llama.cpp (Local)',
+              status: 'completed',
+              durationMs: 350,
+            },
+            {
+              id: 2,
+              title: 'Policy & Tool Validation',
+              subtitle: 'Validating tool contract, dataset binding and limits',
+              component: 'FastAPI Coordinator',
+              status: 'completed',
+              durationMs: 250,
+            },
+            {
+              id: 3,
+              title: 'Kubernetes Kata Job Provisioning',
+              subtitle: 'Dispatching disposable Pod with RuntimeClass: kata-qemu',
+              component: 'OpenStack K8s API',
+              status: 'completed',
+              durationMs: 450,
+            },
+            {
+              id: 4,
+              title: 'MicroVM Sandboxed Execution',
+              subtitle: 'Executing Python inside isolated guest kernel without network',
+              component: 'Kata Containers VM',
+              status: 'completed',
+              durationMs: 400,
+            },
+            {
+              id: 5,
+              title: 'Result Extraction & Summarization',
+              subtitle: 'Collecting validated JSON and generating natural explanation',
+              component: 'llama.cpp (Summarizer)',
+              status: 'completed',
+              durationMs: 300,
+            },
+          ],
+          isComplete: true,
+          activeStepIndex: 5,
+          totalDurationMs: 1750,
+        },
+        result: {
+          answer:
+            'The FastAPI Coordinator enforces strict intake policies: CSV upload max size is 10 MB, headers must be sanitised UTF-8 text, memory limit per Kata job is capped at 256 MB cgroup limit, and pod lifetime expires after 30 seconds.',
+          pythonCode: `# Policy limit check\nimport resource\n\nsoft, hard = resource.getrlimit(resource.RLIMIT_AS)\nprint(f"Memory capped at: {hard / (1024*1024)} MB")\n`,
+          json: {
+            max_file_size_bytes: 10485760,
+            memory_limit_mb: 256,
+            timeout_seconds: 30,
+            read_only_fs: true,
+          },
+          memoryUsage: '45 MB',
+          telemetry: {
+            runtime: 'kata-qemu (MicroVM)',
+            guestKernel: '6.1.102-kata',
+            networkStatus: 'Egress Denied (Default-Deny CNI)',
+            jobUid: 'job-kata-pol-12',
+          },
+        },
+      },
+    ],
+  },
+]
+
 export default function App() {
+  const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_SESSIONS)
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputText, setInputText] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -226,11 +525,36 @@ export default function App() {
     setSelectedFile(DEFAULT_SAMPLE_FILE)
   }
 
+  function handleSelectSession(sessionId: string) {
+    const session = sessions.find((s) => s.id === sessionId)
+    if (!session) return
+    setCurrentSessionId(sessionId)
+    setMessages(session.messages)
+    setSelectedFile(session.selectedFile)
+    setDataset(session.dataset)
+    setInputText('')
+    setCsvError(null)
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false)
+    }
+  }
 
-  function handleResetChat() {
+  function handleStartNewChat() {
+    setCurrentSessionId(null)
     setMessages([])
     setInputText('')
     handleRemoveFile()
+    if (window.innerWidth < 768) {
+      setIsSidebarOpen(false)
+    }
+  }
+
+  function handleDeleteSession(sessionId: string, e: React.MouseEvent) {
+    e.stopPropagation()
+    setSessions((prev) => prev.filter((s) => s.id !== sessionId))
+    if (currentSessionId === sessionId) {
+      handleStartNewChat()
+    }
   }
 
   async function handleSendMessage(event?: FormEvent) {
@@ -246,6 +570,10 @@ export default function App() {
     const currentQuestion = inputText.trim()
     const currentDataset = dataset ?? undefined
     const messageId = `msg-${Date.now()}`
+    const activeSessionId = currentSessionId ?? `session-${Date.now()}`
+    if (!currentSessionId) {
+      setCurrentSessionId(activeSessionId)
+    }
 
     // 1. Add User Message
     const userMessage: ChatMessage = {
@@ -324,6 +652,25 @@ export default function App() {
       )
     }
 
+    const finalResult = {
+      answer:
+        'Notebook sales dropped the most between October and November, falling from 120 units to 80 units (an absolute drop of 40 units). Pen sales had a smaller decrease of 5 units.',
+      pythonCode: DEFAULT_GENERATED_PYTHON_CODE,
+      json: {
+        product: 'Notebook',
+        october_units: 120,
+        november_units: 80,
+        change_units: -40,
+      },
+      memoryUsage: '42 MB',
+      telemetry: {
+        runtime: 'kata-qemu (MicroVM)',
+        guestKernel: '6.1.102-kata',
+        networkStatus: 'Egress Denied (Default-Deny CNI)',
+        jobUid: `job-kata-${Math.random().toString(36).substring(2, 9)}`,
+      },
+    }
+
     // Pipeline finished -> append final calculated answer and JSON result
     setMessages((prev) =>
       prev.map((msg) => {
@@ -334,27 +681,72 @@ export default function App() {
             ...msg.pipeline,
             isComplete: true,
           },
-          result: {
-            answer:
-              'Notebook sales dropped the most between October and November, falling from 120 units to 80 units (an absolute drop of 40 units). Pen sales had a smaller decrease of 5 units.',
-            pythonCode: DEFAULT_GENERATED_PYTHON_CODE,
-            json: {
-              product: 'Notebook',
-              october_units: 120,
-              november_units: 80,
-              change_units: -40,
-            },
-            memoryUsage: '42 MB',
-            telemetry: {
-              runtime: 'kata-qemu (MicroVM)',
-              guestKernel: '6.1.102-kata',
-              networkStatus: 'Egress Denied (Default-Deny CNI)',
-              jobUid: `job-kata-${Math.random().toString(36).substring(2, 9)}`,
-            },
-          },
+          result: finalResult,
         }
       }),
     )
+
+    const sessionTitle =
+      currentQuestion.length > 36
+        ? `${currentQuestion.slice(0, 34)}...`
+        : currentQuestion
+
+    setSessions((prev) => {
+      const existing = prev.find((s) => s.id === activeSessionId)
+      if (existing) {
+        return prev.map((s) =>
+          s.id === activeSessionId
+            ? {
+                ...s,
+                messages: [
+                  ...s.messages,
+                  userMessage,
+                  {
+                    ...assistantMessage,
+                    pipeline: {
+                      steps: INITIAL_PIPELINE_STEPS.map((step, idx) => ({
+                        ...step,
+                        status: 'completed' as const,
+                        durationMs: stepDurations[idx],
+                      })),
+                      isComplete: true,
+                      activeStepIndex: 5,
+                      totalDurationMs: accumulatedMs,
+                    },
+                    result: finalResult,
+                  },
+                ],
+              }
+            : s,
+        )
+      } else {
+        const newSession: ChatSession = {
+          id: activeSessionId,
+          title: sessionTitle,
+          createdAt: 'Just now',
+          selectedFile: selectedFile,
+          dataset: dataset,
+          messages: [
+            userMessage,
+            {
+              ...assistantMessage,
+              pipeline: {
+                steps: INITIAL_PIPELINE_STEPS.map((step, idx) => ({
+                  ...step,
+                  status: 'completed' as const,
+                  durationMs: stepDurations[idx],
+                })),
+                isComplete: true,
+                activeStepIndex: 5,
+                totalDurationMs: accumulatedMs,
+              },
+              result: finalResult,
+            },
+          ],
+        }
+        return [newSession, ...prev]
+      }
+    })
 
     setIsSending(false)
   }
@@ -454,50 +846,158 @@ export default function App() {
 
   return (
     <div className="gemini-app">
-      {/* Top Navigation Bar */}
-      <header className="gemini-header">
-        <div className="header-left">
-          <div className="brand-badge">
-            <span className="brand-logo">KataAI</span>
-          </div>
-        </div>
+      {/* Mobile Backdrop */}
+      {isSidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setIsSidebarOpen(false)}
+          role="presentation"
+        />
+      )}
 
-        <div className="header-actions">
-          {selectedFile ? (
-            <button
-              type="button"
-              className="action-pill-btn"
-              onClick={() => setShowCsvPreviewModal(true)}
-              title="Preview attached CSV"
-            >
-              <Table size={14} />
-              <span>Preview CSV</span>
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="action-pill-btn"
-              onClick={handleUseSampleCsv}
-              title="Load sample sales data"
-            >
-              <Database size={14} />
-              <span>Use Sample Data</span>
-            </button>
-          )}
+      {/* Left Sidebar Drawer (Gemini style) */}
+      <aside className={`gemini-sidebar ${isSidebarOpen ? 'open' : 'closed'}`} aria-label="Chat history">
+        <div className="sidebar-header">
+          <button
+            type="button"
+            className="sidebar-brand-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            title="Close sidebar"
+          >
+            <span className="sidebar-carrot">
+              <Carrot size={18} />
+            </span>
+            <span className="sidebar-brand-title">KataAI</span>
+          </button>
 
           <button
             type="button"
-            className="action-icon-btn"
-            onClick={handleResetChat}
-            title="Start new analysis"
+            className="sidebar-close-btn"
+            onClick={() => setIsSidebarOpen(false)}
+            title="Collapse sidebar"
           >
-            <RotateCcw size={16} />
+            <PanelLeftClose size={18} />
           </button>
         </div>
-      </header>
 
-      {/* Main Chat Content Area */}
-      <main className="gemini-main">
+        {/* New Chat Button (Pill style like Gemini แชทใหม่) */}
+        <div className="sidebar-action-section">
+          <button
+            type="button"
+            className="sidebar-new-chat-btn"
+            onClick={handleStartNewChat}
+            title="Start new chat"
+          >
+            <Plus size={16} />
+            <span>New Chat</span>
+          </button>
+        </div>
+
+        {/* Chat History List */}
+        <div className="sidebar-history-container">
+          <div className="sidebar-history-header">
+            <span className="sidebar-history-label">Recent</span>
+            <Clock size={13} className="sidebar-history-clock" />
+          </div>
+
+          <div className="sidebar-history-list">
+            {sessions.map((session) => (
+              <div
+                key={session.id}
+                className={`history-item ${session.id === currentSessionId ? 'active' : ''}`}
+                onClick={() => handleSelectSession(session.id)}
+                role="button"
+                tabIndex={0}
+              >
+                <MessageSquare size={15} className="history-item-icon" />
+                <span className="history-item-title" title={session.title}>
+                  {session.title}
+                </span>
+                {sessions.length > 1 && (
+                  <button
+                    type="button"
+                    className="history-item-delete"
+                    onClick={(e) => handleDeleteSession(session.id, e)}
+                    title="Delete chat"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="sidebar-footer">
+          <div className="sidebar-status-pill">
+            <span className="status-dot live" />
+            <span>Kata MicroVM Online</span>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main App Body */}
+      <div className="gemini-app-body">
+        {/* Top Navigation Bar */}
+        <header className="gemini-header">
+          <div className="header-left">
+            <button
+              type="button"
+              className="sidebar-toggle-btn"
+              onClick={() => setIsSidebarOpen((prev) => !prev)}
+              title={isSidebarOpen ? 'Close sidebar' : 'Open chat history'}
+              aria-label="Toggle chat history"
+            >
+              <PanelLeft size={19} />
+            </button>
+
+            <button
+              type="button"
+              className="brand-badge-btn"
+              onClick={() => setIsSidebarOpen((prev) => !prev)}
+              title="Click to toggle chat history"
+            >
+              <span className="brand-logo">KataAI</span>
+            </button>
+          </div>
+
+          <div className="header-actions">
+            {selectedFile ? (
+              <button
+                type="button"
+                className="action-pill-btn"
+                onClick={() => setShowCsvPreviewModal(true)}
+                title="Preview attached CSV"
+              >
+                <Table size={14} />
+                <span>Preview CSV</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="action-pill-btn"
+                onClick={handleUseSampleCsv}
+                title="Load sample sales data"
+              >
+                <Database size={14} />
+                <span>Use Sample Data</span>
+              </button>
+            )}
+
+            <button
+              type="button"
+              className="action-icon-btn"
+              onClick={handleStartNewChat}
+              title="Start new analysis"
+            >
+              <RotateCcw size={16} />
+            </button>
+          </div>
+        </header>
+
+        {/* Main Chat Content Area */}
+        <main className="gemini-main">
         {messages.length === 0 ? (
           /* Empty State - Gemini Welcome Screen */
           <div className="gemini-hero">
@@ -723,6 +1223,7 @@ export default function App() {
           {inputForm}
         </footer>
       )}
+      </div>
 
       {/* CSV Data Preview Modal */}
       {showCsvPreviewModal && dataset && (
