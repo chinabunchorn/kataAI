@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RUN_NAME
+  namespace: kata-lab
+  labels:
+    kataai-m1-run: RUN_NAME
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 0
+  activeDeadlineSeconds: 180
+  template:
+    metadata:
+      labels:
+        kataai-m1-run: RUN_NAME
+    spec:
+      runtimeClassName: kata-qemu-runtime-rs
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 10
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: trusted-csv
+          image: PYTHON_IMAGE_DIGEST
+          imagePullPolicy: IfNotPresent
+          command: ["python3", "-I", "-B", "/inputs/trusted_csv.py"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+              ephemeral-storage: 16Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
+              ephemeral-storage: 64Mi
+          volumeMounts:
+            - name: inputs
+              mountPath: /inputs
+              readOnly: true
+            - name: scratch
+              mountPath: /tmp
+      volumes:
+        - name: inputs
+          configMap:
+            name: RUN_NAME-inputs
+            defaultMode: 0444
+        - name: scratch
+          emptyDir:
+            sizeLimit: 16Mi

@@ -174,11 +174,11 @@ flowchart TD
 **Deliverables:** Approved scope matrix, threat-boundary diagram, R1–R6 traceability matrix, question/decision log, test catalog.
 
 **Acceptance criteria**
-- [/] Every required R1–R6 criterion has an identified future test and milestone.
-- [/] FastAPI + web client + llama.cpp + application state on the local laptop, OpenStack Linux VM running Kubernetes/Kata, one-user MVP, generic bounded JSON and optional comparison are recorded; every remaining choice is visibly **TBD**.
-- [/] The lab environment and access assumptions required for M1 are explicitly recorded; unknowns have owners.
-- [/] The deterministic fixture and expected JSON are checked into the test assets without sensitive data.
-- [/] The optional status of the `runc` comparison is documented; deadline and any discovered environmental restrictions are recorded without inventing values.
+- [x] Every required R1–R6 criterion has an identified future test and milestone.
+- [x] FastAPI + web client + llama.cpp + application state on the local laptop, OpenStack Linux VM running Kubernetes/Kata, one-user MVP, generic bounded JSON and optional comparison are recorded; every remaining choice is visibly **TBD**.
+- [x] The lab environment and access assumptions required for M1 are explicitly recorded; unknowns have owners.
+- [x] The deterministic fixture and expected JSON are checked into the test assets without sensitive data.
+- [x] The optional status of the `runc` comparison is documented; deadline and any discovered environmental restrictions are recorded without inventing values.
 
 **Blocking decisions:** Actual VM/cloud resource and admin/KVM availability for M1; team deadlines and other rubric constraints must be recorded when provided. `runc` comparison is **not** a blocker.
 
@@ -201,13 +201,15 @@ flowchart TD
 **Deliverables:** Working Kata cluster recipe, trusted Job manifest, version matrix, VM evidence, I/O/network/teardown logs, feasibility decision.
 
 **Acceptance criteria**
-- [ ] The fixed CSV computation runs inside a **verified Kata VM** on the target lab worker and produces the known JSON.
-- [ ] A Job/Pod UID maps to evidence of the underlying VM, and the VM is observed to stop after deletion.
-- [ ] Input and output channels function with the selected guest UID and network restrictions.
-- [ ] The required network paths are blocked **or** each unblocked path is documented as a blocker requiring resolution before M6.
-- [ ] Disabling the Kata runtime yields a visible failure and **never** executes on the agent host or a different runtime.
-- [ ] All selected versions and unresolved compatibility questions are recorded.
-- [ ] The **local laptop** can securely submit, inspect and delete a trusted Kata Job on **remote OpenStack Kubernetes** without copying cluster credentials into the web client or guest.
+- [x] The fixed CSV computation runs inside a **verified Kata VM** on the target lab worker and produces the known JSON.
+- [x] A Job/Pod UID maps to evidence of the underlying VM, and the VM is observed to stop after deletion.
+- [x] Input and output channels function with the selected guest UID and network restrictions.
+- [x] The required network paths are blocked **or** each unblocked path is documented as a blocker requiring resolution before M6.
+- [x] Disabling the Kata runtime yields a visible failure and **never** executes on the agent host or a different runtime.
+- [x] All selected versions and unresolved compatibility questions are recorded.
+- [x] The **local laptop / local PC** can securely submit, inspect and delete a trusted Kata Job on **remote OpenStack Kubernetes** without copying cluster credentials into the web client or guest.
+
+**M1 evidence (2026-11-11):** See `docs/infrastructure/INFRASTRUCTURE.md` §16.5 and `tests/infrastructure/m1/`. Two trusted runs correlate Job/Pod UIDs with Kata sandboxes and QEMU/KVM guests, return the canonical result as UID 10001 under default-deny, and verify cleanup. Windows HTTPS create/status/log/delete used an approved temporary 600-second operator identity, subsequently removed. Fail-closed acceptance relies on the recorded unavailable-handler spike (§13.10), not destructive failure injection into the working runtime. QEMU exited on workload completion and was confirmed absent after deletion; transient stopped sandbox metadata was later garbage-collected. Broader network/admission hardening, persistent application credentials and configured-runtime crash testing remain outside this feasibility proof and do not waive M6/M8 gates.
 
 **Gate:** If M1 cannot demonstrate Kata VM execution and usable I/O, do not proceed to model integration. Resolve feasibility or formally revisit project scope.
 

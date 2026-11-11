@@ -1,0 +1,49 @@
+# PROPOSAL ONLY. Requires explicit approval before application.
+# Trusted operator only: create permissions cannot enforce Kata or safe Pod specs.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: m1-client-20261111
+  namespace: kata-lab
+automountServiceAccountToken: false
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: m1-client-20261111
+  namespace: kata-lab
+rules:
+  - apiGroups: [batch]
+    resources: [jobs]
+    verbs: [create]
+  - apiGroups: [batch]
+    resources: [jobs]
+    resourceNames: [m1-win-20261111]
+    verbs: [get, delete]
+  - apiGroups: [""]
+    resources: [configmaps]
+    verbs: [create]
+  - apiGroups: [""]
+    resources: [configmaps]
+    resourceNames: [m1-win-20261111-inputs]
+    verbs: [get, delete]
+  - apiGroups: [""]
+    resources: [pods]
+    verbs: [get, list]
+  - apiGroups: [""]
+    resources: [pods/log]
+    verbs: [get]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: m1-client-20261111
+  namespace: kata-lab
+subjects:
+  - kind: ServiceAccount
+    name: m1-client-20261111
+    namespace: kata-lab
+roleRef:
+  kind: Role
+  name: m1-client-20261111
+  apiGroup: rbac.authorization.k8s.io
