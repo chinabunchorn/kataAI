@@ -174,11 +174,11 @@ flowchart TD
 **Deliverables:** Approved scope matrix, threat-boundary diagram, R1–R6 traceability matrix, question/decision log, test catalog.
 
 **Acceptance criteria**
-- [ ] Every required R1–R6 criterion has an identified future test and milestone.
-- [ ] FastAPI + web client + llama.cpp + application state on the local laptop, OpenStack Linux VM running Kubernetes/Kata, one-user MVP, generic bounded JSON and optional comparison are recorded; every remaining choice is visibly **TBD**.
-- [ ] The lab environment and access assumptions required for M1 are explicitly recorded; unknowns have owners.
-- [ ] The deterministic fixture and expected JSON are checked into the test assets without sensitive data.
-- [ ] The optional status of the `runc` comparison is documented; deadline and any discovered environmental restrictions are recorded without inventing values.
+- [/] Every required R1–R6 criterion has an identified future test and milestone.
+- [/] FastAPI + web client + llama.cpp + application state on the local laptop, OpenStack Linux VM running Kubernetes/Kata, one-user MVP, generic bounded JSON and optional comparison are recorded; every remaining choice is visibly **TBD**.
+- [/] The lab environment and access assumptions required for M1 are explicitly recorded; unknowns have owners.
+- [/] The deterministic fixture and expected JSON are checked into the test assets without sensitive data.
+- [/] The optional status of the `runc` comparison is documented; deadline and any discovered environmental restrictions are recorded without inventing values.
 
 **Blocking decisions:** Actual VM/cloud resource and admin/KVM availability for M1; team deadlines and other rubric constraints must be recorded when provided. `runc` comparison is **not** a blocker.
 
