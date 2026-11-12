@@ -27,7 +27,9 @@ def asgi_post(chunks, headers):
         'type': 'http', 'asgi': {'version': '3.0'}, 'http_version': '1.1',
         'method': 'POST', 'scheme': 'http', 'path': '/v1/requests',
         'raw_path': b'/v1/requests', 'query_string': b'',
-        'headers': headers, 'server': ('testserver', 80), 'client': ('testclient', 1),
+        'headers': [(b'host', b'127.0.0.1:8000'), (b'origin', b'http://127.0.0.1:8000'),
+                    (b'x-kataai-request', b'1'), *headers],
+        'server': ('testserver', 80), 'client': ('testclient', 1),
     }
     asyncio.run(app(scope, receive, send))
     start = next(message for message in sent if message['type'] == 'http.response.start')
@@ -67,7 +69,9 @@ def test_body_byte_limit_is_inclusive(extra_bytes, expected_status):
         'dataset_id': 'id', 'question': 'ยอดรวม',
     }, ensure_ascii=False).encode('utf-8')
     body = payload + b' ' * (65536 + extra_bytes - len(payload))
-    response = TestClient(app).post('/v1/requests', content=body, headers={'content-type': 'application/json'})
+    response = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    }).post('/v1/requests', content=body, headers={'content-type': 'application/json'})
     assert response.status_code == expected_status
 
 
@@ -80,7 +84,9 @@ def test_oversized_body_is_rejected_before_validation(monkeypatch):
     monkeypatch.setattr(fakes.FakeModel, 'generate', must_not_run)
     monkeypatch.setattr(fakes.FakeExecutor, 'execute', must_not_run)
     monkeypatch.setattr(slice, 'run_fake_slice', must_not_run)
-    response = TestClient(app).post(
+    response = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    }).post(
         '/v1/requests', content=b'top-secret' + b' ' * 65536,
         headers={'content-type': 'application/json'},
     )
@@ -91,7 +97,9 @@ def test_oversized_body_is_rejected_before_validation(monkeypatch):
 
 @pytest.mark.parametrize('question', ['What is the total?', 'ยอดรวมเท่าไร?'])
 def test_valid_request_is_unavailable(question):
-    client = TestClient(app)
+    client = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    })
     payload = {
         'schema_version': '1.0',
         'client_request_id': '12345678-1234-4234-8234-123456789abc',
@@ -118,7 +126,9 @@ def test_invalid_request_has_safe_error(changes):
         'question': 'Question?',
     }
     payload.update(changes)
-    response = TestClient(app).post('/v1/requests', json=payload)
+    response = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    }).post('/v1/requests', json=payload)
     assert response.status_code == 422
     assert response.json() == {'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid request.'}}
 
@@ -127,7 +137,9 @@ def test_invalid_request_has_safe_error(changes):
     b'{"secret":"top-secret",', b'null', b'[]', b'"top-secret"', b'{"question": "top-secret"}', b'\xff',
 ])
 def test_malformed_or_wrong_shape_has_sanitized_error(body):
-    response = TestClient(app).post('/v1/requests', content=body, headers={'content-type': 'application/json'})
+    response = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    }).post('/v1/requests', content=body, headers={'content-type': 'application/json'})
     assert response.status_code == 422
     assert response.json() == {'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid request.'}}
     assert 'top-secret' not in response.text
@@ -148,7 +160,9 @@ def test_bounds_are_inclusive_and_repeated_requests_make_no_promises(monkeypatch
         'dataset_id': 'x' * 256,
         'question': 'ก' * 4096,
     }
-    client = TestClient(app)
+    client = TestClient(app, base_url='http://127.0.0.1:8000', headers={
+        'origin': 'http://127.0.0.1:8000', 'x-kataai-request': '1',
+    })
     for _ in range(2):
         response = client.post('/v1/requests', json=payload)
         assert response.status_code == 503

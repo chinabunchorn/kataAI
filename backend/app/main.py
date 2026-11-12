@@ -9,7 +9,12 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-app = FastAPI()
+from app.dataset_lookup_api import get_dataset_runtime, router as dataset_lookup_router
+from app.dataset_upload_api import create_upload_router
+from app.local_security import LocalSecurityMiddleware
+
+app = FastAPI(docs_url=None, redoc_url=None)
+app.add_middleware(LocalSecurityMiddleware)
 MAX_REQUEST_BODY_BYTES = 65_536  # Provisional transport limit.
 
 
@@ -88,3 +93,5 @@ def create_request(payload: RequestInput) -> JSONResponse:
 
 
 app.include_router(request_router)
+app.include_router(dataset_lookup_router)
+app.include_router(create_upload_router(get_dataset_runtime))

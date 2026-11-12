@@ -1,12 +1,10 @@
-# Backend: provisional B1 slices
+# Backend: provisional local prototype
 
-This is a provisional, incomplete B1 prototype. `GET /health` reports process
-health, not model, executor, or isolation readiness. There is no real model,
-code execution, wired application persistence, or remote provider. An isolated
-metadata storage adapter and migration exist, but HTTP does not use them. Fake outcomes are
-preset and are not computation or benchmark measurements. The in-process
-example wires provisional ports, but is not exposed as an HTTP execution
-endpoint. No generated code is evaluated.
+`GET /health` reports process health, not model, executor, database or isolation
+readiness. Dataset upload and metadata lookup are available only when explicitly
+configured as described below. There is no real model, generated-code execution,
+queue, history or remote executor. Preset fake outcomes are not computation or
+benchmark measurements. Valid `POST /v1/requests` still returns HTTP 503.
 
 ## Provisional request validation (not a frontend agreement)
 
@@ -39,10 +37,108 @@ overhead, concurrent requests, or request duration. It is not a global memory or
 denial-of-service limit; deployment still needs server/proxy limits, timeouts,
 and concurrency controls.
 
-**Prototype-only, local-only:** Do not expose this endpoint to untrusted
-traffic. Loopback binding alone does not protect against malicious browser
-origins; browser-origin/CSRF defenses must be designed before enabling any
-state-changing endpoint.
+## Local browser security boundary (Phase 1)
+
+The shipped ASGI policy is explicit and fixed: `Host: 127.0.0.1:8000` and,
+when present, `Origin: http://127.0.0.1:8000`. Host includes the port. Only
+literal IPv4 `127.0.0.1` with a canonical explicit port is supported, not
+`localhost`, IPv6, wildcard hosts, default-port omissions, HTTPS or DNS names.
+`SecurityPolicy(host, origin)` validates each independently; a trusted embedding
+application can inject a different explicit port on each via
+`LocalSecurityMiddleware`, but the shipped app has no environment overrides.
+Invalid policy construction raises an error, never broadens access. Tests inject
+policy directly; this is not runtime user configuration. The shipped application
+supports only this same-origin arrangement; serving a frontend and supporting
+alternate backend/frontend ports in the shipped app are deferred.
+
+All HTTP paths, including unknown routes, are checked before reading request
+bodies. Duplicate, missing or foreign Host, and duplicate, `null`, malformed or
+foreign Origin are rejected with a fixed 403. Origin-less GET/HEAD is permitted;
+these methods must never mutate state. All other methods require the exact Origin
+and exactly one `X-KataAI-Request: 1`. Origin-less CLI writes are unsupported.
+Approved preflights only allow GET/HEAD/POST/PUT/PATCH/DELETE and the
+`content-type` and `x-kataai-request` headers, with an exact origin, no wildcard
+or credentials. WebSocket scopes are refused. FastAPI's CDN-backed interactive
+`/docs` and `/redoc` pages are disabled so external scripts are not loaded into
+the trusted backend origin; host-guarded `/openapi.json` remains available. No
+`X-Forwarded-*` header is used for these decisions; do not place the service
+behind an untrusted proxy.
+
+**Threat model:** single trusted local user, no authentication. The Host check
+limits browser DNS rebinding, and the non-simple header plus strict CORS and
+Origin check protects against simple-form CSRF from foreign origins. Neither
+Origin nor the header authenticates a client: native programs can forge them;
+compromise of the trusted origin, client-side CSRF, XSS, other local processes,
+and an adversary who can bind or control the trusted frontend are out of scope.
+Fetch Metadata is not used as authentication. ASGI cannot enforce socket binding:
+the operator must bind to `127.0.0.1:8000`, disable untrusted proxy rewriting,
+and not expose the service on a network. This is not a multi-user service.
+
+## Dataset upload and lookup HTTP API (provisional)
+
+The route names, limits and error codes are local prototype choices, not a
+frontend/teammate agreement. Requests are protected by the local security policy
+above. No login, browser UI, dataset deletion, file-download API, automatic
+reconciliation or generated-code execution is provided.
+
+**Explicit configuration is required:** set `DATABASE_URL` to a migrated local
+PostgreSQL target at literal `127.0.0.1`, `::1`, or an absolute Unix-socket path,
+and set `KATAAI_DATASET_ROOT` to an existing absolute, owner-private local
+filesystem directory. Inherited `PG*` environment variables are rejected. The
+application does not create the directory, connect or run migrations on import,
+or choose a default database. Missing, invalid or unavailable configuration
+returns sanitized HTTP 503. Configure and authorize a target before running any
+migration; never use a real database as a disposable test target. Protect URL
+credentials; do not place them in repository files, logs, or shell history.
+The root's ancestors, local filesystem semantics, ACLs and same-UID processes
+must be trusted; permission checks alone do not establish privacy.
+
+`POST /v1/datasets` accepts `multipart/form-data` with exactly one part named
+`file` and no additional file or text parts. Filename is optional (default
+`upload.csv`) and is untrusted display metadata, never a storage path. Names
+with path separators, control/format characters, leading/trailing whitespace,
+`.`/`..`, invalid UTF-8 or more than 255 Unicode code points are rejected.
+The part's Content-Type and request Content-Length do not prove file contents.
+Actual CSV validation uses the strict provisional grammar and limits below.
+
+The observed raw request body, including multipart framing, is limited to
+10,065,536 bytes; file bytes are limited to 10,000,000. The multipart parser
+limits part headers to 8,192 bytes and the ASCII boundary to 70 bytes, accepts
+only one part, and accepts at most a final CRLF after the closing boundary. A
+15-second idle and 60-second total **intake** budget are checked around receives
+and processing. A nonblocking advisory filesystem lock admits one cooperating
+upload at a time across processes using the same private root; contention returns
+503. This requires a trustworthy local filesystem and cooperating processes.
+The budgets cannot interrupt a blocked kernel filesystem or database operation;
+server/proxy buffering and producer-side allocations are outside these limits.
+
+Uploads are streamed to an exclusive 0600 temporary file in the configured root,
+not the system temporary directory. The CSV is validated before metadata is
+created, then staged and validated again by the publication adapter. A successful
+201 includes only `dataset_id`, `display_name` and `state: "ready"`; storage
+keys, paths and file contents are not returned. `GET /v1/datasets/{dataset_id}`
+returns 200 only for active/ready records, 404 for missing/deleted records, 503
+for pending/unknown or an unavailable backend, and 422 for a malformed canonical
+UUID. A ready row is a point-in-time metadata state, not an integrity or
+availability guarantee against later file loss or replacement. Display names
+are untrusted and consumers must render them safely.
+
+Invalid multipart, filename, CSV or encoding returns a sanitized 422; oversized
+input returns 413; an intake timeout returns 408; storage, admission, database
+or uncertain outcomes return 503. Failures and lost connections **do not prove
+rollback**: a publication or final commit may have succeeded. Do not blindly
+retry or delete a final file. A private `.upload-admission.lock` file is retained
+for advisory locking. The temporary upload and publication stage can coexist,
+requiring space for roughly two file copies plus overhead. No total disk quota,
+crash cleanup or safe automatic reconciliation is implemented; an operator must
+coordinate with all active writers before any investigation. Only owned spool
+entries are removed on ordinary cleanup, with cleanup failure treated as uncertain.
+
+This route does not imply request execution readiness: valid `/v1/requests`
+still returns 503. Exact API contracts, decimal byte convention, resource budgets,
+and frontend compatibility require team review.
+
+## Internal model-proposal validator (execution disabled)
 
 The provisional proposal input is a list with exactly one object containing only
 `name` and `arguments`; `name` must be `run_python`, and `arguments` must contain
@@ -62,7 +158,8 @@ this function commits the connection's entire transaction. The lower-level
 must commit the very transactions containing that store's insertion and ready
 transition. A no-op,
 different transaction, or in-memory store cannot establish this guarantee. The
-caller owns connection and source lifetimes. This is not wired to HTTP.
+caller owns connection and source lifetimes. The dataset upload route calls this
+coordinator after intake validation using a dedicated database connection.
 
 **Critical: `active` is a lifecycle value, not file readiness.** `publication_state`
 is separately `unknown`, `pending`, or `ready`. Legacy rows and direct SQL inserts
@@ -71,8 +168,8 @@ update requires matching ID, storage key, active lifecycle, and pending state; o
 the coordinator may use it after successful publication. The store primitive cannot
 itself prove publication; trusted callers must respect this contract. A successful
 coordinator return means the ready transaction's commit returned successfully.
-No cross-resource atomicity, endpoint serving, integrity audit, or automated
-reconciliation is implemented. This is not B2 upload readiness.
+No cross-resource atomicity, integrity audit, or automated reconciliation is
+implemented. An HTTP-ready state is not a guarantee of later file integrity.
 
 A successful return contains the committed metadata and observed CSV metadata;
 CSV counts and headers are not persisted. On an ordinary commit exception the
@@ -112,8 +209,8 @@ adapter only. The trusted application must supply an existing private local
 root, a caller-owned binary readable stream, and a server-issued `UUID` storage
 key; it accepts no client filename or path. The internal coordinator above supplies
 the key from committed metadata, with the explicit readiness limitations described.
-No upload, retrieval, or deletion HTTP endpoint or browser capability is added. Valid
-`/v1/requests` still returns 503.
+The upload and metadata-lookup routes use this adapter; there is no file download
+or deletion endpoint. Valid `/v1/requests` still returns 503.
 
 The adapter opens the normalized final root component without following a
 symlink, requires a directory owned by the effective UID with no group/other or
@@ -164,18 +261,18 @@ handling. Arbitrary cancellation types cannot be generically reconstructed safel
 Crashes, process termination, filesystem faults, and failed cleanup may leave
 staging or final orphans. Directory fsync is not a cross-platform promise of
 hardware durability. There is no crash cleanup, reconciliation, DB/file atomic
-transaction, lifecycle/deletion protocol, or safe automated retry here. Those
-and browser-origin/transport protections require explicit design and integration
-before exposure. Do not treat this slice as upload or execution readiness.
+transaction, lifecycle/deletion protocol, or safe automated retry here. The HTTP
+route has separate browser-origin and streaming controls, but must not be treated
+as proof of automatic recovery or execution readiness.
 
-## Provisional B2 CSV intake core (not wired to HTTP)
+## Provisional B2 CSV intake core
 
 `app.csv_intake.validate_csv(source, limits)` consumes a caller-owned binary
 file-like object or iterable of byte chunks once and returns immutable
 `CsvMetadata(columns, byte_size, row_count)` only after successful EOF. It does
 not close the stream, use filenames or client hints, retain rows, persist files,
-connect to a database, call a model, or execute CSV text. It does not implement
-an upload endpoint. Valid `/v1/requests` still returns 503. Header names are
+connect to a database, call a model, or execute CSV text. The upload route invokes
+this validator before metadata creation. Valid `/v1/requests` still returns 503. Header names are
 untrusted data, not safe HTML, SQL, spreadsheet formulas, or model instructions.
 
 All rules are **provisional**, not frontend/teammate-approved. Default inclusive
@@ -215,8 +312,8 @@ Peak memory is not a 64 KB or constant-memory guarantee: retained header strings
 Python object overhead, decoding, caller buffers, and concurrency add overhead
 bounded by the configured limits. The validator cannot enforce source-side
 buffering, deadlines, blocking reads, or concurrent request limits; sources can
-block indefinitely and the byte limit is not a duration limit. Future transport
-wiring must enforce those controls separately. More than 1,024 total empty
+block indefinitely and the byte limit is not a duration limit. The HTTP route
+applies separate intake controls as described above. More than 1,024 total empty
 iterable chunks are rejected to avoid no-progress amplification. Stream reads
 returning empty exact bytes signify EOF; non-exact-bytes chunks are rejected
 without invoking their comparison, truth, length, or slicing methods.
@@ -259,8 +356,8 @@ infrastructure gates in the implementation plan.
 
 ## Provisional database migration foundation
 
-This foundation is **not B2**: there are no upload/download/delete endpoints,
-HTTP filesystem operations, queue, or history wiring.
+Dataset upload and metadata lookup use this foundation; no file download or
+delete endpoint, queue, or history wiring exists.
 `/v1/requests` still returns 503 for valid input. The provisional `datasets`
 table contains a caller-supplied UUID primary key, a separately generated unique
 UUID storage key (never a path), a bounded display name, creation time, and an
@@ -312,8 +409,8 @@ structural preflight does not verify the behavior of a custom store or commit ca
 The live contract exercises single-connection create/lookup, validation,
 duplicate ID/key recovery, deleted-row reads, error sanitization, and caller
 rollback. It does not prove concurrent behavior, crash recovery, file/DB
-atomicity, or deletion semantics. Nothing here wires a storage adapter to HTTP or
-implements a deletion service, queue, or execution.
+atomicity, or deletion semantics. The dataset routes use the PostgreSQL adapter;
+no deletion service, queue, or execution is implemented.
 
 Alembic requires an explicitly supplied `DATABASE_URL` with PostgreSQL username,
 database, and either a TCP host or an absolute Unix-socket directory. No default
