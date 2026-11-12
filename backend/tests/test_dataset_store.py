@@ -33,6 +33,18 @@ def test_create_and_lookup_metadata(store_factory, name):
     assert store.get(dataset_id) == record
 
 
+def test_new_metadata_is_not_ready():
+    from app.dataset_store import MemoryDatasetStore
+    record = MemoryDatasetStore().create('new.csv')
+    assert record.publication_state == 'pending'
+
+
+def test_publication_port_does_not_claim_memory_store_support():
+    import app.dataset_store as storage
+    assert hasattr(storage, 'PublicationStore')
+    assert not isinstance(storage.MemoryDatasetStore(), storage.PublicationStore)
+
+
 @pytest.mark.parametrize('name', ['', ' x ', '.', '..', 'a/b', 'a\\b', 'x\n', '\x00', '\ud800', 'x' * 256, None, 1])
 def test_rejects_invalid_names(store_factory, name):
     from app.dataset_store import InvalidDatasetMetadata

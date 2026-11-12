@@ -1,7 +1,7 @@
 """Dataset metadata storage; connections and transaction boundaries belong to callers."""
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Callable, Literal, Protocol
+from typing import Callable, Literal, Protocol, runtime_checkable
 from unicodedata import category
 from uuid import UUID, uuid4
 
@@ -18,11 +18,17 @@ class DatasetMetadata:
     created_at: datetime
     lifecycle: Literal['active', 'deleted']
     deleted_at: datetime | None
+    publication_state: Literal['unknown', 'pending', 'ready'] = 'unknown'
 
 
 class DatasetStore(Protocol):
     def create(self, display_name: str) -> DatasetMetadata: ...
     def get(self, dataset_id: UUID) -> DatasetMetadata: ...
+
+
+@runtime_checkable
+class PublicationStore(DatasetStore, Protocol):
+    def mark_ready(self, dataset: DatasetMetadata) -> DatasetMetadata: ...
 
 
 class InvalidDatasetMetadata(ValueError):
@@ -43,6 +49,11 @@ class DuplicateDatasetMetadata(Exception):
 class DatasetStorageError(Exception):
     def __init__(self) -> None:
         super().__init__('DATASET_STORAGE_ERROR')
+
+
+class DatasetPublicationConflict(Exception):
+    def __init__(self) -> None:
+        super().__init__('DATASET_PUBLICATION_CONFLICT')
 
 
 def _validate_name(name: str) -> None:
@@ -80,7 +91,7 @@ class MemoryDatasetStore:
         created_at = self._clock()
         if not isinstance(created_at, datetime) or created_at.utcoffset() is None:
             raise InvalidDatasetMetadata()
-        record = DatasetMetadata(dataset_id, display_name, key, created_at, 'active', None)
+        record = DatasetMetadata(dataset_id, display_name, key, created_at, 'active', None, 'pending')
         self._records[record.id] = record
         self._keys.add(key)
         return record
@@ -102,9 +113,10 @@ class PostgresDatasetStore:
         dataset_id, key = _new_ids(self._id_factory)
         try:
             row = self._connection.execute(sa.text(
-                'INSERT INTO datasets (id, display_name, storage_key) VALUES (:id, :name, :key) '
+                "INSERT INTO datasets (id, display_name, storage_key, publication_state) "
+                "VALUES (:id, :name, :key, 'pending') "
                 'ON CONFLICT DO NOTHING '
-                'RETURNING id, display_name, storage_key, created_at, lifecycle, deleted_at'),
+                'RETURNING id, display_name, storage_key, created_at, lifecycle, deleted_at, publication_state'),
                 {'id': dataset_id, 'name': display_name, 'key': key}).one_or_none()
         except SQLAlchemyError:
             raise DatasetStorageError() from None
@@ -116,10 +128,47 @@ class PostgresDatasetStore:
         _validate_id(dataset_id)
         try:
             row = self._connection.execute(sa.text(
-                'SELECT id, display_name, storage_key, created_at, lifecycle, deleted_at '
+                'SELECT id, display_name, storage_key, created_at, lifecycle, deleted_at, publication_state '
                 'FROM datasets WHERE id = :id'), {'id': dataset_id}).one_or_none()
         except SQLAlchemyError:
             raise DatasetStorageError() from None
         if row is None:
             raise DatasetNotFound()
         return DatasetMetadata(*row)
+
+    def mark_ready(self, dataset: DatasetMetadata) -> DatasetMetadata:
+        """Compare identity, pending state and lifecycle; caller owns commit."""
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE datasets SET publication_state = 'ready' "
+                "WHERE id = :id AND storage_key = :key AND lifecycle = 'active' "
+                "AND publication_state = 'pending' "
+                'RETURNING id, display_name, storage_key, created_at, lifecycle, deleted_at, publication_state'),
+                {'id': dataset.id, 'key': dataset.storage_key}).one_or_none()
+        except SQLAlchemyError:
+            raise DatasetStorageError() from None
+        if row is None:
+            raise DatasetPublicationConflict()
+        return DatasetMetadata(*row)
+
+    def list_incomplete(self, *, limit: int = 100,
+                        after: tuple[datetime, UUID] | None = None) -> list[DatasetMetadata]:
+        """Snapshot only; rows may still have a live publisher."""
+        if type(limit) is not int or not 1 <= limit <= 1000:
+            raise ValueError('INVALID_PAGE_LIMIT')
+        if after is not None and (not isinstance(after, tuple) or len(after) != 2
+                                  or not isinstance(after[0], datetime) or after[0].utcoffset() is None
+                                  or not isinstance(after[1], UUID)):
+            raise ValueError('INVALID_PAGE_CURSOR')
+        try:
+            query = (
+                'SELECT id, display_name, storage_key, created_at, lifecycle, deleted_at, publication_state '
+                "FROM datasets WHERE publication_state IN ('pending', 'unknown') ")
+            params: dict[str, object] = {'limit': limit}
+            if after is not None:
+                query += 'AND (created_at, id) > (:created_at, :id) '
+                params.update(created_at=after[0], id=after[1])
+            rows = self._connection.execute(sa.text(query + 'ORDER BY created_at, id LIMIT :limit'), params)
+            return [DatasetMetadata(*row) for row in rows]
+        except SQLAlchemyError:
+            raise DatasetStorageError() from None

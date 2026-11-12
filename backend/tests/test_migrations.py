@@ -59,6 +59,13 @@ def test_offline_sql_contains_dataset_metadata_constraints():
     assert 'secret' not in result.stdout + result.stderr
 
 
+def test_migration_defaults_legacy_publication_to_unknown():
+    result = alembic('upgrade', 'head', '--sql',
+                     url='postgresql+psycopg://user:secret@localhost/testdb')
+    assert result.returncode == 0
+    assert "publication_state VARCHAR(16) DEFAULT 'unknown' NOT NULL" in result.stdout
+
+
 @pytest.mark.parametrize('name', ['PGHOSTADDR', 'PGSERVICE', 'PGOPTIONS', 'PGSSLMODE', 'PGPASSWORD', 'PGUNKNOWN'])
 @pytest.mark.parametrize('value', ['sensitive-sentinel', ''])
 def test_migration_rejects_inherited_pg_environment_without_exposing_values(monkeypatch, name, value):

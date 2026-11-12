@@ -53,21 +53,26 @@ likewise provisional. Do not treat this validator as a sandbox.
 ## Provisional B2 internal metadata-first coordinator
 
 `app.dataset_publication.publish_dataset_on_connection(connection, root, name, source)`
-creates PostgreSQL metadata, commits it using that same connection, then calls the
-private CSV publisher with its stored UUID key. Use only a dedicated connection
+creates pending PostgreSQL metadata, commits it using that same connection, calls the
+private CSV publisher with its stored UUID key, and commits a conditional ready
+transition only after the publisher returns successfully. Use only a dedicated connection
 with no unrelated pending work, a migrated schema and the correct search path;
 this function commits the connection's entire transaction. The lower-level
 `publish_dataset(store, commit, ...)` is an injected internal seam: its callback
-must commit the very transaction containing that store's insertion. A no-op,
+must commit the very transactions containing that store's insertion and ready
+transition. A no-op,
 different transaction, or in-memory store cannot establish this guarantee. The
 caller owns connection and source lifetimes. This is not wired to HTTP.
 
-**Critical: the existing schema records `active` before file publication. `active`
-MUST NOT be interpreted as file readiness, exposed to requests, or used to
-serve datasets.** The row can be visible while publishing, after validation or
-publication failure, or after a crash. No readiness state, atomic DB/file commit,
-reliable restart recovery, or automated reconciliation is implemented. This is a
-limited internal integration experiment, not B2 upload readiness.
+**Critical: `active` is a lifecycle value, not file readiness.** `publication_state`
+is separately `unknown`, `pending`, or `ready`. Legacy rows and direct SQL inserts
+default to `unknown`; adapter-created rows start `pending`. The conditional ready
+update requires matching ID, storage key, active lifecycle, and pending state; only
+the coordinator may use it after successful publication. The store primitive cannot
+itself prove publication; trusted callers must respect this contract. A successful
+coordinator return means the ready transaction's commit returned successfully.
+No cross-resource atomicity, endpoint serving, integrity audit, or automated
+reconciliation is implemented. This is not B2 upload readiness.
 
 A successful return contains the committed metadata and observed CSV metadata;
 CSV counts and headers are not persisted. On an ordinary commit exception the
@@ -75,18 +80,28 @@ service reports `commit_unknown`, keeps the generated identity in the exception,
 and does not attempt file publication; the commit may nevertheless have happened.
 Publication errors report `publication_failed`, the identity and the adapter's
 sanitized code/publication/cleanup states. The row is already committed. No final
-file is removed and no retry is attempted. Insert errors propagate from the store;
-the caller must handle the transaction, including rollback where appropriate.
-Interruptions propagate: a commit `KeyboardInterrupt` is stripped of arguments,
-and a publication interruption follows the storage adapter's rules; neither
-establishes commit, publication, or cleanup state. Other `BaseException` types can
-contain secrets, so do not log them unsafely. A process crash cannot return the
-identity: committed rows retain ID/key but do not record an upload attempt, file
-fingerprint, publication state, or durable result. Even when an ID/key can be
-located later, neither a row nor an existing file establishes which attempt
-created it, readiness, integrity, or durability. Operators must not blindly retry,
-automatically delete final files, or regard inspection as full reconciliation.
-An agreed durable state/identity and concurrency design is required first.
+file is removed and no retry is attempted. Insert errors propagate from the store; the caller must handle the transaction,
+including rollback where appropriate. `ready_conflict` means the conditional
+update matched no row; `ready_update_unknown` and `ready_commit_unknown` mean the
+outcome is uncertain. In particular, a lost final commit reply can leave a durable
+ready row despite the error. Never infer rollback from an exception. Interruptions
+propagate; commit/update `KeyboardInterrupt` loses its arguments and context,
+and publication interruptions follow the storage adapter's rules. Other
+`BaseException` types can contain secrets; do not log them unsafely.
+
+After restart, `PostgresDatasetStore.list_incomplete(limit=100, after=None)`
+offers read-only observations of pending and unknown rows (including tombstones).
+It accepts limits 1–1000 and a `(created_at, id)` keyset cursor from the last
+row. Ordering is deterministic, but pages are not a stable cross-transaction
+snapshot: inserts, state changes, and transaction timestamps can cause omissions
+or changes. A pending row may still have an active publisher; this list does not
+claim or lock work, establish writer liveness, or authorize intervention. A crash
+after publication may leave a pending row and a file; a crash after ready commit
+may leave ready without a reply. File existence alone never promotes readiness.
+Manual handling requires separately coordinating with all writers; there is no
+implemented safe reconciliation procedure, blind retry, or automatic deletion.
+CSV metadata and file fingerprints are not persisted. Ready is not a permanent
+integrity or availability guarantee against later file loss or replacement.
 
 ## Provisional B2 private local publication
 
@@ -243,7 +258,7 @@ infrastructure gates in the implementation plan.
 ## Provisional database migration foundation
 
 This foundation is **not B2**: there are no upload/download/delete endpoints,
-filesystem operations, queue, or history wiring.
+HTTP filesystem operations, queue, or history wiring.
 `/v1/requests` still returns 503 for valid input. The provisional `datasets`
 table contains a caller-supplied UUID primary key, a separately generated unique
 UUID storage key (never a path), a bounded display name, creation time, and an
@@ -251,9 +266,11 @@ UUID storage key (never a path), a bounded display name, creation time, and an
 generate opaque IDs and sanitize display names before insertion; constraints are
 only a defensive minimum, not HTML escaping or a complete Unicode/confusable
 policy. The deleted row can eventually be referenced by retained history; no
-history schema, deletion semantics, file/DB atomicity, race protection, or
-automatic cleanup is implemented. Downgrades remove the table and its data and
-are not a production rollback strategy. Schema, policies and API are provisional.
+history schema, deletion semantics, file/DB atomicity, complete race protection, or
+automatic cleanup is implemented. Downgrading revision 0002 drops readiness
+information; re-upgrading assigns `unknown` to existing rows, requiring manual
+reconciliation. Downgrading to base also removes the table and its data. Neither
+is a safe production rollback strategy. Schema, policies and API are provisional.
 
 ## Provisional metadata storage port
 
@@ -287,11 +304,14 @@ errors are not claimed recoverable by the adapter.
 `MemoryDatasetStore` is in-process and accepts injectable UUID factory and
 timezone-aware clock. It does not model database transactions, rollback,
 isolation, concurrent access, persistence, or PostgreSQL timestamp semantics.
+It implements the metadata-only port, not the separate `PublicationStore` port,
+so the coordinator rejects it before creating metadata or publishing a file. This
+structural preflight does not verify the behavior of a custom store or commit callback.
 The live contract exercises single-connection create/lookup, validation,
 duplicate ID/key recovery, deleted-row reads, error sanitization, and caller
 rollback. It does not prove concurrent behavior, crash recovery, file/DB
 atomicity, or deletion semantics. Nothing here wires a storage adapter to HTTP or
-implements files, deletion, a queue, or execution.
+implements a deletion service, queue, or execution.
 
 Alembic requires an explicitly supplied `DATABASE_URL` with PostgreSQL username,
 database, and either a TCP host or an absolute Unix-socket directory. No default

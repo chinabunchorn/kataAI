@@ -111,6 +111,90 @@ def test_cleanup_preserves_schema_with_unexpected_object(migrated_connection):
 
 
 @pytest.mark.live_postgres
+def test_ready_compare_and_swap_concurrent_and_tombstone(migrated_connection):
+    from concurrent.futures import ThreadPoolExecutor
+    from dataclasses import replace
+    from threading import Barrier
+
+    from app.dataset_store import DatasetPublicationConflict, PostgresDatasetStore
+
+    conn, _ = migrated_connection
+    schema = conn.execute(sa.text('SELECT current_schema()')).scalar_one()
+    store = PostgresDatasetStore(conn)
+    record = store.create('race.csv')
+    tombstone = store.create('deleted.csv')
+    conn.execute(sa.text("UPDATE datasets SET lifecycle='deleted', deleted_at=now() WHERE id=:id"),
+                 {'id': tombstone.id})
+    conn.commit()
+    with pytest.raises(DatasetPublicationConflict):
+        store.mark_ready(tombstone)
+    with pytest.raises(DatasetPublicationConflict):
+        store.mark_ready(replace(record, storage_key=uuid4()))
+    conn.rollback()
+    gate = Barrier(2)
+
+    def contend():
+        with conn.engine.connect() as other:
+            other.exec_driver_sql(f'SET search_path TO "{schema}"')
+            other.commit()
+            gate.wait(timeout=5)
+            try:
+                PostgresDatasetStore(other).mark_ready(record)
+                other.commit()
+                return 'ready'
+            except DatasetPublicationConflict:
+                other.rollback()
+                return 'conflict'
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        assert sorted(executor.map(lambda _: contend(), range(2))) == ['conflict', 'ready']
+    assert store.get(record.id).publication_state == 'ready'
+    assert store.get(tombstone.id).publication_state == 'pending'
+
+
+@pytest.mark.live_postgres
+def test_incomplete_listing_is_read_only_and_includes_legacy(migrated_connection):
+    from app.dataset_store import PostgresDatasetStore
+
+    conn, _ = migrated_connection
+    store = PostgresDatasetStore(conn)
+    pending = store.create('pending.csv')
+    legacy_id = uuid4()
+    conn.execute(sa.text("INSERT INTO datasets (id, display_name, storage_key) "
+                         "VALUES (:id, 'old.csv', :key)"), {'id': legacy_id, 'key': uuid4()})
+    conn.commit()
+    first = store.list_incomplete(limit=1)
+    assert len(first) == 1
+    found = first + store.list_incomplete(limit=1, after=(first[0].created_at, first[0].id))
+    assert {row.id for row in found} == {pending.id, legacy_id}
+    with pytest.raises(ValueError):
+        store.list_incomplete(limit=1001)
+    conn.rollback()
+    assert store.get(pending.id).publication_state == 'pending'
+
+
+@pytest.mark.live_postgres
+def test_upgrade_preserves_legacy_rows_as_unknown(migrated_connection):
+    from app.dataset_store import PostgresDatasetStore
+
+    conn, config = migrated_connection
+    command.downgrade(config, '0001_datasets')
+    dataset_id, key = uuid4(), uuid4()
+    conn.execute(sa.text('INSERT INTO datasets (id, display_name, storage_key) '
+                         "VALUES (:id, 'legacy.csv', :key)"), {'id': dataset_id, 'key': key})
+    conn.commit()
+    command.upgrade(config, 'head')
+    conn.commit()
+    record = PostgresDatasetStore(conn).get(dataset_id)
+    assert record.publication_state == 'unknown'
+    assert record.lifecycle == 'active' and record.storage_key == key
+    assert PostgresDatasetStore(conn).create('new.csv').publication_state == 'pending'
+    with pytest.raises(IntegrityError), conn.begin_nested():
+        conn.execute(sa.text("UPDATE datasets SET publication_state='invalid' WHERE id=:id"),
+                     {'id': dataset_id})
+
+
+@pytest.mark.live_postgres
 def test_upgrade_constraints_and_downgrade(migrated_connection):
     conn, config = migrated_connection
     schema = conn.execute(sa.text('SELECT current_schema()')).scalar_one()
