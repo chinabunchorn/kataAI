@@ -100,6 +100,8 @@ after publication may leave a pending row and a file; a crash after ready commit
 may leave ready without a reply. File existence alone never promotes readiness.
 Manual handling requires separately coordinating with all writers; there is no
 implemented safe reconciliation procedure, blind retry, or automatic deletion.
+Tests observe pending and legacy unknown rows through a new PostgreSQL connection;
+that is a reconnect simulation, not an actual process-crash or power-loss test.
 CSV metadata and file fingerprints are not persisted. Ready is not a permanent
 integrity or availability guarantee against later file loss or replacement.
 

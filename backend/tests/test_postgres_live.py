@@ -188,7 +188,15 @@ def test_upgrade_preserves_legacy_rows_as_unknown(migrated_connection):
     record = PostgresDatasetStore(conn).get(dataset_id)
     assert record.publication_state == 'unknown'
     assert record.lifecycle == 'active' and record.storage_key == key
-    assert PostgresDatasetStore(conn).create('new.csv').publication_state == 'pending'
+    pending = PostgresDatasetStore(conn).create('new.csv')
+    assert pending.publication_state == 'pending'
+    schema = conn.execute(sa.text('SELECT current_schema()')).scalar_one()
+    conn.commit()
+    with conn.engine.connect() as reconnected:
+        reconnected.exec_driver_sql(f'SET search_path TO "{schema}"')
+        observed = {row.id: row.publication_state for row in PostgresDatasetStore(reconnected).list_incomplete()}
+        assert observed[dataset_id] == 'unknown'
+        assert observed[pending.id] == 'pending'
     with pytest.raises(IntegrityError), conn.begin_nested():
         conn.execute(sa.text("UPDATE datasets SET publication_state='invalid' WHERE id=:id"),
                      {'id': dataset_id})
