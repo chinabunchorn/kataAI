@@ -139,3 +139,59 @@ def test_csv_does_not_execute_text_or_change_stdlib_global_limit(monkeypatch):
     result = validate_csv(iter([b'code\n__import__(os).system(command)']))
     assert result.row_count == 1
     assert csv.field_size_limit() == limit
+
+
+@pytest.mark.parametrize('file_like', [False, True])
+@pytest.mark.parametrize('deception', ['length', 'eof', 'slice'])
+def test_hostile_bytes_subclass_is_rejected_before_special_methods(file_like, deception):
+    from app.csv_intake import CsvIntakeError, CsvLimits
+
+    calls = []
+
+    class Hostile(bytes):
+        def __len__(self):
+            calls.append('len')
+            return 1
+
+        def __bool__(self):
+            calls.append('bool')
+            return True
+
+        def __eq__(self, other):
+            calls.append('eq')
+            return deception == 'eof'
+
+        def __getitem__(self, item):
+            calls.append('slice')
+            return b'a'
+
+    data = Hostile(b'x' * 30_000)
+    chunks = iter([b'a\n', data, b''])
+
+    class Reader:
+        def read(self, size):
+            return next(chunks)
+
+    with pytest.raises(CsvIntakeError) as exc:
+        validate_csv(Reader() if file_like else chunks, CsvLimits(max_bytes=3))
+    assert exc.value.code == 'INVALID_UPLOAD'
+    assert exc.value.__context__ is None
+    assert calls == []
+
+
+@pytest.mark.parametrize('file_like', [False, True])
+def test_source_keyboard_interrupt_propagates_without_secret(file_like):
+    def chunks():
+        yield b'a\n'
+        raise KeyboardInterrupt('secret')
+
+    iterator = chunks()
+
+    class Reader:
+        def read(self, size):
+            return next(iterator)
+
+    with pytest.raises(KeyboardInterrupt) as exc:
+        validate_csv(Reader() if file_like else iterator)
+    assert 'secret' not in str(exc.value)
+    assert exc.value.__context__ is None

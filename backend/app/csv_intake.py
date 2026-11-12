@@ -127,11 +127,15 @@ def validate_csv(source: BinaryIO | Iterable[bytes], limits: CsvLimits = CsvLimi
     invalid = False
     bad_encoding = False
     code = 'INVALID_UPLOAD'
+    interrupted = False
     try:
         if hasattr(source, 'read'):
             def chunks():
                 while True:
                     chunk = source.read(65_536)
+                    if type(chunk) is not bytes:
+                        yield chunk
+                        return
                     if chunk == b'':
                         break
                     yield chunk
@@ -140,7 +144,7 @@ def validate_csv(source: BinaryIO | Iterable[bytes], limits: CsvLimits = CsvLimi
             stream = iter(source)
         empty_chunks = 0
         for chunk in stream:
-            if not isinstance(chunk, bytes):
+            if type(chunk) is not bytes:
                 break
             if not chunk:
                 empty_chunks += 1
@@ -189,5 +193,9 @@ def validate_csv(source: BinaryIO | Iterable[bytes], limits: CsvLimits = CsvLimi
     except Exception:
         # Source exceptions, including CsvIntakeError, are never trusted.
         code = 'INVALID_UPLOAD'
+    except KeyboardInterrupt:
+        interrupted = True
     # Raise outside the handler: source exceptions and their data do not escape.
+    if interrupted:
+        raise KeyboardInterrupt()
     raise CsvIntakeError(code)

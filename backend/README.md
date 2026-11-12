@@ -50,6 +50,107 @@ only a non-whitespace `code` string of at most 16,384 UTF-8 bytes. This shape an
 limit are local test decisions, not an agreed external contract. Error names are
 likewise provisional. Do not treat this validator as a sandbox.
 
+## Provisional B2 internal metadata-first coordinator
+
+`app.dataset_publication.publish_dataset_on_connection(connection, root, name, source)`
+creates PostgreSQL metadata, commits it using that same connection, then calls the
+private CSV publisher with its stored UUID key. Use only a dedicated connection
+with no unrelated pending work, a migrated schema and the correct search path;
+this function commits the connection's entire transaction. The lower-level
+`publish_dataset(store, commit, ...)` is an injected internal seam: its callback
+must commit the very transaction containing that store's insertion. A no-op,
+different transaction, or in-memory store cannot establish this guarantee. The
+caller owns connection and source lifetimes. This is not wired to HTTP.
+
+**Critical: the existing schema records `active` before file publication. `active`
+MUST NOT be interpreted as file readiness, exposed to requests, or used to
+serve datasets.** The row can be visible while publishing, after validation or
+publication failure, or after a crash. No readiness state, atomic DB/file commit,
+reliable restart recovery, or automated reconciliation is implemented. This is a
+limited internal integration experiment, not B2 upload readiness.
+
+A successful return contains the committed metadata and observed CSV metadata;
+CSV counts and headers are not persisted. On an ordinary commit exception the
+service reports `commit_unknown`, keeps the generated identity in the exception,
+and does not attempt file publication; the commit may nevertheless have happened.
+Publication errors report `publication_failed`, the identity and the adapter's
+sanitized code/publication/cleanup states. The row is already committed. No final
+file is removed and no retry is attempted. Insert errors propagate from the store;
+the caller must handle the transaction, including rollback where appropriate.
+Interruptions propagate: a commit `KeyboardInterrupt` is stripped of arguments,
+and a publication interruption follows the storage adapter's rules; neither
+establishes commit, publication, or cleanup state. Other `BaseException` types can
+contain secrets, so do not log them unsafely. A process crash cannot return the
+identity: committed rows retain ID/key but do not record an upload attempt, file
+fingerprint, publication state, or durable result. Even when an ID/key can be
+located later, neither a row nor an existing file establishes which attempt
+created it, readiness, integrity, or durability. Operators must not blindly retry,
+automatically delete final files, or regard inspection as full reconciliation.
+An agreed durable state/identity and concurrency design is required first.
+
+## Provisional B2 private local publication
+
+`app.local_csv_storage.publish_csv(root, source, key, limits)` is an internal
+adapter only. The trusted application must supply an existing private local
+root, a caller-owned binary readable stream, and a server-issued `UUID` storage
+key; it accepts no client filename or path. The internal coordinator above supplies
+the key from committed metadata, with the explicit readiness limitations described.
+No upload, retrieval, or deletion HTTP endpoint or browser capability is added. Valid
+`/v1/requests` still returns 503.
+
+The adapter opens the normalized final root component without following a
+symlink, requires a directory owned by the effective UID with no group/other or
+special mode bits, and never chmods the root. Ancestors are trusted; normalization
+is lexical and is not a secure walk of ancestors. Ownership and mode bits do
+**not** prove privacy against macOS or inherited ACLs, network/shared filesystem
+semantics, or other same-UID processes. The operator must establish a trusted
+local root and trusted ancestors and ensure ACLs and filesystem policy are
+private. This is not a defense against a hostile process with the same UID.
+
+Only exact `bytes` chunks are accepted; subclasses and other types are rejected
+before their special methods can affect EOF or byte counts. Observed bytes are
+bounded by `CsvLimits`; the adapter creates an exclusive
+random 0600 staging file, loops over partial writes, fsyncs it, and validates
+its already-open inode using the existing CSV validator. It then hard-links the
+stage to the UUID name without replacing a pre-existing entry, removes the stage,
+and fsyncs the directory. Operations on entries are relative to the opened root
+fd with no-follow and exclusive/no-replacement primitives; unsupported required
+primitives fail closed. These semantics assume a trustworthy local POSIX
+filesystem. The caller owns and closes the source. A byte bound does not prevent
+blocking source reads or memory already allocated by a producer; concurrency,
+timeouts and total disk quotas are outside this adapter.
+
+`CsvStorageError` has sanitized `code`, `publication`, and `cleanup` fields.
+CSV validation codes are preserved; `SOURCE_ERROR`, `STORAGE_ERROR`,
+`KEY_COLLISION`, `INVALID_KEY`, `INVALID_ROOT`, and `UNSUPPORTED_PLATFORM`
+represent local failures. `publication` is `not_published` when no link was
+attempted; `indeterminate` means a link operation (including `FileExistsError`)
+or subsequent publication/cleanup operation failed and the
+final entry may exist or its durability is uncertain. `cleanup` is `confirmed`
+when no stage was created or its removal and directory fsync completed, and
+`unknown` when removal or its directory fsync fails. Never infer rollback from
+an error or automatically remove the final entry; it may have been replaced.
+`KEY_COLLISION` indicates a `FileExistsError` during linking, not proof that
+this attempt did not publish: a link implementation could succeed then raise.
+A successful return supplies the validator's metadata. The header remains
+untrusted. Error details never contain file contents or paths. Interruptions
+such as cancellation or `KeyboardInterrupt` propagate after best-effort cleanup;
+they carry no cleanup/publication confirmation, so callers must treat the
+outcome as unknown and must not blindly retry or infer rollback.
+KeyboardInterrupt is re-raised without its original arguments or context. Other
+BaseException types, including cancellation and SystemExit, propagate unchanged;
+their arguments and traceback may contain sensitive producer information. The
+source interface is therefore trusted with respect to such exceptions: callers
+must not log them or expose them to untrusted clients without their own safe
+handling. Arbitrary cancellation types cannot be generically reconstructed safely.
+
+Crashes, process termination, filesystem faults, and failed cleanup may leave
+staging or final orphans. Directory fsync is not a cross-platform promise of
+hardware durability. There is no crash cleanup, reconciliation, DB/file atomic
+transaction, lifecycle/deletion protocol, or safe automated retry here. Those
+and browser-origin/transport protections require explicit design and integration
+before exposure. Do not treat this slice as upload or execution readiness.
+
 ## Provisional B2 CSV intake core (not wired to HTTP)
 
 `app.csv_intake.validate_csv(source, limits)` consumes a caller-owned binary
@@ -100,7 +201,8 @@ buffering, deadlines, blocking reads, or concurrent request limits; sources can
 block indefinitely and the byte limit is not a duration limit. Future transport
 wiring must enforce those controls separately. More than 1,024 total empty
 iterable chunks are rejected to avoid no-progress amplification. Stream reads
-returning empty bytes signify EOF; non-byte chunks and source errors fail safely.
+returning empty exact bytes signify EOF; non-exact-bytes chunks are rejected
+without invoking their comparison, truth, length, or slicing methods.
 
 Errors are `CsvIntakeError` with a stable `code` of `INVALID_UPLOAD`,
 `UPLOAD_TOO_LARGE`, or `UNSUPPORTED_ENCODING` and fixed content-free messages.
@@ -108,7 +210,11 @@ For a complete byte stream, precedence is `UPLOAD_TOO_LARGE` over
 `UNSUPPORTED_ENCODING` over `INVALID_UPLOAD`. After syntax or encoding failure,
 scanning continues to EOF or the byte limit; source errors or invalid chunks
 before that point produce `INVALID_UPLOAD` because the input is unavailable.
-No source exception or raw row is included in the public error. Never log source
+Ordinary source `Exception` errors do not appear in the public error, and
+`KeyboardInterrupt` propagates with its arguments and context removed. Other
+`BaseException` types propagate unchanged; source producers are trusted not to
+include secrets in those exceptions, or callers must sanitize them safely at
+their boundary. Never log source
 inputs, headers, traceback locals, or exception internals; traceback frames can
 retain sensitive input even when the rendered exception is sanitized. No error is
 a substitute for transport-level controls.
