@@ -23,6 +23,7 @@ def cleanup_test_schema(conn, schema):
         raise ValueError('Refusing to clean up a non-test schema')
     conn.rollback()
     with conn.begin():
+        conn.exec_driver_sql(f'DROP TABLE IF EXISTS "{schema}"."request_intents" RESTRICT')
         conn.exec_driver_sql(f'DROP TABLE IF EXISTS "{schema}"."datasets" RESTRICT')
         conn.exec_driver_sql(f'DROP TABLE IF EXISTS "{schema}"."alembic_version" RESTRICT')
         conn.exec_driver_sql(f'DROP SCHEMA "{schema}" RESTRICT')
@@ -62,6 +63,7 @@ def test_cleanup_uses_only_restrict_for_known_objects():
     cleanup_test_schema(conn, schema)
     statements = [call.args[0] for call in conn.exec_driver_sql.call_args_list]
     assert statements == [
+        f'DROP TABLE IF EXISTS "{schema}"."request_intents" RESTRICT',
         f'DROP TABLE IF EXISTS "{schema}"."datasets" RESTRICT',
         f'DROP TABLE IF EXISTS "{schema}"."alembic_version" RESTRICT',
         f'DROP SCHEMA "{schema}" RESTRICT',

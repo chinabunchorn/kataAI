@@ -51,7 +51,7 @@ def test_streamed_oversize_ignores_missing_or_misleading_length(declared_length)
 def test_streamed_valid_body_ignores_misleading_high_length():
     payload = json.dumps({
         'schema_version': '1.0', 'client_request_id': '12345678-1234-4234-8234-123456789abc',
-        'dataset_id': 'id', 'question': 'Question?',
+        'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'question': 'Question?',
     }).encode()
     status, body, count = asgi_post(
         [payload[:20], payload[20:]],
@@ -66,7 +66,7 @@ def test_streamed_valid_body_ignores_misleading_high_length():
 def test_body_byte_limit_is_inclusive(extra_bytes, expected_status):
     payload = json.dumps({
         'schema_version': '1.0', 'client_request_id': '12345678-1234-4234-8234-123456789abc',
-        'dataset_id': 'id', 'question': 'ยอดรวม',
+        'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'question': 'ยอดรวม',
     }, ensure_ascii=False).encode('utf-8')
     body = payload + b' ' * (65536 + extra_bytes - len(payload))
     response = TestClient(app, base_url='http://127.0.0.1:8000', headers={
@@ -103,7 +103,7 @@ def test_valid_request_is_unavailable(question):
     payload = {
         'schema_version': '1.0',
         'client_request_id': '12345678-1234-4234-8234-123456789abc',
-        'dataset_id': 'opaque-id',
+        'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         'question': question,
     }
     response = client.post('/v1/requests', json=payload)
@@ -122,7 +122,7 @@ def test_invalid_request_has_safe_error(changes):
     payload = {
         'schema_version': '1.0',
         'client_request_id': '12345678-1234-4234-8234-123456789abc',
-        'dataset_id': 'opaque-id',
+        'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         'question': 'Question?',
     }
     payload.update(changes)
@@ -157,7 +157,7 @@ def test_bounds_are_inclusive_and_repeated_requests_make_no_promises(monkeypatch
     payload = {
         'schema_version': '1.0',
         'client_request_id': '12345678-1234-4234-8234-123456789abc',
-        'dataset_id': 'x' * 256,
+        'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
         'question': 'ก' * 4096,
     }
     client = TestClient(app, base_url='http://127.0.0.1:8000', headers={

@@ -1,31 +1,80 @@
 # Backend: provisional local prototype
 
 `GET /health` reports process health, not model, executor, database or isolation
-readiness. Dataset upload and metadata lookup are available only when explicitly
-configured as described below. There is no real model, generated-code execution,
-queue, history or remote executor. Preset fake outcomes are not computation or
-benchmark measurements. Valid `POST /v1/requests` still returns HTTP 503.
+readiness. Explicitly configured dataset and request APIs use PostgreSQL and a
+private local dataset root. Request intents are durable; a separate, explicitly
+invoked fake-only worker processes at most one per run. There is no real model,
+generated-code execution or remote executor. Fake completion is not computation
+or a benchmark measurement.
 
-## Provisional request validation (not a frontend agreement)
+## Provisional request API and fake-only queue (Phase 3)
 
-`POST /v1/requests` accepts a JSON object with exactly these required fields:
+The API contract, states and limits are local prototype decisions, not a
+frontend/teammate agreement. Explicit local PostgreSQL and private dataset-root
+configuration are required as described below; no schema migration is run on
+startup. `POST /v1/requests` accepts exactly these required JSON fields:
 
 - `schema_version`: the string `"1.0"` only.
-- `client_request_id`: a UUID expressed as a string, for correlation only.
-- `dataset_id`: an opaque string, 1–256 Unicode code points, containing at
-  least one non-whitespace character. Existence is not checked.
-- `question`: a string, 1–4,096 Unicode code points, containing at least one
-  non-whitespace character. English and Thai are accepted.
+- `client_request_id`: a UUID string, normalized as the idempotency key.
+- `dataset_id`: a UUID string for an active, ready dataset.
+- `question`: a nonblank UTF-8 string of 1–4,096 Unicode code points. NUL and
+  unpaired surrogates are rejected. Thai and English are accepted as data.
 
-These limits, field names, and error codes are local provisional decisions, not
-an agreed frontend contract. Unknown fields (including infrastructure settings)
-are rejected. Malformed JSON, invalid types, unsupported versions, and other
-validation failures return HTTP 422 with `{"error":{"code":"INVALID_REQUEST",
-"message":"Invalid request."}}`. Valid inputs always return HTTP 503 with
-`{"error":{"code":"EXECUTION_UNAVAILABLE","message":"Request processing is
-unavailable."}}`. Neither response echoes input. No request is queued, stored,
-assigned a durable ID, submitted, or sent to a model or executor. Repeating a
-request does not establish idempotency or promise eventual processing.
+For a new key and ready dataset, the endpoint creates a durable queued intent
+and returns 201 with its server-generated `id`, `status` and `provisional` flag.
+A retry with the same client UUID, dataset UUID and **exact same question**
+returns the same request ID and current status with 200, even if the dataset's
+state subsequently changes. Reusing the key for different input returns 409.
+The normalized UUID spellings identify the same key. Missing/deleted datasets
+return 404; incomplete datasets, unavailable configuration or uncertain database
+operations return 503. Malformed input returns sanitized 422. Unknown fields,
+including client-controlled infrastructure settings, are rejected.
+
+Success is returned only after a confirmed commit. A 503 or lost reply does not
+prove rollback. For submission recovery, retrying the **same client ID and exact
+same payload** is idempotent; it does not enqueue a duplicate or redispatch
+claimed/unknown work. Do not generate a new ID merely because a response was
+lost. This guarantee concerns request creation, not any future external provider.
+
+`GET /v1/requests/{id}` returns the last recorded status, dataset ID, original
+question and creation time, or 404 for a missing request. `GET /v1/requests`
+returns recent history, newest first, with a `limit` of 1–100 (default 20). The
+question is returned as **untrusted plain data**, never as safe HTML or code.
+Successful request status and history responses include `Cache-Control: no-store`.
+These endpoints have no authentication beyond the documented local browser
+boundary. Questions are stored in PostgreSQL and returned through local history;
+the application provides no encryption-at-rest, retention policy, or request
+deletion feature in this phase. Protect the database, backups and trusted browser. No
+question, storage path or SQL exception is returned in an error message.
+
+### Fake worker and crash semantics
+
+The HTTP server **does not start a worker**. With the same explicitly configured
+local runtime and migrated database, run the one-shot fake worker separately:
+
+```sh
+python -m app.fake_worker --once
+```
+
+Each invocation processes at most one queued request and exits. Run it again to
+process another; there is no automatic polling service in this phase. The outcome
+`fake_completed` is a preset state transition, explicitly marked `fake: true` in
+status/history. It does not read CSV rows, compute an answer, call a model, or
+execute Python. `queued` means waiting; `running` is the last committed claim,
+**not proof of current liveness**. On the next worker takeover a previous running
+claim becomes `unknown`, not queued, and is never automatically redispatched.
+A new worker may process another queued request. There is no API for resolving or
+retrying `unknown` work in this phase.
+
+Cooperating fake workers hold an exclusive PostgreSQL session advisory lock on a
+dedicated non-pooled connection; a database constraint and claim token further
+protect the running transition and fence stale database writes. The token does
+**not** fence external side effects, and these guarantees do not establish safety
+for a real provider. Lost database/commit acknowledgments remain uncertain; the
+worker stops without blind retry. An operator must coordinate all writers before
+manual intervention. Future real execution requires separately approved isolation,
+provider idempotency and recovery design.
+
 
 The provisional transport limit for `POST /v1/requests` is 65,536 body bytes,
 inclusive, counted from the ASGI stream before JSON parsing rather than trusting
@@ -134,9 +183,9 @@ crash cleanup or safe automatic reconciliation is implemented; an operator must
 coordinate with all active writers before any investigation. Only owned spool
 entries are removed on ordinary cleanup, with cleanup failure treated as uncertain.
 
-This route does not imply request execution readiness: valid `/v1/requests`
-still returns 503. Exact API contracts, decimal byte convention, resource budgets,
-and frontend compatibility require team review.
+Dataset readiness does not imply real execution readiness. Exact API contracts,
+decimal byte convention, resource budgets, and frontend compatibility require
+team review.
 
 ## Internal model-proposal validator (execution disabled)
 
@@ -210,7 +259,7 @@ root, a caller-owned binary readable stream, and a server-issued `UUID` storage
 key; it accepts no client filename or path. The internal coordinator above supplies
 the key from committed metadata, with the explicit readiness limitations described.
 The upload and metadata-lookup routes use this adapter; there is no file download
-or deletion endpoint. Valid `/v1/requests` still returns 503.
+or deletion endpoint. Request processing remains fake-only.
 
 The adapter opens the normalized final root component without following a
 symlink, requires a directory owned by the effective UID with no group/other or
@@ -272,7 +321,7 @@ file-like object or iterable of byte chunks once and returns immutable
 `CsvMetadata(columns, byte_size, row_count)` only after successful EOF. It does
 not close the stream, use filenames or client hints, retain rows, persist files,
 connect to a database, call a model, or execute CSV text. The upload route invokes
-this validator before metadata creation. Valid `/v1/requests` still returns 503. Header names are
+this validator before metadata creation. Request processing remains fake-only. Header names are
 untrusted data, not safe HTML, SQL, spreadsheet formulas, or model instructions.
 
 All rules are **provisional**, not frontend/teammate-approved. Default inclusive
@@ -356,20 +405,21 @@ infrastructure gates in the implementation plan.
 
 ## Provisional database migration foundation
 
-Dataset upload and metadata lookup use this foundation; no file download or
-delete endpoint, queue, or history wiring exists.
-`/v1/requests` still returns 503 for valid input. The provisional `datasets`
+Dataset upload, metadata lookup and the durable fake-only queue use this
+foundation; no file download or delete endpoint exists. The provisional `datasets`
 table contains a caller-supplied UUID primary key, a separately generated unique
 UUID storage key (never a path), a bounded display name, creation time, and an
 `active`/`deleted` tombstone with a matching deletion timestamp. Producers must
 generate opaque IDs and sanitize display names before insertion; constraints are
 only a defensive minimum, not HTML escaping or a complete Unicode/confusable
-policy. The deleted row can eventually be referenced by retained history; no
-history schema, deletion semantics, file/DB atomicity, complete race protection, or
-automatic cleanup is implemented. Downgrading revision 0002 drops readiness
-information; re-upgrading assigns `unknown` to existing rows, requiring manual
-reconciliation. Downgrading to base also removes the table and its data. Neither
-is a safe production rollback strategy. Schema, policies and API are provisional.
+policy. Request intents retain a non-cascading dataset reference; no separate
+history-retention policy, deletion semantics, file/DB atomicity, complete race protection, or
+automatic cleanup is implemented. Downgrading revision 0003 drops the entire
+`request_intents` table, including history and idempotency records. Downgrading
+revision 0002 drops readiness information; re-upgrading assigns `unknown` to
+existing rows, requiring manual reconciliation. Downgrading to base also removes
+the dataset table and its data. None is a safe production rollback strategy.
+Schema, policies and API are provisional.
 
 ## Provisional metadata storage port
 
@@ -410,7 +460,7 @@ The live contract exercises single-connection create/lookup, validation,
 duplicate ID/key recovery, deleted-row reads, error sanitization, and caller
 rollback. It does not prove concurrent behavior, crash recovery, file/DB
 atomicity, or deletion semantics. The dataset routes use the PostgreSQL adapter;
-no deletion service, queue, or execution is implemented.
+no deletion service or real execution is implemented.
 
 Alembic requires an explicitly supplied `DATABASE_URL` with PostgreSQL username,
 database, and either a TCP host or an absolute Unix-socket directory. No default
@@ -458,8 +508,9 @@ python -m pytest -q -m live_postgres --run-live-postgres
 This exact CI command fails with a usage error when either guard or URL is
 missing, rather than silently skipping. A connection or migration failure also
 fails the suite. The suite generates uniquely named schemas and sets its
-search path so both application tables and `alembic_version` live there. Cleanup
-uses transactional `RESTRICT` drops for those known tables and the test schema.
+search path so application tables and `alembic_version` live there. Cleanup
+uses transactional `RESTRICT` drops for `request_intents`, `datasets`,
+`alembic_version` and the test schema.
 External dependencies that block table removal or independent unexpected objects
 in the test schema make cleanup fail and roll back. PostgreSQL can still remove
 objects automatically dependent on a dropped table, such as its indexes and

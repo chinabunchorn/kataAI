@@ -1,7 +1,7 @@
 from typing import Literal
 from uuid import UUID
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, Depends, FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.routing import APIRoute
@@ -50,7 +50,7 @@ class RequestInput(BaseModel):
     dataset_id: str = Field(strict=True, min_length=1, max_length=256)
     question: str = Field(strict=True, min_length=1, max_length=4096)
 
-    @field_validator('client_request_id')
+    @field_validator('client_request_id', 'dataset_id')
     @classmethod
     def uuid_string(cls, value: str) -> str:
         UUID(value)
@@ -59,8 +59,8 @@ class RequestInput(BaseModel):
     @field_validator('dataset_id', 'question')
     @classmethod
     def nonblank(cls, value: str) -> str:
-        if not value.strip():
-            raise ValueError('blank')
+        if not value.strip() or '\x00' in value or any(0xD800 <= ord(c) <= 0xDFFF for c in value):
+            raise ValueError('invalid text')
         return value
 
 
@@ -86,10 +86,21 @@ def health() -> dict[str, str]:
 
 
 @request_router.post('/v1/requests')
-def create_request(payload: RequestInput) -> JSONResponse:
-    return JSONResponse(status_code=503, content={
-        'error': {'code': 'EXECUTION_UNAVAILABLE', 'message': 'Request processing is unavailable.'},
-    })
+def create_request(payload: RequestInput, runtime=Depends(get_dataset_runtime)) -> JSONResponse:
+    from app.request_api import create_request as create
+    return create(payload, runtime)
+
+
+@request_router.get('/v1/requests')
+def request_history(limit: int = Query(default=20, ge=1, le=100), runtime=Depends(get_dataset_runtime)):
+    from app.request_api import history
+    return history(runtime, limit)
+
+
+@request_router.get('/v1/requests/{request_id}')
+def request_status(request_id: UUID, runtime=Depends(get_dataset_runtime)):
+    from app.request_api import status
+    return status(runtime, request_id)
 
 
 app.include_router(request_router)
