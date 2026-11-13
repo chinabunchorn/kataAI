@@ -39,7 +39,7 @@ def _require_ownership(connection):
 def run_once(connection, queue_factory):
     """Run at most one fake claim on a dedicated session; caller closes it.
 
-    Return busy, idle, fake_completed, or stale. Exceptions mean outcome may
+    Return busy, idle, fake_completed, cancelled, or stale. Exceptions mean outcome may
     be uncertain, including when a COMMIT was sent but not acknowledged.
     """
     acquired = False
@@ -68,7 +68,8 @@ def run_once(connection, queue_factory):
         _require_ownership(connection)
         completed = queue.complete_fake(claim.id, token)
         connection.commit()
-        return 'fake_completed' if completed else 'stale'
+        return ('cancelled' if completed == 'cancelled' else
+                'fake_completed' if completed else 'stale')
     except BaseException:
         failed = True
         raise

@@ -7,7 +7,7 @@ invoked fake-only worker processes at most one per run. There is no real model,
 generated-code execution or remote executor. Fake completion is not computation
 or a benchmark measurement.
 
-## Provisional request API and fake-only queue (Phase 3)
+## Provisional request API and fake-only queue
 
 The API contract, states and limits are local prototype decisions, not a
 frontend/teammate agreement. Explicit local PostgreSQL and private dataset-root
@@ -37,15 +37,37 @@ claimed/unknown work. Do not generate a new ID merely because a response was
 lost. This guarantee concerns request creation, not any future external provider.
 
 `GET /v1/requests/{id}` returns the last recorded status, dataset ID, original
-question and creation time, or 404 for a missing request. `GET /v1/requests`
-returns recent history, newest first, with a `limit` of 1–100 (default 20). The
+question and creation time, or 404 for a missing or hidden request.
+`GET /v1/requests` returns visible history, newest first, with a `limit` of
+1–100 (default 20). A returned `next_cursor` can be passed back as the `cursor`
+query parameter. Pagination is keyset-based, not a stable snapshot: concurrent
+inserts or hiding may change what later pages contain; a cursor may lead to an
+empty page. The
 question is returned as **untrusted plain data**, never as safe HTML or code.
 Successful request status and history responses include `Cache-Control: no-store`.
 These endpoints have no authentication beyond the documented local browser
 boundary. Questions are stored in PostgreSQL and returned through local history;
-the application provides no encryption-at-rest, retention policy, or request
-deletion feature in this phase. Protect the database, backups and trusted browser. No
+the application provides no encryption-at-rest or retention policy. Hiding a
+request does not erase its question or database record. Protect the database,
+backups and trusted browser accordingly. No
 question, storage path or SQL exception is returned in an error message.
+
+`POST /v1/requests/{id}/cancel` changes queued work to `cancelled`, or marks
+running work `cancel_requested` until the fake worker acknowledges it. A
+`cancel_requested` response does **not** mean a worker or external provider has
+stopped. Cancellation and fake completion are serialized: their commit order
+determines precedence, and a running cancellation still requires acknowledgement.
+Already completed or `unknown`
+work cannot be cancelled and returns 409. A subsequent worker takeover marks
+interrupted `running` or `cancel_requested` work `unknown`, never requeues it.
+
+`DELETE /v1/requests/{id}` **hides** a cancelled or fake-completed request from
+normal detail and history responses; it returns 204. Active or unknown requests
+cannot be hidden and return 409. Hiding is not secure erasure: the full record,
+including the question, idempotency key and dataset reference, remains in the
+database. A repeated submission using the same client key and payload returns
+the retained original ID and status without unhiding or redispatching it. A
+repeat hide of an already hidden ID returns 404.
 
 ### Fake worker and crash semantics
 
@@ -62,7 +84,8 @@ process another; there is no automatic polling service in this phase. The outcom
 status/history. It does not read CSV rows, compute an answer, call a model, or
 execute Python. `queued` means waiting; `running` is the last committed claim,
 **not proof of current liveness**. On the next worker takeover a previous running
-claim becomes `unknown`, not queued, and is never automatically redispatched.
+or cancel-requested claim becomes `unknown`, not queued, and is never
+automatically redispatched.
 A new worker may process another queued request. There is no API for resolving or
 retrying `unknown` work in this phase.
 
@@ -127,8 +150,8 @@ and not expose the service on a network. This is not a multi-user service.
 
 The route names, limits and error codes are local prototype choices, not a
 frontend/teammate agreement. Requests are protected by the local security policy
-above. No login, browser UI, dataset deletion, file-download API, automatic
-reconciliation or generated-code execution is provided.
+above. No login, browser UI, file-download API, automatic reconciliation or
+generated-code execution is provided.
 
 **Explicit configuration is required:** set `DATABASE_URL` to a migrated local
 PostgreSQL target at literal `127.0.0.1`, `::1`, or an absolute Unix-socket path,
@@ -171,6 +194,24 @@ for pending/unknown or an unavailable backend, and 422 for a malformed canonical
 UUID. A ready row is a point-in-time metadata state, not an integrity or
 availability guarantee against later file loss or replacement. Display names
 are untrusted and consumers must render them safely.
+
+`DELETE /v1/datasets/{dataset_id}` performs **logical deletion only**: it
+marks an eligible dataset deleted in PostgreSQL and returns
+`file_cleanup: "not_attempted"`. It does not inspect, unlink or erase its CSV;
+**disk space is not reclaimed**. A repeat delete of a tombstone returns the same
+logical result, without claiming the file exists. Missing IDs return 404.
+Pending/unknown publication or any associated queued, running, cancel-requested
+or unknown request blocks deletion with 409. Completed or cancelled request
+records remain retained. There is no API to resolve unknown work in this phase.
+
+The delete path takes the shared upload admission lock before the queue claim
+lock and dataset row lock; request creation is serialized by the dataset row lock.
+These protections require a trusted local root and cooperating HTTP publishers;
+direct internal or out-of-band writers are not covered by the filesystem lock.
+Database or lock failure can leave a commit outcome unknown and returns 503.
+An operator must inspect the durable tombstone rather than assume rollback;
+ordinary dataset GET returns 404 for both deleted and missing records. No deletion path
+attempts physical file cleanup or promises secure erasure.
 
 Invalid multipart, filename, CSV or encoding returns a sanitized 422; oversized
 input returns 413; an intake timeout returns 408; storage, admission, database
@@ -258,8 +299,8 @@ adapter only. The trusted application must supply an existing private local
 root, a caller-owned binary readable stream, and a server-issued `UUID` storage
 key; it accepts no client filename or path. The internal coordinator above supplies
 the key from committed metadata, with the explicit readiness limitations described.
-The upload and metadata-lookup routes use this adapter; there is no file download
-or deletion endpoint. Request processing remains fake-only.
+The upload and metadata-lookup routes use this adapter; dataset deletion is
+logical only and there is no file-download endpoint. Processing remains fake-only.
 
 The adapter opens the normalized final root component without following a
 symlink, requires a directory owned by the effective UID with no group/other or
@@ -405,16 +446,18 @@ infrastructure gates in the implementation plan.
 
 ## Provisional database migration foundation
 
-Dataset upload, metadata lookup and the durable fake-only queue use this
-foundation; no file download or delete endpoint exists. The provisional `datasets`
+Dataset upload, metadata lookup, logical deletion and the durable fake-only queue
+use this foundation; no file-download endpoint exists. The provisional `datasets`
 table contains a caller-supplied UUID primary key, a separately generated unique
 UUID storage key (never a path), a bounded display name, creation time, and an
 `active`/`deleted` tombstone with a matching deletion timestamp. Producers must
 generate opaque IDs and sanitize display names before insertion; constraints are
 only a defensive minimum, not HTML escaping or a complete Unicode/confusable
 policy. Request intents retain a non-cascading dataset reference; no separate
-history-retention policy, deletion semantics, file/DB atomicity, complete race protection, or
-automatic cleanup is implemented. Downgrading revision 0003 drops the entire
+history-retention policy, physical deletion protocol, file/DB atomicity, complete
+race protection, or automatic cleanup is implemented. Revision 0004's downgrade refuses while
+cancelled, cancel-requested or hidden records exist; this guard does not make
+other downgrade paths safe. Downgrading revision 0003 drops the entire
 `request_intents` table, including history and idempotency records. Downgrading
 revision 0002 drops readiness information; re-upgrading assigns `unknown` to
 existing rows, requiring manual reconciliation. Downgrading to base also removes
@@ -459,8 +502,8 @@ structural preflight does not verify the behavior of a custom store or commit ca
 The live contract exercises single-connection create/lookup, validation,
 duplicate ID/key recovery, deleted-row reads, error sanitization, and caller
 rollback. It does not prove concurrent behavior, crash recovery, file/DB
-atomicity, or deletion semantics. The dataset routes use the PostgreSQL adapter;
-no deletion service or real execution is implemented.
+atomicity, or physical deletion semantics. The dataset routes use the PostgreSQL
+adapter; no physical file deletion or real execution is implemented.
 
 Alembic requires an explicitly supplied `DATABASE_URL` with PostgreSQL username,
 database, and either a TCP host or an absolute Unix-socket directory. No default

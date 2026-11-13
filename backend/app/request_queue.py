@@ -53,20 +53,59 @@ class RequestQueue:
             raise InvalidRequest()
         try:
             row = self._connection.execute(sa.text(
-                f'SELECT {_COLUMNS} FROM request_intents WHERE id = :id'),
+                f'SELECT {_COLUMNS} FROM request_intents WHERE id = :id AND hidden_at IS NULL'),
                 {'id': request_id}).one_or_none()
             return RequestRecord(*row) if row is not None else None
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
-    def history(self, limit):
-        if type(limit) is not int or not 1 <= limit <= 1000:
+    def history(self, limit, before=None):
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise InvalidRequest()
+        if before is not None and (not isinstance(before, tuple) or len(before) != 2
+                                   or not isinstance(before[0], datetime) or before[0].utcoffset() is None
+                                   or not isinstance(before[1], UUID)):
             raise InvalidRequest()
         try:
+            cursor = ' AND (created_at, id) < (:created_at, :cursor_id)' if before else ''
+            params: dict[str, object] = {'limit': limit}
+            if before:
+                params.update(created_at=before[0], cursor_id=before[1])
             rows = self._connection.execute(sa.text(
-                f'SELECT {_COLUMNS} FROM request_intents ORDER BY created_at DESC, id DESC LIMIT :limit'),
-                {'limit': limit})
+                f'SELECT {_COLUMNS} FROM request_intents WHERE hidden_at IS NULL{cursor} '
+                'ORDER BY created_at DESC, id DESC LIMIT :limit'), params)
             return [RequestRecord(*row) for row in rows]
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def cancel(self, request_id):
+        """Cancel queued work or request cooperative cancellation; return current row.
+
+        Terminal and unknown records are unchanged. The caller commits. Row-level
+        update locking linearizes this operation against claim and finish.
+        """
+        if not isinstance(request_id, UUID):
+            raise InvalidRequest()
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET status=CASE status WHEN 'queued' THEN 'cancelled' "
+                "WHEN 'running' THEN 'cancel_requested' ELSE status END, "
+                "updated_at=CASE WHEN status IN ('queued','running') THEN clock_timestamp() ELSE updated_at END "
+                f'WHERE id=:id AND hidden_at IS NULL RETURNING {_COLUMNS}'), {'id': request_id}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def hide_history(self, request_id):
+        if not isinstance(request_id, UUID):
+            raise InvalidRequest()
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET hidden_at=CASE WHEN status IN ('cancelled','fake_completed') "
+                "THEN clock_timestamp() ELSE hidden_at END "
+                f'WHERE id=:id AND hidden_at IS NULL RETURNING {_COLUMNS}'),
+                {'id': request_id}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
@@ -79,7 +118,7 @@ class RequestQueue:
             row = self._connection.execute(sa.text(
                 "UPDATE request_intents SET status='running', claim_token=:token, updated_at=clock_timestamp() "
                 "WHERE id = (SELECT id FROM request_intents WHERE status='queued' "
-                "AND NOT EXISTS (SELECT 1 FROM request_intents WHERE status='running') "
+                "AND NOT EXISTS (SELECT 1 FROM request_intents WHERE status IN ('running','cancel_requested')) "
                 'ORDER BY created_at, id LIMIT 1 FOR UPDATE) '
                 f'RETURNING {_COLUMNS}'), {'token': token}).one_or_none()
             return RequestRecord(*row) if row is not None else None
@@ -91,10 +130,11 @@ class RequestQueue:
             raise InvalidRequest()
         try:
             row = self._connection.execute(sa.text(
-                "UPDATE request_intents SET status='fake_completed', claim_token=NULL, updated_at=clock_timestamp() "
-                "WHERE id=:id AND status='running' AND claim_token=:token RETURNING id"),
+                "UPDATE request_intents SET status=CASE WHEN status='cancel_requested' THEN 'cancelled' "
+                "ELSE 'fake_completed' END, claim_token=NULL, updated_at=clock_timestamp() "
+                "WHERE id=:id AND status IN ('running','cancel_requested') AND claim_token=:token RETURNING status"),
                 {'id': request_id, 'token': token}).one_or_none()
-            return row is not None
+            return row[0] if row is not None else False
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
@@ -103,7 +143,7 @@ class RequestQueue:
         try:
             result = self._connection.execute(sa.text(
                 "UPDATE request_intents SET status='unknown', claim_token=NULL, updated_at=clock_timestamp() "
-                "WHERE status='running'"))
+                "WHERE status IN ('running','cancel_requested')"))
             return result.rowcount
         except SQLAlchemyError:
             raise RequestStorageError() from None

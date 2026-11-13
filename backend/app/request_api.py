@@ -1,7 +1,10 @@
 """Provisional request HTTP boundary; no execution is performed here."""
+import base64
+import binascii
+from datetime import datetime
 from uuid import UUID
 
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from .dataset_store import DatasetNotFound
 
@@ -18,7 +21,7 @@ def error(status, code, message):
 
 
 def public_record(record, *, include_detail=False):
-    if record.status not in {'queued', 'running', 'fake_completed', 'unknown'}:
+    if record.status not in {'queued', 'running', 'fake_completed', 'unknown', 'cancelled', 'cancel_requested'}:
         raise ValueError('unsupported status')
     result = {'id': str(UUID(str(record.id))), 'status': record.status, 'provisional': True}
     if include_detail:
@@ -46,14 +49,64 @@ def status(runtime, request_id):
         return error(503, 'EXECUTION_UNAVAILABLE', 'Request processing is unavailable.')
 
 
-def history(runtime, limit):
+def cancel(runtime, request_id):
     try:
         if runtime is None:
             raise RuntimeError('runtime unavailable')
         with runtime.connection() as connection:
-            records = queue_factory(connection).history(limit)
-            return JSONResponse({'requests': [public_record(record, include_detail=True) for record in records[:limit]]},
-                                headers={'Cache-Control': 'no-store'})
+            record = queue_factory(connection).cancel(request_id)
+            body = public_record(record) if record is not None else None
+            connection.commit()
+        if record is None:
+            return error(404, 'REQUEST_NOT_FOUND', 'Request not found.')
+        if record.status not in {'cancelled', 'cancel_requested'}:
+            return error(409, 'REQUEST_CONFLICT', 'Request cannot be cancelled.')
+        return JSONResponse(body, headers={'Cache-Control': 'no-store'})
+    except Exception:
+        return error(503, 'EXECUTION_UNAVAILABLE', 'Request processing is unavailable.')
+
+
+def hide(runtime, request_id):
+    try:
+        if runtime is None:
+            raise RuntimeError('runtime unavailable')
+        with runtime.connection() as connection:
+            record = queue_factory(connection).hide_history(request_id)
+            connection.commit()
+        if record is None:
+            return error(404, 'REQUEST_NOT_FOUND', 'Request not found.')
+        if record.status not in {'cancelled', 'fake_completed'}:
+            return error(409, 'REQUEST_CONFLICT', 'Request cannot be hidden.')
+        return Response(status_code=204, headers={'Cache-Control': 'no-store'})
+    except Exception:
+        return error(503, 'EXECUTION_UNAVAILABLE', 'Request processing is unavailable.')
+
+
+def history(runtime, limit, cursor=None):
+    before = None
+    if cursor is not None:
+        try:
+            raw = base64.b64decode(cursor.encode('ascii'), altchars=b'-_', validate=True).decode('ascii')
+            timestamp, identifier = raw.split('|')
+            timestamp = datetime.fromisoformat(timestamp)
+            if timestamp.utcoffset() is None:
+                raise ValueError('naive timestamp')
+            before = (timestamp, UUID(identifier))
+        except (ValueError, UnicodeError, binascii.Error):
+            return error(422, 'INVALID_REQUEST', 'Invalid request.')
+    try:
+        if runtime is None:
+            raise RuntimeError('runtime unavailable')
+        with runtime.connection() as connection:
+            queue = queue_factory(connection)
+            records = queue.history(limit) if before is None else queue.history(limit, before=before)
+            records = records[:limit]
+            result = {'requests': [public_record(record, include_detail=True) for record in records]}
+            if len(records) == limit:
+                last = records[-1]
+                raw = f'{last.created_at.isoformat()}|{UUID(str(last.id))}'.encode('ascii')
+                result['next_cursor'] = base64.urlsafe_b64encode(raw).decode('ascii')
+            return JSONResponse(result, headers={'Cache-Control': 'no-store'})
     except Exception:
         return error(503, 'EXECUTION_UNAVAILABLE', 'Request processing is unavailable.')
 

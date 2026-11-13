@@ -9,6 +9,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.dataset_lifecycle_api import create_dataset_lifecycle_router
 from app.dataset_lookup_api import get_dataset_runtime, router as dataset_lookup_router
 from app.dataset_upload_api import create_upload_router
 from app.local_security import LocalSecurityMiddleware
@@ -28,7 +29,7 @@ class BoundedBodyRoute(APIRoute):
                 if len(chunk) > MAX_REQUEST_BODY_BYTES - len(body):
                     return JSONResponse(status_code=413, content={
                         'error': {'code': 'REQUEST_TOO_LARGE', 'message': 'Request body is too large.'},
-                    })
+                    }, headers={'Cache-Control': 'no-store'})
                 body.extend(chunk)
 
             async def receive():
@@ -68,7 +69,7 @@ class RequestInput(BaseModel):
 async def invalid_request(request: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(status_code=422, content={
         'error': {'code': 'INVALID_REQUEST', 'message': 'Invalid request.'},
-    })
+    }, headers={'Cache-Control': 'no-store'})
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -92,9 +93,11 @@ def create_request(payload: RequestInput, runtime=Depends(get_dataset_runtime)) 
 
 
 @request_router.get('/v1/requests')
-def request_history(limit: int = Query(default=20, ge=1, le=100), runtime=Depends(get_dataset_runtime)):
+def request_history(limit: int = Query(default=20, ge=1, le=100),
+                    cursor: str | None = Query(default=None, min_length=1, max_length=256),
+                    runtime=Depends(get_dataset_runtime)):
     from app.request_api import history
-    return history(runtime, limit)
+    return history(runtime, limit, cursor)
 
 
 @request_router.get('/v1/requests/{request_id}')
@@ -103,6 +106,19 @@ def request_status(request_id: UUID, runtime=Depends(get_dataset_runtime)):
     return status(runtime, request_id)
 
 
+@request_router.post('/v1/requests/{request_id}/cancel')
+def cancel_request(request_id: UUID, runtime=Depends(get_dataset_runtime)):
+    from app.request_api import cancel
+    return cancel(runtime, request_id)
+
+
+@request_router.delete('/v1/requests/{request_id}')
+def hide_request(request_id: UUID, runtime=Depends(get_dataset_runtime)):
+    from app.request_api import hide
+    return hide(runtime, request_id)
+
+
 app.include_router(request_router)
 app.include_router(dataset_lookup_router)
+app.include_router(create_dataset_lifecycle_router(get_dataset_runtime))
 app.include_router(create_upload_router(get_dataset_runtime))
