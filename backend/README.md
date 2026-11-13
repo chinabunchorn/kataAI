@@ -3,9 +3,59 @@
 `GET /health` reports process health, not model, executor, database or isolation
 readiness. Explicitly configured dataset and request APIs use PostgreSQL and a
 private local dataset root. Request intents are durable; a separate, explicitly
-invoked fake-only worker processes at most one per run. There is no real model,
-generated-code execution or remote executor. Fake completion is not computation
-or a benchmark measurement.
+invoked fake-only worker processes at most one per run. The optional local model
+adapter is not connected to that queue. There is no generated-code execution or
+remote executor. Fake completion is not computation or a benchmark measurement.
+
+## Local model adapter (experimental, not wired to the queue)
+
+`app.model_adapter.LocalModelAdapter` is an explicitly invoked library client for
+an independently started llama.cpp server at a numeric IPv4 loopback HTTP
+endpoint. It does **not** start the server or worker, connect to the request API,
+execute generated code, or dispatch it anywhere. The existing queue still uses
+only the fake worker. Model availability, tool-calling accuracy and runtime
+performance depend on the installed model and server; a valid proposal is not
+proof that it will compute a correct answer or be safe to execute.
+
+`generate(question, columns)` sends the question, column names and a fixed
+provisional runner description—**never CSV rows**—and accepts exactly one
+`run_python` function call with a bounded code string. The code is untrusted,
+inert text. Dataset identity, files, runtime, permissions and budgets are never
+model-selected. No automatic retries or repair are performed. The runner's
+`df` description is a provisional future contract, not an implemented executor.
+Prompt instructions alone do not prevent injection or unsafe proposals.
+
+`summarize(question, result)` validates bounded JSON and sends the question and
+result with tools disabled. It returns the original result, summary and warning;
+a model/validation failure returns the original value and `SUMMARY_UNAVAILABLE`.
+A caller must independently validate an executor result before displaying it as a
+successful result. Summaries and all user/model content remain untrusted. No
+results, questions or code are intentionally logged by this adapter.
+
+The endpoint must be explicitly supplied by the operator; the optional model name
+defaults to `local-model`. Only `http://127.0.0.1:<port>/v1/chat/completions`
+is accepted. Calls have a maximum
+120-second wall-clock deadline, bounded input and response sizes, no redirects,
+no remote endpoint fallback and no automatic retry. Only HTTP 200 responses with
+one explicit `Content-Length` are accepted; chunked, close-delimited and
+informational responses fail closed. Transport configuration is
+trusted internal code, not an HTTP client-controlled setting. The local server
+and other same-user processes are not authenticated by this loopback restriction.
+There is no production API or persisted model result for this adapter yet.
+llama-server itself may allow browser cross-origin access without an API key;
+loopback binding is not authentication. Keep its availability and exposure under
+operator control, avoid sending private data through an unprotected service, and
+stop it when not in use.
+
+A synthetic compatibility probe on 2026-11-13 used `llama-server` build 12110
+and `unsloth/Qwen3.5-4B-GGUF` Q4_K_M with an 8192-token context and reasoning
+off. English and Thai prompts produced parseable single-tool proposals, but a
+missing-profit-column prompt **invented a profit formula**, even with an
+abstention instruction. These proposals were not executed or checked for
+correctness. One tools-disabled synthetic summary returned `3`. This small probe
+is not a quality benchmark. The adapter currently treats an abstaining text-only
+response as a generic model error; it does not yet expose a cannot-answer message.
+A proposal's syntactic validity must never be interpreted as semantic validity.
 
 ## Provisional request API and fake-only queue
 
