@@ -99,6 +99,21 @@ def _json_value(value, limit):
         raise ModelAdapterError() from None
 
 
+def encode_generation_input(question, columns):
+    """Validate and encode the exact JSON user content for generation."""
+    try:
+        _text(question, 16_384)
+        if len(question) > 4096:
+            raise ModelAdapterError()
+        if type(columns) not in (list, tuple) or not 1 <= len(columns) <= 256:
+            raise ModelAdapterError()
+        for col in columns:
+            _text(col, 1024)
+        return _json_value({'question': question, 'columns': list(columns)}, 32_768).decode('utf-8')
+    except (ModelAdapterError, TypeError, ValueError):
+        raise ModelAdapterError() from None
+
+
 def _load_json(raw):
     def pairs(values):
         result = {}
@@ -234,14 +249,7 @@ class LocalModelAdapter:
 
     def generate(self, question, columns):
         try:
-            _text(question, 16_384)
-            if len(question) > 4096:
-                raise ModelAdapterError()
-            if type(columns) not in (list, tuple) or not 1 <= len(columns) <= 256:
-                raise ModelAdapterError()
-            for col in columns:
-                _text(col, 1024)
-            user_data = _json_value({'question': question, 'columns': list(columns)}, 32_768).decode('utf-8')
+            user_data = encode_generation_input(question, columns)
             choice = self._request({'model': self._model, 'messages': [
                 {'role': 'system', 'content': RUNNER_CONTRACT},
                 {'role': 'user', 'content': user_data}],

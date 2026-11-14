@@ -138,6 +138,69 @@ def test_generation_requests_provisional_qwen_mvp_contract_and_sampling():
     assert 'seed' not in payload
 
 
+def test_generation_uses_public_preflight_exact_json():
+    from app import model_adapter
+
+    requests = []
+    def transport(payload):
+        requests.append(payload)
+        return tool_response()
+
+    question = 'ยอด "รวม"\\รายการ\n?'
+    columns = ('ราคา', 'a"b\\c')
+    encoded = model_adapter.encode_generation_input(question, columns)
+    assert encoded == '{"question":"ยอด \\"รวม\\"\\\\รายการ\\n?","columns":["ราคา","a\\"b\\\\c"]}'
+    adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions', transport=transport)
+    adapter.generate(question, columns)
+    assert requests[0]['messages'][1]['content'] == encoded
+
+
+@pytest.mark.parametrize('question,columns', [
+    ('ก' * 4096, ['ก' * 341 + 'a']),
+    ('😀' * 4096, ['a' * 1024]),
+    ('q', ['c'] * 256),
+])
+def test_generation_preflight_accepts_valid_boundaries(question, columns):
+    from app.model_adapter import encode_generation_input
+    assert json.loads(encode_generation_input(question, columns)) == {
+        'question': question, 'columns': columns}
+
+
+@pytest.mark.parametrize('question,columns', [
+    ('ก' * 4097, ['c']), ('😀' * 4097, ['c']),
+    ('', ['c']), ('  ', ['c']), ('private\x00question', ['c']),
+    ('\ud800', ['c']), (None, ['c']),
+    ('q', []), ('q', ['c'] * 257), ('q', 'column'),
+    ('q', ['ก' * 342]), ('q', ['a' * 1025]), ('q', [' ']),
+    ('q', ['private\x00column']), ('q', ['\ud800']), ('q', [123]),
+])
+def test_generation_preflight_rejects_invalid_inputs_without_sending(question, columns):
+    from app.model_adapter import encode_generation_input
+    def forbidden(_):
+        pytest.fail('invalid input must not reach transport')
+    adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions', transport=forbidden)
+    for operation in (encode_generation_input, adapter.generate):
+        with pytest.raises(ModelAdapterError, match='^MODEL_ADAPTER_FAILED$') as caught:
+            operation(question, columns)
+        assert 'private' not in repr(caught.value)
+
+
+def test_generation_preflight_enforces_encoded_json_byte_limit_including_escapes():
+    from app.model_adapter import encode_generation_input
+
+    columns = ['a' * 1024] * 31 + ['']
+    base = json.dumps({'question': 'q', 'columns': columns}, ensure_ascii=False,
+                      separators=(',', ':')).encode('utf-8')
+    remaining = 32768 - len(base)
+    columns[-1] = '"' * (remaining // 2) + 'x' * (remaining % 2)
+    assert len(columns[-1].encode('utf-8')) <= 1024
+    encoded = encode_generation_input('q', columns)
+    assert len(encoded.encode('utf-8')) == 32768
+    columns[-1] += 'x'
+    with pytest.raises(ModelAdapterError, match='^MODEL_ADAPTER_FAILED$'):
+        encode_generation_input('q', columns)
+
+
 def test_generation_accepts_question_at_existing_unicode_character_limit():
     question = 'ก' * 4096
     adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions',
