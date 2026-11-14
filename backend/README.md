@@ -212,7 +212,11 @@ Questions and column names are sent to the local model; CSV rows are not.
 at most 1,024 UTF-8 bytes per column name and at most 32,768 UTF-8 bytes for
 the encoded question-and-columns JSON (including JSON syntax and escaping).
 For a **new HTTP request**, the application reads the selected ready dataset's
-validated headers and uses the same model-input encoding before queuing. An
+validated headers and checks both the model-input JSON and the complete serialized
+generation request before queuing. Because the API does not know which valid model
+name a worker will use, it reserves space for the maximum 256-byte model name
+with worst-case JSON escaping; this is conservative and can reject an input that
+would fit with a shorter model name. An
 incompatible input returns sanitized HTTP 422 `MODEL_INPUT_INCOMPATIBLE` without
 creating a request; an unreadable dataset returns 503. A retry of an existing
 client ID is resolved before this check, preserving idempotency and conflict

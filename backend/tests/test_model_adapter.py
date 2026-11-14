@@ -201,6 +201,93 @@ def test_generation_preflight_enforces_encoded_json_byte_limit_including_escapes
         encode_generation_input('q', columns)
 
 
+def test_generation_preflight_rejects_double_escaped_outer_request_before_transport():
+    import csv
+    import io
+    from app.model_adapter import encode_generation_input
+
+    columns = [f'{i:02d}' + '"' * 998 for i in range(16)]
+    csv_file = io.StringIO(newline='')
+    csv.writer(csv_file).writerow(columns)
+    csv_file.seek(0)
+    assert next(csv.reader(csv_file)) == columns
+    inner = json.dumps({'question': 'q', 'columns': columns}, ensure_ascii=False,
+                       separators=(',', ':')).encode('utf-8')
+    assert len(set(columns)) == len(columns)
+    assert len(inner) <= 32768
+
+    def forbidden(_):
+        pytest.fail('oversized request must not reach transport')
+
+    adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions', transport=forbidden)
+    for operation in (encode_generation_input, adapter.generate):
+        with pytest.raises(ModelAdapterError, match='^MODEL_ADAPTER_FAILED$'):
+            operation('q', columns)
+
+
+def test_generation_outer_worst_case_exact_boundary_matches_preflight():
+    from app.model_adapter import encode_generation_input, MAX_REQUEST_BYTES
+
+    requests = []
+    worst_model = '\x01' * 256
+    adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions',
+                                model=worst_model,
+                                transport=lambda payload: requests.append(payload) or tool_response())
+    adapter.generate('q', ['c'])
+    template = requests.pop()
+    columns = [f'{i:02d}' + '"' * 898 for i in range(16)]
+
+    def sizes(question):
+        inner = json.dumps({'question': question, 'columns': columns}, ensure_ascii=False,
+                           separators=(',', ':'))
+        template['messages'][1]['content'] = inner
+        outer = json.dumps(template, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+        return len(inner.encode('utf-8')), len(outer)
+
+    base = sizes('q')[1]
+    quote_count, padding = divmod(MAX_REQUEST_BYTES - base, 4)
+    question = 'q' + '"' * quote_count + 'x' * padding
+    assert len(question) <= 4096
+    assert sizes(question)[0] <= 32768
+    assert sizes(question)[1] == MAX_REQUEST_BYTES
+    assert json.loads(encode_generation_input(question, columns)) == {'question': question, 'columns': columns}
+    assert adapter.generate(question, columns)[0]['name'] == 'run_python'
+    assert len(json.dumps(requests.pop(), ensure_ascii=False, separators=(',', ':')).encode('utf-8')) == MAX_REQUEST_BYTES
+
+    question += 'x'
+    assert sizes(question)[1] == MAX_REQUEST_BYTES + 1
+    for operation in (encode_generation_input, adapter.generate):
+        with pytest.raises(ModelAdapterError, match='^MODEL_ADAPTER_FAILED$'):
+            operation(question, columns)
+    assert requests == []
+    # A smaller model would fit, but admission intentionally covers every
+    # valid worker configuration instead of trusting the current worker.
+    template['model'] = 'local-model'
+    assert sizes(question)[1] < MAX_REQUEST_BYTES
+
+
+def test_generation_outer_overflow_maps_to_http_422_without_enqueue(monkeypatch):
+    from contextlib import nullcontext
+    from types import SimpleNamespace
+    from app import dataset_columns, request_api
+
+    columns = [f'{i:02d}' + '"' * 998 for i in range(16)]
+    monkeypatch.setattr(dataset_columns, 'read_dataset_columns', lambda root, key: columns)
+
+    class Queue:
+        def create(self, request_id, dataset_id, question, validate):
+            validate('dataset.csv')
+            pytest.fail('incompatible request must not be enqueued')
+
+    monkeypatch.setattr(request_api, 'queue_factory', lambda connection: Queue())
+    runtime = SimpleNamespace(root='unused', connection=lambda: nullcontext(object()))
+    payload = SimpleNamespace(question='q', client_request_id='00000000-0000-0000-0000-000000000001',
+                              dataset_id='00000000-0000-0000-0000-000000000002')
+    response = request_api.create_request(payload, runtime)
+    assert response.status_code == 422
+    assert json.loads(response.body)['error']['code'] == 'MODEL_INPUT_INCOMPATIBLE'
+
+
 def test_generation_accepts_question_at_existing_unicode_character_limit():
     question = 'ก' * 4096
     adapter = LocalModelAdapter('http://127.0.0.1:8080/v1/chat/completions',

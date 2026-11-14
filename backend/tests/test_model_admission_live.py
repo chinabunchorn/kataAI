@@ -3,6 +3,8 @@
 No model or worker is run. The migrated fixture owns and drops only its isolated
 schema; the dataset root is a private per-test temporary directory.
 """
+import csv
+import io
 import json
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
@@ -52,8 +54,10 @@ def admission(request, tmp_path):
 
 def upload(client, columns):
     # Header-only CSV is valid, and distinct names are required at intake.
+    stream = io.StringIO(newline='')
+    csv.writer(stream).writerow(columns)
     response = client.post('/v1/datasets', files={
-        'file': ('synthetic.csv', (','.join(columns) + '\n').encode('utf-8'), 'text/csv')})
+        'file': ('synthetic.csv', stream.getvalue().encode('utf-8'), 'text/csv')})
     assert response.status_code == 201, response.text
     return response.json()['dataset_id']
 
@@ -91,6 +95,33 @@ def test_uploaded_oversize_column_rejected_before_queue(admission):
     response = client.post('/v1/requests', json=payload(dataset_id, question))
     assert response.status_code == 422
     assert_sanitized(response, 'PRIVATE_COLUMN_', question)
+    assert count_requests(conn) == 0
+
+
+def test_outer_generation_payload_oversize_rejected_before_queue(admission):
+    from app.model_adapter import RUNNER_CONTRACT
+
+    client, conn, _ = admission
+    columns = [f'C{i:02d}' + '"' * 1000 for i in range(16)]
+    question = 'PRIVATE_QUESTION_' + '"' * 308
+    assert len(set(columns)) == len(columns)
+    assert all(len(column.encode('utf-8')) <= 1024 for column in columns)
+    inner = json.dumps({'question': question, 'columns': columns}, ensure_ascii=False,
+                       separators=(',', ':'))
+    assert len(inner.encode('utf-8')) < 32768
+    # Even the actual generation request's messages alone exceed the outer limit;
+    # its model, tools, and sampling fields can only add bytes.
+    messages_only = {'messages': [
+        {'role': 'system', 'content': RUNNER_CONTRACT},
+        {'role': 'user', 'content': inner},
+    ]}
+    assert len(json.dumps(messages_only, ensure_ascii=False, separators=(',', ':'))
+               .encode('utf-8')) > 65536
+
+    dataset_id = upload(client, columns)
+    response = client.post('/v1/requests', json=payload(dataset_id, question))
+    assert response.status_code == 422
+    assert_sanitized(response, columns[0], 'PRIVATE_QUESTION_', question)
     assert count_requests(conn) == 0
 
 

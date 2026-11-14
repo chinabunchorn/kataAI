@@ -100,7 +100,11 @@ def _json_value(value, limit):
 
 
 def encode_generation_input(question, columns):
-    """Validate and encode the exact JSON user content for generation."""
+    """Validate user content and its outer request for any valid model identifier.
+
+    Admission is conservative: a shorter or less escaped model identifier may
+    fit even when this check rejects the input. No transport is invoked.
+    """
     try:
         _text(question, 16_384)
         if len(question) > 4096:
@@ -109,9 +113,26 @@ def encode_generation_input(question, columns):
             raise ModelAdapterError()
         for col in columns:
             _text(col, 1024)
-        return _json_value({'question': question, 'columns': list(columns)}, 32_768).decode('utf-8')
+        user_data = _json_value({'question': question, 'columns': list(columns)}, 32_768).decode('utf-8')
+        # Each of the model's at most 256 UTF-8 bytes can expand to at most
+        # six JSON bytes. U+0001 attains that bound and is a valid model value.
+        _json_value(_generation_payload('\x01' * 256, user_data), MAX_REQUEST_BYTES)
+        return user_data
     except (ModelAdapterError, TypeError, ValueError):
         raise ModelAdapterError() from None
+
+
+def _generation_payload(model, user_data):
+    return {'model': model, 'messages': [
+        {'role': 'system', 'content': RUNNER_CONTRACT},
+        {'role': 'user', 'content': user_data}],
+        'tools': [{'type': 'function', 'function': {'name': 'run_python',
+            'description': 'Propose Python code as inert text', 'parameters': {
+                'type': 'object', 'properties': {'code': {'type': 'string'}},
+                'required': ['code'], 'additionalProperties': False}}}],
+        'tool_choice': 'auto',
+        'max_tokens': 4096, 'temperature': 0.6, 'top_p': 0.95, 'top_k': 20,
+        'min_p': 0.0, 'presence_penalty': 0.0, 'repeat_penalty': 1.0}
 
 
 def _load_json(raw):
@@ -250,16 +271,7 @@ class LocalModelAdapter:
     def generate(self, question, columns):
         try:
             user_data = encode_generation_input(question, columns)
-            choice = self._request({'model': self._model, 'messages': [
-                {'role': 'system', 'content': RUNNER_CONTRACT},
-                {'role': 'user', 'content': user_data}],
-                'tools': [{'type': 'function', 'function': {'name': 'run_python',
-                    'description': 'Propose Python code as inert text', 'parameters': {
-                        'type': 'object', 'properties': {'code': {'type': 'string'}},
-                        'required': ['code'], 'additionalProperties': False}}}],
-                'tool_choice': 'auto',
-                'max_tokens': 4096, 'temperature': 0.6, 'top_p': 0.95, 'top_k': 20,
-                'min_p': 0.0, 'presence_penalty': 0.0, 'repeat_penalty': 1.0})
+            choice = self._request(_generation_payload(self._model, user_data))
             msg = choice['message']
             calls = msg.get('tool_calls')
             if (choice.get('finish_reason') == 'stop' and msg.get('role', 'assistant') == 'assistant'
