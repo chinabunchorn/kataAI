@@ -14,15 +14,16 @@ def run_fake_flow(model, fake_result, question, columns, *, request_id=None, dat
         if not isinstance(request_id, UUID) or not isinstance(dataset_id, UUID):
             raise ValueError('INVALID_EXECUTOR_REQUEST')
     proposal = validate_proposals(model.generate(question, columns))
+    handoff = None
     if isinstance(request_id, UUID) and isinstance(dataset_id, UUID):
         # This run ID exists only for the fake invocation. Real external runs
         # must first persist their identity and reconcile uncertain submissions.
         handoff = ExecutorRequest(request_id, uuid4(), dataset_id, proposal, 60)
-        proposal = handoff.proposal
     # Validate before FakeExecutor's deepcopy, which must never invoke methods
     # on arbitrary result objects; validate again at the executor boundary.
     _json_value(fake_result, MAX_RESULT_BYTES)
-    result = FakeExecutor(fake_result).execute(proposal)
+    executor = FakeExecutor(fake_result)
+    result = executor.execute_handoff(handoff) if handoff is not None else executor.execute(proposal)
     # Fake values also pass the provisional bounded wire-result decoder; this
     # does not establish a provider origin or turn a preset into computation.
     result = decode_execution_result(_json_value(result, MAX_RESULT_BYTES))

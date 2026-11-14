@@ -24,6 +24,36 @@ def test_invalid_fake_handoff_identifiers_fail_before_model_call(request_id, dat
         run_fake_flow(Model(), {}, 'q', ('column',), request_id=request_id, dataset_id=dataset_id)
 
 
+def test_fake_executor_receives_complete_bound_handoff(monkeypatch, tmp_path):
+    from uuid import UUID, uuid4
+    from app.fake_flow import run_fake_flow
+    from app.fakes import FakeExecutor
+
+    request_id, dataset_id = uuid4(), uuid4()
+    marker = tmp_path / 'must-not-exist'
+    code = f"open({str(marker)!r}, 'w').write('unsafe')"
+    model = FakeModel([{'name': 'run_python', 'arguments': {'code': code}}])
+    seen = []
+    def capture(self, handoff):
+        seen.append(handoff)
+        return {'answer': 17}
+    monkeypatch.setattr(FakeExecutor, 'execute_handoff', capture, raising=False)
+    output = run_fake_flow(model, {'answer': 17}, 'q', ('column',),
+                           request_id=request_id, dataset_id=dataset_id)
+    assert len(seen) == 1
+    assert seen[0].request_id == request_id and seen[0].dataset_id == dataset_id
+    assert isinstance(seen[0].run_id, UUID) and seen[0].proposal.code == code
+    assert output['fake'] is True and not marker.exists()
+
+
+def test_fake_flow_preserves_large_valid_object_at_existing_item_limit():
+    from app.fake_flow import run_fake_flow
+    model = FakeModel([{'name': 'run_python', 'arguments': {'code': 'inert'}}])
+    data = {str(i): 0 for i in range(2048)}
+    output = run_fake_flow(model, data, 'q', ('column',))
+    assert output['fake'] is True and output['result'] == data
+
+
 def test_fake_preset_passes_bounded_result_decoder(monkeypatch):
     from app import fake_flow
     from app.executor_results import decode_execution_result

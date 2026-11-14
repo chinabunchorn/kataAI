@@ -15,7 +15,8 @@ def test_returns_generic_data_without_interpreting_guest_claims():
 @pytest.mark.parametrize('raw', [
     b'', b'not json secret', b'"\xff"', b'{"x":1,"x":2}',
     b'{"x":{"y":1,"y":2}}', b'NaN', b'Infinity', b'-Infinity',
-    b'1e999', b'"\\ud800"', b'\xef\xbb\xbfnull', b'0 trailing',
+    b'1e999', b'"\\ud800"', b'"\\u0000"', b'{"\\u0000":1}',
+    b'\xef\xbb\xbfnull', b'0 trailing',
 ])
 def test_malformed_data_raises_sanitized_error(raw):
     from app.executor_results import decode_execution_result, ExecutionResultError
@@ -53,15 +54,14 @@ def test_depth_limit_has_exact_boundary():
     assert exc.value.code == 'EXECUTION_RESULT_TOO_LARGE'
 
 
-def test_item_limit_counts_root_values_and_object_keys():
+def test_item_limit_counts_root_and_values_but_not_object_keys():
     from app.executor_results import decode_execution_result, ExecutionResultError, MAX_RESULT_ITEMS
     assert len(decode_execution_result(b'[' + b'0,' * (MAX_RESULT_ITEMS - 2) + b'0]')) == MAX_RESULT_ITEMS - 1
     with pytest.raises(ExecutionResultError) as exc:
         decode_execution_result(b'[' + b'0,' * (MAX_RESULT_ITEMS - 1) + b'0]')
     assert exc.value.code == 'EXECUTION_RESULT_TOO_LARGE'
-    with pytest.raises(ExecutionResultError) as exc:
-        decode_execution_result(b'{' + b','.join(('"%d":0' % i).encode() for i in range(MAX_RESULT_ITEMS // 2)) + b'}')
-    assert exc.value.code == 'EXECUTION_RESULT_TOO_LARGE'
+    raw = b'{' + b','.join(('"%d":0' % i).encode() for i in range(MAX_RESULT_ITEMS // 2)) + b'}'
+    assert len(decode_execution_result(raw)) == MAX_RESULT_ITEMS // 2
 
 
 def test_large_integer_and_extreme_nesting_fail_closed():

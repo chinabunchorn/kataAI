@@ -24,6 +24,13 @@ class FakeExecutor:
         self._outcome = deepcopy(outcome)
         self._available = available
 
+    def execute_handoff(self, request):
+        """Accept a validated fake-only handoff; no code or dataset is read."""
+        from app.executor_contract import ExecutorRequest
+        if type(request) is not ExecutorRequest:
+            raise ValueError('INVALID_EXECUTOR_REQUEST')
+        return self.execute(request.proposal)
+
     def execute(self, proposal: PythonProposal) -> dict[str, Any]:
         if not self._available:
             raise ExecutionUnavailable()

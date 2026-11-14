@@ -240,7 +240,7 @@ There is no Kubernetes client, VM connection, remote dispatch, input staging,
 real cancellation, or real result persistence in this phase.
 
 The fake worker constructs the shape with the request/dataset IDs and a fresh
-**ephemeral fake-only** run ID before passing the proposal to `FakeExecutor`.
+**ephemeral fake-only** run ID and passes the complete handoff to `FakeExecutor`.
 This ID is not stored or sent anywhere and must not be used for real submission.
 A real integration must first persist the logical run/attempt identity and submit
 intent, establish provider-side idempotency or reconciliation, bind results to the
@@ -249,7 +249,7 @@ A database claim token alone does not fence remote execution.
 
 `app.executor_results.decode_execution_result` decodes bounded untrusted UTF-8
 JSON with explicit byte, nesting, item and integer limits; it rejects duplicates,
-non-finite values, invalid Unicode, and malformed or oversized data. JSON `null`
+non-finite values, NUL characters, invalid Unicode, and malformed or oversized data. JSON `null`
 is a valid value distinct from a missing or unavailable result. Guest fields
 called `status` or `metrics` are only data, not trusted execution status or
 resource measurements. Limits are provisional; transport must bound bytes while

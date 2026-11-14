@@ -12,7 +12,7 @@ import math
 # Provisional backend limits; the byte limit applies to the entire wire payload.
 MAX_RESULT_BYTES = 32_768
 MAX_RESULT_DEPTH = 16  # Root is depth zero.
-MAX_RESULT_ITEMS = 4_096  # Includes root, all values, and all object keys.
+MAX_RESULT_ITEMS = 4_096  # Includes root and all values, excluding object keys.
 MAX_INTEGER_BITS = 1_024
 
 
@@ -77,14 +77,18 @@ def decode_execution_result(raw: bytes):
             if count > MAX_RESULT_ITEMS or depth > MAX_RESULT_DEPTH:
                 _too_large()
             if type(item) is str:
+                if '\x00' in item:
+                    _malformed()
                 item.encode('utf-8')  # Reject escaped unpaired surrogates.
             elif type(item) is float and not math.isfinite(item):
                 _malformed()
             elif type(item) is list:
                 stack.extend((child, depth + 1) for child in item)
             elif type(item) is dict:
-                # Keys count as items but are not additional nesting levels.
-                stack.extend((key, depth) for key in item)
+                for key in item:
+                    if '\x00' in key:
+                        _malformed()
+                    key.encode('utf-8')  # Validate keys without counting as values.
                 stack.extend((child, depth + 1) for child in item.values())
         return value
     except ExecutionResultError:
