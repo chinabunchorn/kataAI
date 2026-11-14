@@ -207,6 +207,19 @@ returns `fake: true`, `metrics: null`, and the warning
 `FAKE_PRESET_NOT_AN_ANSWER`, and does not summarize the preset as an answer.
 Questions and column names are sent to the local model; CSV rows are not.
 
+**Header/request compatibility limit:** CSV intake allows field values up to
+65,536 Unicode code points and up to 256 columns, but the model adapter accepts
+at most 1,024 UTF-8 bytes per column name and at most 32,768 UTF-8 bytes for
+the encoded question-and-columns JSON (including JSON syntax and escaping).
+A successfully uploaded, ready CSV does not guarantee that a particular question
+fits the model request. The question also consumes this combined byte budget.
+If an incompatible request is claimed, the adapter fails before sending it; the
+one-shot worker reports a sanitized failure and its committed claim can remain
+`running` until the next worker takeover marks it `unknown`. There is no automatic
+retry or user-facing resolution API for `unknown`. For the current MVP, use
+short column names and questions; aligning admission and user-facing recovery is
+future work, not an implemented validation guarantee.
+
 A synthetic local integration probe used a disposable PostgreSQL instance and
 real HTTP requests: upload and queue two selected fixture questions, invoke this
 worker against a separately started Qwen3.5-9B Q4_K_M server, and retrieve detail
