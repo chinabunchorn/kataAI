@@ -19,4 +19,5 @@ def process_claim(connection, root, claim, *, model=None):
     connection.commit()
     if model is None:
         model = FakeModel([{'name': 'run_python', 'arguments': {'code': '# fake proposal; not executed'}}])
-    return run_fake_flow(model, {'example': [1, 2]}, claim.question, columns)
+    return run_fake_flow(model, {'example': [1, 2]}, claim.question, columns,
+                         request_id=claim.id, dataset_id=claim.dataset_id)

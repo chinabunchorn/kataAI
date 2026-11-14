@@ -14,6 +14,32 @@ def test_fake_flow_returns_labeled_preset_json_without_running_proposed_code(tmp
     assert not marker.exists()
 
 
+@pytest.mark.parametrize('request_id,dataset_id', [(None, 'bad'), ('bad', None)])
+def test_invalid_fake_handoff_identifiers_fail_before_model_call(request_id, dataset_id):
+    from app.fake_flow import run_fake_flow
+    class Model:
+        def generate(self, *_):
+            pytest.fail('invalid handoff must not call model')
+    with pytest.raises(ValueError, match='^INVALID_EXECUTOR_REQUEST$'):
+        run_fake_flow(Model(), {}, 'q', ('column',), request_id=request_id, dataset_id=dataset_id)
+
+
+def test_fake_preset_passes_bounded_result_decoder(monkeypatch):
+    from app import fake_flow
+    from app.executor_results import decode_execution_result
+
+    seen = []
+    def decoder(raw):
+        seen.append(raw)
+        return decode_execution_result(raw)
+
+    monkeypatch.setattr(fake_flow, 'decode_execution_result', decoder, raising=False)
+    model = FakeModel([{'name': 'run_python', 'arguments': {'code': 'inert'}}])
+    output = fake_flow.run_fake_flow(model, {'answer': 17}, 'q', ('column',))
+    assert output['fake'] is True and output['result'] == {'answer': 17}
+    assert len(seen) == 1 and seen[0] == b'{"answer":17}'
+
+
 def test_summary_receives_real_inputs_and_cannot_replace_result():
     from app.fake_flow import run_fake_flow
 

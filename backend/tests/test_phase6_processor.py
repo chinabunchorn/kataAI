@@ -32,8 +32,20 @@ def test_processor_passes_question_and_only_columns_to_model(monkeypatch, tmp_pa
 
     monkeypatch.setattr(phase6_processor, 'PostgresDatasetStore', Store)
     monkeypatch.setattr(phase6_processor, 'read_dataset_columns', lambda root, file_key: ('item', 'count'))
-    claim = SimpleNamespace(dataset_id=dataset_id, question='How many?')
+    claim = SimpleNamespace(id=uuid4(), dataset_id=dataset_id, question='How many?')
+    from app import fake_flow
+    from app.executor_contract import ExecutorRequest
+    requests = []
+    def record_handoff(*args, **kwargs):
+        handoff = ExecutorRequest(*args, **kwargs)
+        requests.append(handoff)
+        return handoff
+    monkeypatch.setattr(fake_flow, 'ExecutorRequest', record_handoff, raising=False)
     result = phase6_processor.process_claim(connection, tmp_path, claim, model=Model())
+    assert len(requests) == 1
+    assert requests[0].request_id == claim.id and requests[0].dataset_id == dataset_id
+    assert requests[0].proposal.code == 'raise RuntimeError("not executed")'
+    assert requests[0].timeout_seconds == 60
     assert seen == [('How many?', ('item', 'count'))]
     assert result['fake'] is True and result['metrics'] is None
     assert result['code'] == 'raise RuntimeError("not executed")'
