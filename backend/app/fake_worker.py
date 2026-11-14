@@ -36,11 +36,15 @@ def _require_ownership(connection):
         raise OwnershipLost('WORKER_OWNERSHIP_LOST')
 
 
-def run_once(connection, queue_factory):
+def run_once(connection, queue_factory, *, processor=None):
     """Run at most one fake claim on a dedicated session; caller closes it.
 
     Return busy, idle, fake_completed, cancelled, or stale. Exceptions mean outcome may
-    be uncertain, including when a COMMIT was sent but not acknowledged.
+    be uncertain, including when a COMMIT was sent but not acknowledged. An explicitly
+    injected trusted processor receives the claimed record and must use only a fixed,
+    predetermined fake executor; this worker cannot sandbox arbitrary callables. It
+    returns a dict with code and result plus optional summary/warning/fake/metrics.
+    With no processor the historical status-only fake path is retained.
     """
     acquired = False
     failed = False
@@ -63,10 +67,15 @@ def run_once(connection, queue_factory):
         connection.commit()
         if claim is None:
             return 'idle'
-        # Fake work is deliberately just a fixed status transition: no question,
-        # dataset access, generated code, model, or external execution.
+        # The compatibility path is status-only; injected work must be fake-only.
         _require_ownership(connection)
-        completed = queue.complete_fake(claim.id, token)
+        if processor is None:
+            completed = queue.complete_fake(claim.id, token)
+        else:
+            from .request_queue import validate_fake_result
+            result = validate_fake_result(processor(claim))
+            _require_ownership(connection)
+            completed = queue.complete_fake(claim.id, token, result)
         connection.commit()
         return ('cancelled' if completed == 'cancelled' else
                 'fake_completed' if completed else 'stale')

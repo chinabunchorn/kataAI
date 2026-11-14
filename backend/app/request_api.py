@@ -33,6 +33,9 @@ def public_record(record, *, include_detail=False):
                       created_at=record.created_at.isoformat())
     if record.status == 'fake_completed':
         result['fake'] = True
+        if include_detail and getattr(record, 'fake_result', None) is not None:
+            from .request_queue import validate_fake_result
+            result['fake_result'] = validate_fake_result(record.fake_result)
     return result
 
 

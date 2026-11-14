@@ -4,6 +4,7 @@ Callers own commit/rollback. Per-client advisory locks last until transaction en
 keep transactions short. Recovery additionally requires the worker session lock.
 """
 from dataclasses import dataclass, field
+import json
 from datetime import datetime
 from uuid import UUID, uuid4
 
@@ -12,6 +13,32 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from .dataset_store import DatasetNotFound
 from .ready_dataset import DatasetUnavailable
+from .model_adapter import MAX_RESULT_BYTES, MAX_SUMMARY_BYTES, ModelAdapterError, _json_value, _text
+from .proposals import MAX_CODE_BYTES
+
+
+def validate_fake_result(value):
+    """Validate/copy an explicitly supplied fake envelope; never evaluate code."""
+    if type(value) is not dict or not {'code', 'result'} <= value.keys() or (
+        value.keys() - {'code', 'result', 'summary', 'warning', 'fake', 'metrics'}
+    ):
+        raise InvalidRequest()
+    if ('fake' in value and value['fake'] is not True) or (
+        'metrics' in value and value['metrics'] is not None
+    ):
+        raise InvalidRequest()
+    try:
+        _text(value['code'], MAX_CODE_BYTES)
+        _json_value(value['result'], MAX_RESULT_BYTES)
+        for key in ('summary', 'warning'):
+            if value.get(key) is not None:
+                _text(value[key], MAX_SUMMARY_BYTES)
+        envelope = {'code': value['code'], 'result': value['result'],
+                    'summary': value.get('summary'), 'warning': value.get('warning'),
+                    'fake': True, 'metrics': None}
+        return json.loads(_json_value(envelope, 65_536))
+    except ModelAdapterError:
+        raise InvalidRequest() from None
 
 
 class InvalidRequest(ValueError):
@@ -39,9 +66,10 @@ class RequestRecord:
     claim_token: UUID | None
     created_at: datetime
     updated_at: datetime
+    fake_result: dict | None = field(default=None, repr=False)
 
 
-_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at'
+_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result'
 
 
 class RequestQueue:
@@ -125,15 +153,18 @@ class RequestQueue:
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
-    def complete_fake(self, request_id, token):
+    def complete_fake(self, request_id, token, result=None):
         if not isinstance(request_id, UUID) or not isinstance(token, UUID):
             raise InvalidRequest()
+        encoded = None if result is None else json.dumps(validate_fake_result(result), ensure_ascii=False)
         try:
             row = self._connection.execute(sa.text(
                 "UPDATE request_intents SET status=CASE WHEN status='cancel_requested' THEN 'cancelled' "
-                "ELSE 'fake_completed' END, claim_token=NULL, updated_at=clock_timestamp() "
+                "ELSE 'fake_completed' END, "
+                "fake_result=CASE WHEN status='cancel_requested' THEN NULL ELSE CAST(:result AS jsonb) END, "
+                "claim_token=NULL, updated_at=clock_timestamp() "
                 "WHERE id=:id AND status IN ('running','cancel_requested') AND claim_token=:token RETURNING status"),
-                {'id': request_id, 'token': token}).one_or_none()
+                {'id': request_id, 'token': token, 'result': encoded}).one_or_none()
             return row[0] if row is not None else False
         except SQLAlchemyError:
             raise RequestStorageError() from None

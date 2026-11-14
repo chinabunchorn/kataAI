@@ -3,18 +3,96 @@
 `GET /health` reports process health, not model, executor, database or isolation
 readiness. Explicitly configured dataset and request APIs use PostgreSQL and a
 private local dataset root. Request intents are durable; a separate, explicitly
-invoked fake-only worker processes at most one per run. The optional local model
-adapter is not connected to that queue. There is no generated-code execution or
+invoked fake-only worker processes at most one per run. An opt-in demo worker can
+use a local model with a fake executor. There is no generated-code execution or
 remote executor. Fake completion is not computation or a benchmark measurement.
 
-## Local model adapter (experimental, not wired to the queue)
+## MVP direction: real model-generated code, narrowly evaluated
+
+**Selected local model:** Qwen3.5-9B Q4_K_M is the current MVP candidate after
+comparison with 4B. The operator must explicitly start the 9B llama.cpp server;
+the application does not choose or launch model weights automatically. Earlier
+4B test observations below are historical. The first MVP demonstration focuses
+on one or two clear, answerable synthetic questions. Comprehensive ambiguous-
+question handling is deferred; do not claim arbitrary questions are supported or
+present a guessed answer as verified.
+
+**This section describes the agreed direction, not functionality implemented
+or enabled today.** Keep Qwen as the generator of Python for a user's natural-
+language CSV question; the MVP is not merely an intent classifier selecting
+between prewritten sum/count templates. To keep the first milestone manageable,
+evaluate with one small synthetic CSV and one or two representative questions
+(Thai and/or English). These are initial evaluation examples, not the only
+questions the interface may accept, and they are not evidence of general
+correctness on arbitrary data, questions or languages. Exact fixture and
+question selection remain to be agreed before claiming an acceptance pass.
+
+The intended future path is: user upload and question → local Qwen proposes one
+`run_python` code string → backend validates the envelope, binds server-owned
+dataset/runtime settings and displays the code as inert text → an independently
+approved remote isolated executor runs it → backend validates and displays the
+result with any supported metrics. Model output and CSV headers remain untrusted;
+a valid tool call, successful execution or isolated guest cannot prove that the
+code answers the question correctly. Unanswerable, ambiguous, invalid and failed
+requests must surface as such without fabricated answers. The adapter now
+distinguishes a bounded text-only response via `ModelTextOnlyOutcome`, but the
+worker does not yet surface a clarification to the user or persist this as a
+terminal outcome; text alone is not proof that a response is a clarification.
+
+**Execution remains disabled.** Neither local Python nor an ordinary local
+container may run generated code. The fake executor returns presets only. A real
+remote integration begins with trusted synthetic fixture code and can accept
+model-generated code only after the infrastructure team supplies and the team
+reviews evidence of the actual isolation, limits, I/O, cancellation and cleanup
+gates. Do not silently fall back to the laptop. Record provider outcomes as
+unknown when appropriate and do not assume a database claim fences model calls.
+
+A 2026-11-13 local synthetic retry compared thinking off (one run per question)
+with thinking on (three seeds per question), using the same four questions,
+8192-token context, temperature 0.6 and top-p 0.95. In thinking mode the model
+proposed plausible column sums on the English and Thai cases in all three runs;
+it abstained without a tool call on each missing-profit/ambiguous-average case
+in two of three runs. In the remaining runs it used a tool call for the missing
+profit case and guessed a column for the ambiguous average. Off mode guessed
+on average and returned a missing-profit explanation inside a tool call. No
+proposed code was executed or independently validated for computation, and
+some proposals were bare expressions rather than a verified runner contract.
+This is a tiny exploratory probe, not a benchmark or evidence of reliability.
+
+The immediate evaluation work is to freeze a synthetic fixture and expected
+answers, define the code/result runner contract and response handling for
+clarification versus failure, then repeat local generation and human-review code
+against those questions and selected negative cases (missing columns, ambiguity,
+unsupported inputs). Record model/version, quantization, prompt, thinking mode,
+sampling, seeds, output and latency; never count an invalid or uncertain run as
+success. Run generated code only after the remote isolation gate, compare actual
+results with independently established expected values, and report any failure.
+Two successful examples cannot substantiate a general-purpose accuracy claim.
+
+A follow-up smoke evaluation used `tests/fixtures/qwen_mvp/` with a four-row
+synthetic sales file, two positive questions and two negative controls. With
+thinking enabled and the current generation prompt, three seeded runs produced
+an incorrect revenue expression in two runs; all three ambiguous-total prompts
+made a tool call instead of asking for clarification, and two of three
+missing-profit prompts used a tool call. A separate exploratory prompt explicitly
+advised row-wise operations and clarification: one of three revenue proposals
+still had the same wrong aggregation, all three ambiguous prompts called a tool,
+and two of three missing-profit prompts called a tool. English revenue and Thai
+East-quantity proposals were manually inspected as inert text, not executed.
+The probe did not specify the fixture's hypothetical JSON result contract, which
+is not team-approved, so none of these runs proves end-to-end compatibility.
+These cases and repetitions are too few to establish a reliability rate; their
+failures do show the MVP acceptance gate has not been met.
+
+## Local model adapter (experimental)
 
 `app.model_adapter.LocalModelAdapter` is an explicitly invoked library client for
 an independently started llama.cpp server at a numeric IPv4 loopback HTTP
 endpoint. It does **not** start the server or worker, connect to the request API,
-execute generated code, or dispatch it anywhere. The existing queue still uses
-only the fake worker. Model availability, tool-calling accuracy and runtime
-performance depend on the installed model and server; a valid proposal is not
+execute generated code, or dispatch it anywhere. The opt-in Qwen demo worker
+uses it with the fake executor as described below; the default fake worker does not.
+Model availability, tool-calling accuracy and runtime performance depend on the
+installed model and server; a valid proposal is not
 proof that it will compute a correct answer or be safe to execute.
 
 `generate(question, columns)` sends the question, column names and a fixed
@@ -41,7 +119,9 @@ one explicit `Content-Length` are accepted; chunked, close-delimited and
 informational responses fail closed. Transport configuration is
 trusted internal code, not an HTTP client-controlled setting. The local server
 and other same-user processes are not authenticated by this loopback restriction.
-There is no production API or persisted model result for this adapter yet.
+There is no production model-backed API. The opt-in demo worker persists the
+model's generated code as part of its explicitly fake result; it does not
+persist a computed answer.
 llama-server itself may allow browser cross-origin access without an API key;
 loopback binding is not authentication. Keep its availability and exposure under
 operator control, avoid sending private data through an unprotected service, and
@@ -53,9 +133,101 @@ off. English and Thai prompts produced parseable single-tool proposals, but a
 missing-profit-column prompt **invented a profit formula**, even with an
 abstention instruction. These proposals were not executed or checked for
 correctness. One tools-disabled synthetic summary returned `3`. This small probe
-is not a quality benchmark. The adapter currently treats an abstaining text-only
-response as a generic model error; it does not yet expose a cannot-answer message.
-A proposal's syntactic validity must never be interpreted as semantic validity.
+is not a quality benchmark. The adapter now identifies bounded text-only replies
+with `ModelTextOnlyOutcome` (a `ModelAdapterError` subclass); the exception
+message omits model text, but traceback frames may retain model responses and
+inputs. Do not capture or persist traceback locals. Current worker handling
+remains generic failure; it does not yet surface or persist a cannot-answer
+message. A text-only response is not necessarily a valid clarification. A
+proposal's syntactic validity must never be interpreted as semantic validity.
+
+## Fake-backed application flow (experimental)
+
+`python -m app.phase6_worker --once` explicitly processes at most one queued
+request. It reads the selected ready CSV to validate it and obtain **only the
+column names** for the model interface. The shipped demo uses a deterministic
+fake model and a fixed fake executor; it does not start Qwen or execute generated
+Python. Its preset `{"example": [1, 2]}` is **not computed from the CSV** and
+must never be presented as a real answer. Generated code is untrusted inert text.
+There is no automatic worker startup or polling service.
+
+A newly processed request may expose `fake_result` in detail and history with
+`fake: true`, `code`, the preset `result`, `summary`, `warning`, and `metrics`.
+`metrics: null` means unavailable, not zero. The shipped fake model has no
+summarizer, so the result is retained and `SUMMARY_UNAVAILABLE` is returned.
+Previous status-only fake completions may have no `fake_result`. Hiding history
+retains the result, question and code in PostgreSQL and backups; it is not
+secure erasure. The database and browser must be protected accordingly.
+
+The worker keeps the existing session ownership and claim-token fencing. If
+cancellation is requested during processing, the processor may continue until it
+returns; final acknowledgement records `cancelled` without publishing a result.
+A lost worker or uncertain commit is
+not automatically retried; the next worker marks interrupted work `unknown`.
+The column reader requires a trusted private dataset root, a ready dataset and a
+server-owned storage key. File validation does not prove immutability or
+provenance against uncooperative same-user processes. Logical deletion still
+retains CSV files and does not reclaim space.
+
+Revision `0005_fake_results` is required before using this code. No migration is
+run on startup; verify and separately authorize the target before migrating.
+Downgrading revision 0005 is refused while fake results are stored; a later
+schema downgrade may still destroy other data. This demo does not establish model
+quality, real execution, isolation, computation correctness or resource metrics.
+
+## Opt-in local Qwen with fake execution
+
+For the selected local MVP model, an operator may start a loopback-only server
+explicitly (this is a one-process demo, not authentication):
+
+```sh
+llama-server --model "$HOME/Library/Caches/kataai/models/Qwen3.5-9B-Q4_K_M.gguf" \
+  --host 127.0.0.1 --port 18942 --ctx-size 8192 --gpu-layers 99 \
+  --parallel 1 --jinja --reasoning on
+```
+
+The server controls which weights are used; the worker's model name is a
+request identifier and does not establish the loaded model's identity. The
+adapter sends the provisional MVP prompt asking for `result = {"answer": ...}`
+with a Python numeric value and explicitly requests coding-oriented sampling
+(temperature 0.6, top-p 0.95, top-k 20, min-p 0, presence penalty 0, repeat
+penalty 1). The JSON convention is not an approved remote runner contract;
+validating the `run_python` envelope does not verify the generated program,
+result type or answer. Do not assume that a server enforces or supports every
+sampling option without checking its behavior. The model call has a maximum
+120-second wall-clock deadline, so slower 9B calls can time out; a timeout does
+not guarantee that inference already in progress has stopped.
+
+`python -m app.qwen_demo_worker --once --model-endpoint
+http://127.0.0.1:PORT/v1/chat/completions` explicitly processes at most one
+queued request with a separately started local model. Dataset runtime and the
+model endpoint must be explicitly configured. The worker does not start a model
+server, and **never executes generated code**. It uses the fixed fake executor,
+returns `fake: true`, `metrics: null`, and the warning
+`FAKE_PRESET_NOT_AN_ANSWER`, and does not summarize the preset as an answer.
+Questions and column names are sent to the local model; CSV rows are not.
+
+A synthetic local integration probe used a disposable PostgreSQL instance and
+real HTTP requests: upload and queue two selected fixture questions, invoke this
+worker against a separately started Qwen3.5-9B Q4_K_M server, and retrieve detail
+and history. Both responses contained generated code and the labelled fake
+preset; the code was not executed and the preset was not calculated. A single
+run of two examples does not prove general model reliability or runner
+compatibility. The disposable database was removed and the test servers stopped.
+
+The model can still produce incorrect proposals. Synthetic local tests observed
+Qwen replacing the provided DataFrame with an empty DataFrame for a sales
+question, answering a profit question using sales, and guessing which column to
+average for an ambiguous question. No proposal was run. Do not treat this flow
+as reliable analysis or use syntactic validation as proof of correctness.
+Cancellation is cooperative: a request cancelled after claim may still send its
+question and column names to the model, and a model call already in progress may
+continue. The token-fenced final update prevents publishing a fake result if
+cancellation wins. If the worker loses its database session, an in-flight model
+call can outlive ownership; the token fences only database writes, not model-side
+activity. Worker/session failure or lost commit acknowledgement is uncertain and
+is not blindly retried. No authentication is provided by loopback alone; do not
+expose the model server or send private data to an unprotected local service.
 
 ## Provisional request API and fake-only queue
 
