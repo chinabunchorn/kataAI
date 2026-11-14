@@ -211,14 +211,19 @@ Questions and column names are sent to the local model; CSV rows are not.
 65,536 Unicode code points and up to 256 columns, but the model adapter accepts
 at most 1,024 UTF-8 bytes per column name and at most 32,768 UTF-8 bytes for
 the encoded question-and-columns JSON (including JSON syntax and escaping).
-A successfully uploaded, ready CSV does not guarantee that a particular question
-fits the model request. The question also consumes this combined byte budget.
-If an incompatible request is claimed, the adapter fails before sending it; the
-one-shot worker reports a sanitized failure and its committed claim can remain
-`running` until the next worker takeover marks it `unknown`. There is no automatic
-retry or user-facing resolution API for `unknown`. For the current MVP, use
-short column names and questions; aligning admission and user-facing recovery is
-future work, not an implemented validation guarantee.
+For a **new HTTP request**, the application reads the selected ready dataset's
+validated headers and uses the same model-input encoding before queuing. An
+incompatible input returns sanitized HTTP 422 `MODEL_INPUT_INCOMPATIBLE` without
+creating a request; an unreadable dataset returns 503. A retry of an existing
+client ID is resolved before this check, preserving idempotency and conflict
+semantics even after dataset deletion or file loss. Internal queue users that
+omit the optional validation callback do not obtain this admission guarantee.
+The check reads the CSV while transaction locks are held and can block on a slow
+filesystem. It is a point-in-time check: the trusted root and cooperating writers
+are required, and later file loss/replacement can still make processing fail.
+Already queued requests are not retroactively validated or repaired; other model
+errors or timeouts may leave work `running` until takeover marks it `unknown`.
+There is no automatic retry or user-facing resolution API for `unknown`.
 
 A synthetic local integration probe used a disposable PostgreSQL instance and
 real HTTP requests: upload and queue two selected fixture questions, invoke this
@@ -284,8 +289,9 @@ startup. `POST /v1/requests` accepts exactly these required JSON fields:
 - `question`: a nonblank UTF-8 string of 1–4,096 Unicode code points. NUL and
   unpaired surrogates are rejected. Thai and English are accepted as data.
 
-For a new key and ready dataset, the endpoint creates a durable queued intent
-and returns 201 with its server-generated `id`, `status` and `provisional` flag.
+For a new key, ready dataset and compatible model input, the endpoint creates a
+durable queued intent and returns 201 with its server-generated `id`, `status`
+and `provisional` flag.
 A retry with the same client UUID, dataset UUID and **exact same question**
 returns the same request ID and current status with 200, even if the dataset's
 state subsequently changes. Reusing the key for different input returns 409.

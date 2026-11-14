@@ -179,7 +179,7 @@ class RequestQueue:
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
-    def create(self, client_request_id, dataset_id, question):
+    def create(self, client_request_id, dataset_id, question, validate_input=None):
         if (not isinstance(client_request_id, UUID) or not isinstance(dataset_id, UUID)
                 or not isinstance(question, str) or not 1 <= len(question) <= 4096
                 or not question.strip() or '\x00' in question):
@@ -201,12 +201,16 @@ class RequestQueue:
                     raise IdempotencyConflict()
                 return record, False
             dataset = self._connection.execute(sa.text(
-                'SELECT lifecycle, publication_state FROM datasets WHERE id = :id FOR SHARE'),
+                'SELECT lifecycle, publication_state, storage_key FROM datasets WHERE id = :id FOR SHARE'),
                 {'id': dataset_id}).one_or_none()
             if dataset is None or dataset.lifecycle != 'active':
                 raise DatasetNotFound()
             if dataset.publication_state != 'ready':
                 raise DatasetUnavailable()
+            # File validation may block while both transaction locks are held. Keep
+            # the transaction open: deletion cannot race this readiness check.
+            if validate_input is not None:
+                validate_input(dataset.storage_key)
             row = self._connection.execute(sa.text(
                 'INSERT INTO request_intents (id, client_request_id, dataset_id, question) '
                 'VALUES (:id, :key, :dataset, :question) '

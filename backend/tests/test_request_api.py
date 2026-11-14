@@ -49,7 +49,7 @@ def test_create_persists_and_returns_only_safe_status(monkeypatch):
     class Queue:
         def __init__(self, connection):
             pass
-        def create(self, client_id, dataset_id, question):
+        def create(self, client_id, dataset_id, question, validate_input):
             events.append((client_id, dataset_id, question))
             return SimpleNamespace(id=UUID('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'), status='queued'), True
     monkeypatch.setattr(request_api, 'queue_factory', Queue)

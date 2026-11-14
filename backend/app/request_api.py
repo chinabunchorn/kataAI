@@ -115,18 +115,27 @@ def history(runtime, limit, cursor=None):
 
 
 def create_request(payload, runtime):
+    from .model_adapter import ModelAdapterError
+
+    def validate_input(storage_key):
+        from .dataset_columns import read_dataset_columns
+        from .model_adapter import encode_generation_input
+        encode_generation_input(payload.question, read_dataset_columns(runtime.root, storage_key))
+
     try:
         if runtime is None:
             raise RuntimeError('runtime unavailable')
         with runtime.connection() as connection:
             record, created = queue_factory(connection).create(
-                UUID(payload.client_request_id), UUID(payload.dataset_id), payload.question)
+                UUID(payload.client_request_id), UUID(payload.dataset_id), payload.question, validate_input)
             body = public_record(record)
             if created:
                 connection.commit()
         return JSONResponse(status_code=201 if created else 200, content=body, headers={'Cache-Control': 'no-store'})
     except DatasetNotFound:
         return error(404, 'DATASET_NOT_FOUND', 'Dataset not found.')
+    except ModelAdapterError:
+        return error(422, 'MODEL_INPUT_INCOMPATIBLE', 'Request is incompatible with model input limits.')
     except Exception as exc:
         try:
             from .request_queue import IdempotencyConflict
