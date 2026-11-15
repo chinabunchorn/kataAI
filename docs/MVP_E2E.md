@@ -1,5 +1,7 @@
 # Native macOS research MVP
 
+For the consolidated step-by-step commands, use the [operator runbook](RUNBOOK.md).
+
 This integration has **passed the live Mac → Qwen → remote Kata → JSON → Qwen → HTTP workflow**
 for the two synthetic positive cases and both negative controls. Kubernetes API
 resources are absent after cleanup; independent guest teardown remains pending.

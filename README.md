@@ -2,7 +2,8 @@
 
 Kata-based Python execution for a split local application / OpenStack lab.
 
-- [Native macOS MVP setup, execution and verification](docs/MVP_E2E.md)
+- [Complete startup and operations runbook](docs/RUNBOOK.md)
+- [Native macOS MVP architecture and verification](docs/MVP_E2E.md)
 - [Backend API and historical milestones](backend/README.md)
 - [Master roadmap](Sandboxed_AI_Inference_Master_Roadmap_v0.3.md)
 - [Verified M1 infrastructure records](docs/infrastructure/INFRASTRUCTURE.md)

@@ -1,5 +1,7 @@
 # Backend: provisional local prototype
 
+For complete setup and operating commands, see the [operator runbook](../docs/RUNBOOK.md).
+
 The current native macOS ARM64 integration is documented in
 [the MVP runbook](../docs/MVP_E2E.md). `app.kata_demo_worker` uses local Qwen,
 the existing PostgreSQL queue and the remote `KataExecutor`; dispatch is disabled

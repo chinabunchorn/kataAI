@@ -1,5 +1,7 @@
 # KataAI frontend
 
+Full setup, terminal commands and Kubernetes connection: [operator runbook](../docs/RUNBOOK.md).
+
 React chat UI for the real FastAPI → PostgreSQL → local Qwen → remote Kata workflow.
 See [the full application runbook](../docs/MVP_E2E.md) for native macOS, database,
 model, scoped credentials, tunnel and worker setup. Generated Python executes only
