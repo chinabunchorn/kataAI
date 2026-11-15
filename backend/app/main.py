@@ -1,3 +1,5 @@
+import os
+
 from typing import Literal
 from uuid import UUID
 
@@ -12,10 +14,12 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.dataset_lifecycle_api import create_dataset_lifecycle_router
 from app.dataset_lookup_api import get_dataset_runtime, router as dataset_lookup_router
 from app.dataset_upload_api import create_upload_router
-from app.local_security import LocalSecurityMiddleware
+from app.local_security import LocalSecurityMiddleware, SecurityPolicy
 
 app = FastAPI(docs_url=None, redoc_url=None)
-app.add_middleware(LocalSecurityMiddleware)
+_api_port = os.environ.get('KATAAI_API_PORT', '8000')
+app.add_middleware(LocalSecurityMiddleware, policy=SecurityPolicy(
+    host=f'127.0.0.1:{_api_port}', origin=f'http://127.0.0.1:{_api_port}'))
 MAX_REQUEST_BODY_BYTES = 65_536  # Provisional transport limit.
 
 

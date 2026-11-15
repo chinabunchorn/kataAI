@@ -1,0 +1,76 @@
+0.00.137.895 I cmn  common_param: common_params_print_info: build 12359 (b1b770d90) with AppleClang 21.0.0.21000401 for Darwin arm64
+0.00.137.901 I cmn  common_param:   - MTL0    : Apple M2 (12124 MiB, 12123 MiB free)
+0.00.190.023 I llama_prepare_model_devices: using device MTL0 (Apple M2) (unknown id) - 12123 MiB free
+0.00.291.140 I load_tensors: offloaded 33/33 layers to GPU
+0.00.362.105 I llama_prepare_model_devices: using device MTL0 (Apple M2) (unknown id) - 12123 MiB free
+0.01.268.160 I load_tensors: offloaded 33/33 layers to GPU
+0.01.584.484 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 4096, kv_unified = 'false'
+0.26.918.269 I slot   operator(): id  0 | task 0 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 594
+0.55.731.102 I slot print_timing: id  0 | task 0 | prompt eval time =    5260.61 ms /   594 tokens (    8.86 ms per token,   112.91 tokens per second)
+0.55.731.106 I slot print_timing: id  0 | task 0 |        eval time =   23552.21 ms /   330 tokens (   71.59 ms per token,    13.97 tokens per second)
+0.55.731.107 I slot print_timing: id  0 | task 0 |       total time =   28812.81 ms /   924 tokens
+0.55.742.674 I slot   operator(): id  0 | task 334 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 586
+1.20.590.974 I slot print_timing: id  0 | task 334 | prompt eval time =     664.05 ms /    43 tokens (   15.44 ms per token,    64.75 tokens per second)
+1.20.590.975 I slot print_timing: id  0 | task 334 |        eval time =   24184.24 ms /   317 tokens (   76.53 ms per token,    13.07 tokens per second)
+1.20.590.976 I slot print_timing: id  0 | task 334 |       total time =   24848.29 ms /   360 tokens
+1.20.599.627 I slot   operator(): id  0 | task 653 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 580
+2.20.728.591 I slot print_timing: id  0 | task 653 | prompt eval time =     816.70 ms /    37 tokens (   22.07 ms per token,    45.30 tokens per second)
+2.20.728.593 I slot print_timing: id  0 | task 653 |        eval time =   59312.25 ms /   430 tokens (  138.26 ms per token,     7.23 tokens per second)
+2.20.728.593 I slot print_timing: id  0 | task 653 |       total time =   60128.95 ms /   467 tokens
+2.20.734.971 I slot   operator(): id  0 | task 1085 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 576
+3.15.153.621 I slot print_timing: id  0 | task 1085 | prompt eval time =    1023.52 ms /    33 tokens (   31.02 ms per token,    32.24 tokens per second)
+3.15.153.631 I slot print_timing: id  0 | task 1085 |        eval time =   53395.12 ms /   269 tokens (  199.24 ms per token,     5.02 tokens per second)
+3.15.153.640 I slot print_timing: id  0 | task 1085 |       total time =   54418.63 ms /   302 tokens
+9.09.628.866 I slot   operator(): id  0 | task 1356 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 633
+9.37.976.332 I slot print_timing: id  0 | task 1356 | prompt eval time =    5160.08 ms /   555 tokens (    9.30 ms per token,   107.56 tokens per second)
+9.37.976.333 I slot print_timing: id  0 | task 1356 |        eval time =   23187.38 ms /   335 tokens (   69.42 ms per token,    14.40 tokens per second)
+9.37.976.333 I slot print_timing: id  0 | task 1356 |       total time =   28347.46 ms /   890 tokens
+9.52.162.568 I slot   operator(): id  0 | task 1695 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 75
+11.10.471.990 I slot print_timing: id  0 | task 1695 | prompt eval time =     952.03 ms /    75 tokens (   12.69 ms per token,    78.78 tokens per second)
+11.10.471.993 I slot print_timing: id  0 | task 1695 |        eval time =   77357.37 ms /  1024 tokens (   75.62 ms per token,    13.22 tokens per second)
+11.10.471.997 I slot print_timing: id  0 | task 1695 |       total time =   78309.41 ms /  1099 tokens
+11.14.156.581 I slot   operator(): id  0 | task 2722 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 625
+11.52.732.522 I slot print_timing: id  0 | task 2722 | prompt eval time =     697.20 ms /    43 tokens (   16.21 ms per token,    61.68 tokens per second)
+11.52.732.524 I slot print_timing: id  0 | task 2722 |        eval time =   37878.72 ms /   254 tokens (  149.72 ms per token,     6.68 tokens per second)
+11.52.732.527 I slot print_timing: id  0 | task 2722 |       total time =   38575.92 ms /   297 tokens
+12.06.987.527 I slot   operator(): id  0 | task 2978 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 63
+14.10.627.742 I slot   operator(): id  0 | task 3665 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 616
+14.55.278.926 I slot print_timing: id  0 | task 3665 | prompt eval time =     458.32 ms /    34 tokens (   13.48 ms per token,    74.18 tokens per second)
+14.55.278.930 I slot print_timing: id  0 | task 3665 |        eval time =   44192.85 ms /   279 tokens (  158.97 ms per token,     6.29 tokens per second)
+14.55.278.931 I slot print_timing: id  0 | task 3665 |       total time =   44651.17 ms /   313 tokens
+14.56.309.998 I slot   operator(): id  0 | task 3946 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 615
+15.36.382.013 I slot print_timing: id  0 | task 3946 | prompt eval time =     551.56 ms /    33 tokens (   16.71 ms per token,    59.83 tokens per second)
+15.36.382.016 I slot print_timing: id  0 | task 3946 |        eval time =   39520.44 ms /   254 tokens (  156.21 ms per token,     6.40 tokens per second)
+15.36.382.017 I slot print_timing: id  0 | task 3946 |       total time =   40072.01 ms /   287 tokens
+16.24.633.582 I slot   operator(): id  0 | task 4202 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 633
+16.47.520.944 I slot print_timing: id  0 | task 4202 | prompt eval time =     689.13 ms /    51 tokens (   13.51 ms per token,    74.01 tokens per second)
+16.47.520.945 I slot print_timing: id  0 | task 4202 |        eval time =   22198.22 ms /   271 tokens (   82.22 ms per token,    12.16 tokens per second)
+16.47.520.945 I slot print_timing: id  0 | task 4202 |       total time =   22887.35 ms /   322 tokens
+17.03.383.957 I slot   operator(): id  0 | task 4475 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 77
+17.04.681.905 I slot print_timing: id  0 | task 4475 | prompt eval time =     950.49 ms /    77 tokens (   12.34 ms per token,    81.01 tokens per second)
+17.04.681.907 I slot print_timing: id  0 | task 4475 |        eval time =     347.44 ms /     6 tokens (   69.49 ms per token,    14.39 tokens per second)
+17.04.681.908 I slot print_timing: id  0 | task 4475 |       total time =    1297.93 ms /    83 tokens
+17.08.398.993 I slot   operator(): id  0 | task 4484 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 625
+17.29.337.730 I slot print_timing: id  0 | task 4484 | prompt eval time =     666.35 ms /    43 tokens (   15.50 ms per token,    64.53 tokens per second)
+17.29.337.732 I slot print_timing: id  0 | task 4484 |        eval time =   20272.37 ms /   285 tokens (   71.38 ms per token,    14.01 tokens per second)
+17.29.337.733 I slot print_timing: id  0 | task 4484 |       total time =   20938.72 ms /   328 tokens
+17.43.501.589 I slot   operator(): id  0 | task 4771 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 65
+17.44.252.571 I slot print_timing: id  0 | task 4771 | prompt eval time =     680.89 ms /    37 tokens (   18.40 ms per token,    54.34 tokens per second)
+17.44.252.576 I slot print_timing: id  0 | task 4771 |        eval time =      70.07 ms /     2 tokens (   70.07 ms per token,    14.27 tokens per second)
+17.44.252.577 I slot print_timing: id  0 | task 4771 |       total time =     750.97 ms /    39 tokens
+18.39.305.778 I slot   operator(): id  0 | task 4775 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 633
+19.02.806.304 I slot print_timing: id  0 | task 4775 | prompt eval time =     689.27 ms /    51 tokens (   13.52 ms per token,    73.99 tokens per second)
+19.02.806.305 I slot print_timing: id  0 | task 4775 |        eval time =   22811.25 ms /   295 tokens (   77.59 ms per token,    12.89 tokens per second)
+19.02.806.306 I slot print_timing: id  0 | task 4775 |       total time =   23500.52 ms /   346 tokens
+19.17.099.294 I slot   operator(): id  0 | task 5072 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 104
+19.19.227.282 I slot print_timing: id  0 | task 5072 | prompt eval time =    1198.89 ms /   104 tokens (   11.53 ms per token,    86.75 tokens per second)
+19.19.227.283 I slot print_timing: id  0 | task 5072 |        eval time =     929.09 ms /    14 tokens (   71.47 ms per token,    13.99 tokens per second)
+19.19.227.283 I slot print_timing: id  0 | task 5072 |       total time =    2127.98 ms /   118 tokens
+19.22.869.638 I slot   operator(): id  0 | task 5089 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 625
+19.49.541.722 I slot print_timing: id  0 | task 5089 | prompt eval time =     670.72 ms /    43 tokens (   15.60 ms per token,    64.11 tokens per second)
+19.49.541.723 I slot print_timing: id  0 | task 5089 |        eval time =   26001.36 ms /   294 tokens (   88.74 ms per token,    11.27 tokens per second)
+19.49.541.724 I slot print_timing: id  0 | task 5089 |       total time =   26672.08 ms /   337 tokens
+20.03.716.440 I slot   operator(): id  0 | task 5385 | new prompt, n_ctx_slot = 4096, n_keep = 0, task.n_tokens = 92
+20.05.386.209 I slot print_timing: id  0 | task 5385 | prompt eval time =     699.23 ms /    37 tokens (   18.90 ms per token,    52.92 tokens per second)
+20.05.386.215 I slot print_timing: id  0 | task 5385 |        eval time =     970.52 ms /    14 tokens (   74.66 ms per token,    13.39 tokens per second)
+20.05.386.216 I slot print_timing: id  0 | task 5385 |       total time =    1669.75 ms /    51 tokens

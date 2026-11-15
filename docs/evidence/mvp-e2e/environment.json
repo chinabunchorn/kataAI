@@ -1,0 +1,24 @@
+{
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "python": "3.12.16",
+  "model_file": "Qwen3.5-9B-Q4_K_M.gguf",
+  "model_bytes": 5680522464,
+  "model_sha256": "03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8",
+  "model_server_version": "version: 1.0.0 (build 12359, commit b1b770d90)\nbuilt with AppleClang 21.0.0.21000401 for Darwin arm64",
+  "context_tokens": 4096,
+  "gpu_device": "MTL0 Apple M2",
+  "layers_offloaded": "33/33",
+  "posix": {
+    "O_DIRECTORY": true,
+    "O_NOFOLLOW": true,
+    "O_NONBLOCK": true,
+    "geteuid": true
+  },
+  "dir_fd": {
+    "open": true,
+    "link": true,
+    "unlink": true
+  },
+  "link_nofollow": true
+}

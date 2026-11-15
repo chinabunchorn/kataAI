@@ -1,0 +1,17 @@
+dataset_id=3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc request_id=f1dd6a6e-acc6-4b76-b380-e45833364129
+{
+  "id": "f1dd6a6e-acc6-4b76-b380-e45833364129",
+  "status": "completed",
+  "provisional": true,
+  "fake": false,
+  "run_id": "a8997e47-0352-444e-a66a-3e0b9f7cbc77",
+  "result": {
+    "answer": 770.0
+  },
+  "answer": null,
+  "error_code": "SUMMARY_UNAVAILABLE",
+  "code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path(\"/inputs/data.csv\")\norders = []\n\nwith open(csv_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row[\"quantity\"])\n        unit_price_thb = float(row[\"unit_price_thb\"])\n        revenue = quantity * unit_price_thb\n        orders.append(revenue)\n\n# Calculate total revenue\ntotal_revenue = sum(orders)\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+  "dataset_id": "3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc",
+  "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+  "created_at": "2026-11-15T18:03:07.680781+07:00"
+}

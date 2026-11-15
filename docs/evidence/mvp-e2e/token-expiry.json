@@ -1,0 +1,5 @@
+{
+  "expires_at_utc": "2026-11-15T19:00:46+00:00",
+  "requested_duration": "8h",
+  "identity": "system:serviceaccount:kata-lab:kataai-mvp"
+}

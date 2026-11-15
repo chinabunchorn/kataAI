@@ -1,0 +1,37 @@
+{
+  "run_id": "m3-011-security-1115a",
+  "job_uid": "1bf66a13-e0a3-4e56-8932-dc484bd2941a",
+  "pod_name": "m3-011-security-1115a-5brv8",
+  "pod_uid": "dd08f322-e02a-4ca6-becc-2f9f6ff8646a",
+  "sandbox_id": "848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6",
+  "sandbox_labels": {
+    "batch.kubernetes.io/controller-uid": "1bf66a13-e0a3-4e56-8932-dc484bd2941a",
+    "batch.kubernetes.io/job-name": "m3-011-security-1115a",
+    "controller-uid": "1bf66a13-e0a3-4e56-8932-dc484bd2941a",
+    "io.cri-containerd.kind": "sandbox",
+    "io.kubernetes.pod.name": "m3-011-security-1115a-5brv8",
+    "io.kubernetes.pod.namespace": "kata-lab",
+    "io.kubernetes.pod.uid": "dd08f322-e02a-4ca6-becc-2f9f6ff8646a",
+    "job-name": "m3-011-security-1115a",
+    "kataai-m3-run": "m3-011-security-1115a",
+    "oci_runtime_type": "io.containerd.kata-qemu-runtime-rs.v2"
+  },
+  "runtime": "io.containerd.kata-qemu-runtime-rs.v2",
+  "shim_pid": 1565141,
+  "qemu_pid": 1565166,
+  "observed_process_snapshot": {
+    "at": "2026-11-15T07:08:40.248185+00:00",
+    "command": "sudo -n ctr -n k8s.io sandboxes ls; ps -eo pid,ppid,lstart,args | grep -E \"[q]emu-system|[c]ontainerd-shim-kata\"",
+    "returncode": 0,
+    "stdout": "ID                                                               CREATED                                 RUNTIME                               \n0810cae29f8578e1e2336f8f2949a899287d381421c53d338cb1b03a80e3f66f 2026-11-11 07:45:35.531030902 +0000 UTC io.containerd.runc.v2                 \n3cda59f8cc239a44fa320b160609f650829d96ffab43c6f517b9cae1d0437a45 2026-11-11 07:49:57.601527256 +0000 UTC io.containerd.runc.v2                 \n3e9b1a8a9a32e2292aae2cec7d1026e49dd68dbd3c20bae2efaa229f1aa9f928 2026-11-11 07:45:21.494373475 +0000 UTC io.containerd.runc.v2                 \n4aed18563b1cd78c380bb5e38487c894ee3b0babb0db83c103bf821ddf27ef57 2026-11-11 07:45:21.484153622 +0000 UTC io.containerd.runc.v2                 \n67d2249c7ddb938b547efe7d381e7ef962312cbfdd920d0f4572f06ab370cc1b 2026-11-11 07:45:21.466526695 +0000 UTC io.containerd.runc.v2                 \n848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6 2026-11-15 07:08:21.370372675 +0000 UTC io.containerd.kata-qemu-runtime-rs.v2 \na2a0b4facd02519ab2701687f1a4779bdffb11fb0d26668ffca1577d005d00ca 2026-11-11 07:51:05.507474956 +0000 UTC io.containerd.runc.v2                 \nb3adfde3751620198e0ce335f1331ef9d67c29ea5428539566b382cd2c0d2c4a 2026-11-11 07:51:06.297420261 +0000 UTC io.containerd.runc.v2                 \nbf98323a3fd1ca8f2e34019c58951992677484c75c2c2ce5cb09aefdcadd65fc 2026-11-11 07:49:57.4972245 +0000 UTC   io.containerd.runc.v2                 \nc1d8709447ba5010c54a405ad0a7957a743eb82dd1ed0498a114ea02ff3c20c4 2026-11-11 07:48:18.667417037 +0000 UTC io.containerd.runc.v2                 \nd96075c93242cd9bf22ae3906fb63c9340dc63f0896f83d5e1394dc5fb5efc21 2026-11-11 07:45:21.468216884 +0000 UTC io.containerd.runc.v2                 \ne0480ed5298e04311a48821c23b1db8fe1764bf044dc710e2384bb110bfbb81b 2026-11-11 07:51:06.28795326 +0000 UTC  io.containerd.runc.v2                 \ne76a65b4745b2561750055c0ad4ea16935820cbea04f60c76ef686fc99de8a5a 2026-11-11 07:51:06.26945843 +0000 UTC  io.containerd.runc.v2                 \n1565141       1 Sun Nov 15 07:08:20 2026 /opt/kata/runtime-rs/bin/containerd-shim-kata-v2 -id 848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6 -namespace k8s.io -address /run/containerd/containerd.sock -publish-binary /usr/bin/containerd\n1565166 1565141 Sun Nov 15 07:08:20 2026 /opt/kata/bin/qemu-system-x86_64 -name sandbox-848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6 -kernel /opt/kata/share/kata-containers/vmlinux-6.18.56-208 -append reboot=k panic=1 systemd.unit=kata-containers.target systemd.mask=systemd-networkd.service systemd.mask=systemd-networkd.socket root=/dev/pmem0p1 rootflags=dax,data=ordered,errors=remount-ro ro rootfstype=ext4 agent.cdh_api_timeout=50 cgroup_no_v1=all systemd.unified_cgroup_hierarchy=1 selinux=0 console=hvc0 -smp 2 -machine q35,accel=kvm,nvdimm=on,kernel_irqchip=on,memory-backend=entire-guest-memory-share -cpu host,pmu=off -m 288M,slots=10,maxmem=7941M -object memory-backend-file,id=entire-guest-memory-share,mem-path=/dev/shm,size=288M,share=on,prealloc=off,readonly=off -qmp unix:fd=19,server=on,wait=off -rtc base=utc,clock=host,driftfix=slew -object rng-random,id=rng0,filename=/dev/urandom -device virtio-rng-pci,rng=rng0 -device pci-bridge,bus=pcie.0,id=pci-bridge-0,chassis_nr=1,shpc=off,addr=2,io-reserve=4k,mem-reserve=1m,pref64-reserve=1m -device virtio-scsi-pci,id=scsi0,disable-modern=true -device vhost-vsock-pci,disable-modern=true,vhostfd=20,guest-cid=3145616357 -netdev tap,id=network-tap0_kata,vhost=on,vhostfds=23,fds=22 -device virtio-net-pci,netdev=network-tap0_kata,mac=be:c9:19:53:da:c5,disable-modern=true,mq=on,vectors=4 -chardev socket,id=virtiofsd-chardev,path=/run/kata/848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6/root/virtiofsd.sock -device vhost-user-fs-pci,chardev=virtiofsd-chardev,tag=kataShared,queue-size=1024 -object memory-backend-file,id=TODO,mem-path=/opt/kata/share/kata-containers/kata-ubuntu-resolute.image,size=256M,share=off,prealloc=off,readonly=on -device nvdimm,memdev=TODO,unarmed=on -device virtio-serial-pci,id=serial0 -device virtconsole,id=console0,chardev=charconsole0 -chardev socket,id=charconsole0,server=on,wait=off,path=/run/kata/848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6/root/console.sock -vga none -no-user-config -nodefaults -nographic -no-reboot\n",
+    "stderr": ""
+  },
+  "actual_image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "container_id": "containerd://68afac2c7cd35e9f0428787d3ad51d71c87ffbffdf3c2d143ea1a19d5df3615a",
+  "guest_kernel": "6.18.56",
+  "acceleration": "kvm",
+  "exact_pids_and_guest_directories_absent": true,
+  "teardown_evidence": "security-teardown-followup.txt",
+  "sandbox_metadata_later_absent_evidence": "final-node-inventory.txt",
+  "note": "Initial post-API snapshot retained stopped sandbox metadata with no shim/QEMU; suite paused, exact PID/path checks confirmed stop, then continued without rerunning security. Metadata was later garbage-collected. No runtime files manually deleted."
+}

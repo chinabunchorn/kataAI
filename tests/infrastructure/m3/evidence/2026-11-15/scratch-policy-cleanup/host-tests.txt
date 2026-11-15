@@ -1,0 +1,53 @@
+test_blob_tampering_rejected (test_artifact.ArtifactTests.test_blob_tampering_rejected) ... ok
+test_nontraversable_directories_rejected (test_artifact.ArtifactTests.test_nontraversable_directories_rejected) ... ok
+test_scratch_provenance_required_and_verified (test_artifact.ArtifactTests.test_scratch_provenance_required_and_verified) ... ok
+test_stale_image_version_rejected (test_artifact.ArtifactTests.test_stale_image_version_rejected) ... ok
+test_static_nonroot_artifact_acceptance (test_artifact.ArtifactTests.test_static_nonroot_artifact_acceptance) ... ok
+test_wrong_identity_and_writable_paths_rejected (test_artifact.ArtifactTests.test_wrong_identity_and_writable_paths_rejected) ... ok
+test_collects_data_and_stable_failures (test_contracts.CollectionTests.test_collects_data_and_stable_failures) ... ok
+test_diagnostics_or_guest_success_cannot_replace_report (test_contracts.CollectionTests.test_diagnostics_or_guest_success_cannot_replace_report) ... ok
+test_eviction_needs_resource_evidence (test_contracts.CollectionTests.test_eviction_needs_resource_evidence) ... ok
+test_exit_and_oom_are_external_evidence (test_contracts.CollectionTests.test_exit_and_oom_are_external_evidence) ... ok
+test_external_runtime_and_image_causes (test_contracts.CollectionTests.test_external_runtime_and_image_causes) ... ok
+test_job_deadline_needs_observed_condition (test_contracts.CollectionTests.test_job_deadline_needs_observed_condition) ... ok
+test_rejects_wrong_origin_and_workload (test_contracts.CollectionTests.test_rejects_wrong_origin_and_workload) ... ok
+test_signal_and_exit_do_not_imply_resource_failure (test_contracts.CollectionTests.test_signal_and_exit_do_not_imply_resource_failure) ... ok
+test_identity_rejected (test_contracts.ReportTests.test_identity_rejected) ... ok
+test_separate_user_status_from_runner_code (test_contracts.ReportTests.test_separate_user_status_from_runner_code) ... ok
+test_unknown_duplicate_and_inconsistent_report_fields (test_contracts.ReportTests.test_unknown_duplicate_and_inconsistent_report_fields) ... ok
+test_exact_scoped_keys_and_hashes (test_contracts.StagingTests.test_exact_scoped_keys_and_hashes) ... ok
+test_fixed_security_manifest (test_contracts.StagingTests.test_fixed_security_manifest) ... ok
+test_input_limits_before_creation (test_contracts.StagingTests.test_input_limits_before_creation) ... ok
+test_names_and_mutable_images_rejected (test_contracts.StagingTests.test_names_and_mutable_images_rejected) ... ok
+test_collection_boundaries (test_contracts.ValidationTests.test_collection_boundaries) ... ok
+test_depth_and_quoted_delimiters (test_contracts.ValidationTests.test_depth_and_quoted_delimiters) ... ok
+test_disallowed_root_types (test_contracts.ValidationTests.test_disallowed_root_types) ... ok
+test_exact_byte_limit_and_whitespace (test_contracts.ValidationTests.test_exact_byte_limit_and_whitespace) ... ok
+test_invalid_results (test_contracts.ValidationTests.test_invalid_results) ... ok
+test_sales_and_distinct_array (test_contracts.ValidationTests.test_sales_and_distinct_array) ... ok
+test_api_pipe_collection_is_bounded (test_harness.HarnessTests.test_api_pipe_collection_is_bounded) ... ok
+test_every_catalog_case_stages_without_executing_candidate (test_harness.HarnessTests.test_every_catalog_case_stages_without_executing_candidate) ... ok
+test_legacy_quota_cases_are_excluded_from_release_execution (test_harness.HarnessTests.test_legacy_quota_cases_are_excluded_from_release_execution) ... ok
+test_preflight_distinguishes_namespaced_and_global_policy (test_harness.HarnessTests.test_preflight_distinguishes_namespaced_and_global_policy) ... ok
+test_render_default_does_not_contact_cluster (test_harness.HarnessTests.test_render_default_does_not_contact_cluster) ... ok
+test_ssh_transport_quotes_remote_arguments (test_harness.HarnessTests.test_ssh_transport_quotes_remote_arguments) ... ok
+test_uid_precondition_cleanup_is_scoped (test_harness.HarnessTests.test_uid_precondition_cleanup_is_scoped) ... ok
+test_build_provenance_covers_image_and_host_runner_files (test_release_metadata.ReleaseMetadataTests.test_build_provenance_covers_image_and_host_runner_files) ... ok
+test_release_version_consistent (test_release_metadata.ReleaseMetadataTests.test_release_version_consistent) ... ok
+test_empty_or_invalid_filesystem_rejected (test_scratch.ScratchTests.test_empty_or_invalid_filesystem_rejected) ... ok
+test_mount_identity_encoding_bounds_and_readonly_rejected (test_scratch.ScratchTests.test_mount_identity_encoding_bounds_and_readonly_rejected) ... ok
+test_real_preflight_rejects_invalid_scratch_before_child_launch (test_scratch.ScratchTests.test_real_preflight_rejects_invalid_scratch_before_child_launch) ... ok
+test_writable_capacities_accept_used_space (test_scratch.ScratchTests.test_writable_capacities_accept_used_space) ... ok
+test_inherited_pipe_wait_is_bounded_after_exit (test_supervisor.ChildControlTests.test_inherited_pipe_wait_is_bounded_after_exit) ... ok
+test_log_flood_is_bounded_without_executing_process (test_supervisor.ChildControlTests.test_log_flood_is_bounded_without_executing_process) ... ok
+test_measured_timeout_is_not_generic_nonzero_exit (test_supervisor.ChildControlTests.test_measured_timeout_is_not_generic_nonzero_exit) ... ok
+test_failure_cannot_publish_existing_valid_result (test_supervisor.MainTests.test_failure_cannot_publish_existing_valid_result) ... ok
+test_report_channel_failure_never_returns_success (test_supervisor.MainTests.test_report_channel_failure_never_returns_success) ... ok
+test_success_and_missing_invalid_output (test_supervisor.MainTests.test_success_and_missing_invalid_output) ... ok
+test_timeout_and_log_flood_keep_distinct_mapping (test_supervisor.MainTests.test_timeout_and_log_flood_keep_distinct_mapping) ... ok
+test_unsafe_preflight_never_launches_child (test_supervisor.MainTests.test_unsafe_preflight_never_launches_child) ... ok
+
+----------------------------------------------------------------------
+Ran 48 tests in 0.231s
+
+OK

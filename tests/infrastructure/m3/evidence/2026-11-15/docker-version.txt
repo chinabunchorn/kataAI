@@ -1,0 +1,9 @@
+Client:
+ Version:           29.6.2
+ API version:       1.55
+ Go version:        go1.26.5
+ Git commit:        dfc4efb
+ Built:             Thu Jul 16 16:14:59 2026
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.

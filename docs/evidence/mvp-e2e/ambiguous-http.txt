@@ -1,0 +1,15 @@
+dataset_id=76b333b1-9e1f-49e3-a275-2e1c5c95b321 request_id=338c057b-dc6c-4ab3-b5c4-54d2f7eb243d
+{
+  "id": "338c057b-dc6c-4ab3-b5c4-54d2f7eb243d",
+  "status": "needs_clarification",
+  "provisional": true,
+  "fake": false,
+  "run_id": null,
+  "result": null,
+  "answer": "The question \"What is the total?\" is ambiguous given the available columns. There are two numeric columns:\n\n- **quantity** \n- **unit_price_thb**\n\nCould you please specify which measure you'd like me to total? For example:\n- Total quantity across all orders?\n- Total unit_price_thb across all orders?\n- Total revenue (quantity × unit_price_thb)?",
+  "error_code": null,
+  "code": null,
+  "dataset_id": "76b333b1-9e1f-49e3-a275-2e1c5c95b321",
+  "question": "What is the total?",
+  "created_at": "2026-11-15T18:08:54.608684+07:00"
+}

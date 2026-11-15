@@ -1,0 +1,44 @@
+test_approval_is_rechecked_when_resuming_a_staged_attempt (test_adapter.AdapterTests.test_approval_is_rechecked_when_resuming_a_staged_attempt) ... ok
+test_backend_nul_rule_is_preserved (test_adapter.AdapterTests.test_backend_nul_rule_is_preserved) ... ok
+test_cancel_before_submit_is_a_durable_tombstone (test_adapter.AdapterTests.test_cancel_before_submit_is_a_durable_tombstone) ... ok
+test_cancel_running_run_requires_teardown_evidence (test_adapter.AdapterTests.test_cancel_running_run_requires_teardown_evidence) ... ok
+test_cancel_staged_run_cleans_inputs_without_dispatching (test_adapter.AdapterTests.test_cancel_staged_run_cleans_inputs_without_dispatching) ... ok
+test_changed_payload_cannot_rebind_existing_run (test_adapter.AdapterTests.test_changed_payload_cannot_rebind_existing_run) ... ok
+test_cleanup_preserves_uncollected_results_and_retries_after_restart (test_adapter.AdapterTests.test_cleanup_preserves_uncollected_results_and_retries_after_restart) ... ok
+test_confirmed_cleanup_is_durable_without_reobserving_deleted_objects (test_adapter.AdapterTests.test_confirmed_cleanup_is_durable_without_reobserving_deleted_objects) ... ok
+test_delete_acknowledgement_does_not_confirm_api_absence (test_adapter.AdapterTests.test_delete_acknowledgement_does_not_confirm_api_absence) ... ok
+test_foreign_or_replaced_job_is_not_adopted_or_deleted (test_adapter.AdapterTests.test_foreign_or_replaced_job_is_not_adopted_or_deleted) ... ok
+test_image_provenance_is_required (test_adapter.AdapterTests.test_image_provenance_is_required) ... ok
+test_injected_workload_cannot_supply_result (test_adapter.AdapterTests.test_injected_workload_cannot_supply_result) ... ok
+test_input_and_timeout_caps_precede_mutation (test_adapter.AdapterTests.test_input_and_timeout_caps_precede_mutation) ... ok
+test_intent_and_snapshot_are_durable_before_remote_mutation (test_adapter.AdapterTests.test_intent_and_snapshot_are_durable_before_remote_mutation) ... ok
+test_job_deadline_uses_external_evidence (test_adapter.AdapterTests.test_job_deadline_uses_external_evidence) ... ok
+test_lost_create_responses_reconcile_without_duplicate_jobs (test_adapter.AdapterTests.test_lost_create_responses_reconcile_without_duplicate_jobs) ... ok
+test_multiple_or_replacement_pods_fail_closed (test_adapter.AdapterTests.test_multiple_or_replacement_pods_fail_closed) ... ok
+test_oom_uses_authoritative_termination_not_exit_137 (test_adapter.AdapterTests.test_oom_uses_authoritative_termination_not_exit_137) ... ok
+test_other_request_cannot_read_or_delete_run (test_adapter.AdapterTests.test_other_request_cannot_read_or_delete_run) ... ok
+test_provider_callback_errors_are_sanitized_and_recoverable (test_adapter.AdapterTests.test_provider_callback_errors_are_sanitized_and_recoverable) ... ok
+test_reconcile_retries_requested_cleanup_and_never_submits (test_adapter.AdapterTests.test_reconcile_retries_requested_cleanup_and_never_submits) ... ok
+test_repeated_submit_uses_same_snapshot_and_provider_objects (test_adapter.AdapterTests.test_repeated_submit_uses_same_snapshot_and_provider_objects) ... ok
+test_runtime_or_policy_failure_prevents_mutation (test_adapter.AdapterTests.test_runtime_or_policy_failure_prevents_mutation) ... ok
+test_script_failure_does_not_publish_json (test_adapter.AdapterTests.test_script_failure_does_not_publish_json) ... ok
+test_success_persists_result_and_survives_cleanup_and_restart (test_adapter.AdapterTests.test_success_persists_result_and_survives_cleanup_and_restart) ... ok
+test_terminal_job_without_pod_is_unknown_not_permanently_queued (test_adapter.AdapterTests.test_terminal_job_without_pod_is_unknown_not_permanently_queued) ... ok
+test_unacknowledged_create_prevents_false_cleanup_confirmation (test_adapter.AdapterTests.test_unacknowledged_create_prevents_false_cleanup_confirmation) ... ok
+test_unapproved_execution_has_no_api_calls (test_adapter.AdapterTests.test_unapproved_execution_has_no_api_calls) ... ok
+test_uncertain_create_with_absent_object_is_never_blindly_retried (test_adapter.AdapterTests.test_uncertain_create_with_absent_object_is_never_blindly_retried) ... ok
+test_wrong_report_identity_is_not_a_result (test_adapter.AdapterTests.test_wrong_report_identity_is_not_a_result) ... ok
+test_wrong_uid_event_is_ignored (test_adapter.AdapterTests.test_wrong_uid_event_is_ignored) ... ok
+test_errors_classify_not_found_without_exposing_input (test_transport.TransportTests.test_errors_classify_not_found_without_exposing_input) ... ok
+test_explicit_context_tls_and_raw_create_body (test_transport.TransportTests.test_explicit_context_tls_and_raw_create_body) ... ok
+test_get_missing_resource_returns_none_but_create_is_uncertain (test_transport.TransportTests.test_get_missing_resource_returns_none_but_create_is_uncertain) ... ok
+test_insecure_or_non_tls_configuration_is_rejected_before_request (test_transport.TransportTests.test_insecure_or_non_tls_configuration_is_rejected_before_request) ... ok
+test_malformed_response_is_sanitized (test_transport.TransportTests.test_malformed_response_is_sanitized) ... ok
+test_output_cap_is_enforced_while_draining (test_transport.TransportTests.test_output_cap_is_enforced_while_draining) ... ok
+test_stderr_cap_is_enforced_without_echoing_diagnostics (test_transport.TransportTests.test_stderr_cap_is_enforced_without_echoing_diagnostics) ... ok
+test_timeout_kills_process_and_is_sanitized (test_transport.TransportTests.test_timeout_kills_process_and_is_sanitized) ... ok
+
+----------------------------------------------------------------------
+Ran 39 tests in 2.909s
+
+OK

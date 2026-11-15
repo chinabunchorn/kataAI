@@ -1,0 +1,129 @@
+{
+  "date": "2026-11-15",
+  "timezone": "Asia/Bangkok",
+  "scope": "source implementation and review only",
+  "upstream_repository": "https://github.com/kata-containers/kata-containers.git",
+  "upstream_revision": "03cf2ec06a5d302f23af811744f6bcea49988bfb",
+  "source_checkout": ".m3-runs/kata-scratch-source",
+  "source_is_dirty": true,
+  "patch": "0001-fixed-16mib-ephemeral.patch",
+  "patch_sha256": "08f451a4ce6ca257cc2cd55d8e8734801822b28ebcc381140ae43b0ced536ebf",
+  "modified_source_sha256": {
+    "src/runtime-rs/crates/resource/src/volume/ephemeral_volume.rs": "5eeb2ecbe8bbcc100334e471a6b1d6791abe1c49ba87c82a5db55dd547c91c69",
+    "src/agent/src/storage/ephemeral_handler.rs": "84ff1cf1d8127f69e3bea39ee782b17ea7f007cd35412e4202595588bc4aaa07",
+    "src/agent/src/storage/mod.rs": "768e5ce8c72a418c6e29588eb4c3e723647cfd98003792a7aa799796a8f8ae2d",
+    "src/libs/kata-sys-util/src/lib.rs": "023a4d71e44cc08b25b15fd1db1c5cd73405bd10925390250d6e385adcd9463a",
+    "src/libs/kata-sys-util/src/bounded_tmpfs.rs": "7ee475693307c1cf46ed3baa730bf62deb23291ecfaf766866d8987c69ccf8b6"
+  },
+  "cargo_lock_sha256": "ac6e4479e76df38b5240423f9d172e201256d40213073da03f800b8941e0b9ff",
+  "tools": {
+    "rustc": "1.97.1 (8bab26f4f 2026-07-14)",
+    "git": "2.54.0.windows.1",
+    "rust_toolchain_source": "https://static.rust-lang.org",
+    "system_build_packages_installed": false,
+    "environment": "local Ubuntu WSL, Linux 6.18.58.1-microsoft-standard-WSL2",
+    "toolchain_location": ".m3-runs/kata-build-tools",
+    "rustfmt": "1.9.0-stable (8bab26f4f6 2026-07-14)"
+  },
+  "checks": [
+    {
+      "name": "rustfmt check, five changed Rust files",
+      "log": "format.log",
+      "exit_code": 0,
+      "status": "Passed"
+    },
+    {
+      "name": "git diff --check",
+      "exit_code": 0,
+      "status": "Passed"
+    },
+    {
+      "name": "git apply --check on separate clean pinned worktree",
+      "exit_code": 0,
+      "status": "Passed",
+      "worktree": ".m3-runs/kata-patch-apply-check"
+    },
+    {
+      "name": "git apply --reverse --check on patched source",
+      "exit_code": 0,
+      "status": "Passed"
+    },
+    {
+      "validation_status": "Blocked before patched source type checking",
+      "name": "cargo check --locked -p kata-sys-util -p resource -p kata-agent",
+      "log": "check.log",
+      "reason": "linker cc not found during dependency build scripts",
+      "log_is_complete": false,
+      "native_wsl_exit_code": 1,
+      "status": "Failed"
+    },
+    {
+      "validation_status": "Blocked; zero test assertions executed",
+      "name": "cargo test --locked -p kata-sys-util bounded_tmpfs",
+      "cargo_exit_code": 101,
+      "log": "test-shared.log",
+      "status": "Failed"
+    },
+    {
+      "validation_status": "Blocked; zero test assertions executed",
+      "name": "cargo test --locked -p resource volume::ephemeral_volume::tests",
+      "cargo_exit_code": 101,
+      "log": "test-shim.log",
+      "status": "Failed"
+    },
+    {
+      "validation_status": "Blocked; zero test assertions executed",
+      "name": "cargo test --locked -p kata-agent storage::ephemeral_handler::tests",
+      "cargo_exit_code": 101,
+      "log": "test-agent.log",
+      "status": "Failed"
+    },
+    {
+      "name": "isolated kernel ENOSPC enforcement test",
+      "reason": "agent test binary cannot build without native linker",
+      "status": "Not run / blocked",
+      "kernel_enforcement_demonstrated": false
+    },
+    {
+      "name": "release shim/agent and guest ext4 image build, artifact inspection and boot",
+      "reason": "native build prerequisites unavailable; installed agent identity and feature set still unknown",
+      "status": "Not run / blocked"
+    },
+    {
+      "name": "live M3 acceptance",
+      "reason": "deployment and live workloads are outside authorized scope",
+      "status": "Not run"
+    }
+  ],
+  "log_sha256": {
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "check.log": "24029a10fb8dd59b2748a2a1cf2d42d81222368698bd19137dc732d0cc676a0b",
+    "test-shared.log": "fbf334097bce502d368dfcb3dafc0bcc1a5eca2c43daeebddafc5838c7726b2b",
+    "test-shim.log": "ac9950df5ef846d73e1a311e7e8a892dcd621482fe2cd48dd3bd32fd7200d3be",
+    "test-agent.log": "91c4aeb9ef8eef22fc730d0a67e72b3eba2a67f59b7ce09a4fd612411496f06c"
+  },
+  "patched_artifacts": {
+    "guest_image": null,
+    "agent": null,
+    "shim": null
+  },
+  "observed_installed_baseline": {
+    "shim_sha256": "c9a43977c61ff649c8233efd9ce6cf28e0bf777523071e838b8ebc3362f57016",
+    "guest_image_sha256": "6770db2cca5710593f27c9ac5e1d9d7aab836422695a5e5c4807496a92a0f24d",
+    "containerd_snippet_sha256": "c6d3ec89be3a281955d9290264d211cdbb11a2b5f7f303d66bbd8e19a96726b8",
+    "agent_binary_independently_identified": false,
+    "kernel_sha256": "f87d8359035cb7557b16a319e6431ea09b183e62268aef436bf8dc6530d786b6",
+    "inspection": "read-only SSH 2026-11-15; no mount or config change",
+    "kata_config_sha256": "d33d1787f6b8326fe143a33434f2e74be7d118d3cfee386579ade42f87c09656",
+    "shim_revision": "03cf2ec06a5d302f23af811744f6bcea49988bfb",
+    "shim_version": "4.3.1"
+  },
+  "infrastructure_modified": false,
+  "services_restarted": false,
+  "runtimeclass_or_security_contract_changed": false,
+  "python_executed": false,
+  "commits_created": false,
+  "pushed": false,
+  "m3_complete": false,
+  "runner_released": false
+}

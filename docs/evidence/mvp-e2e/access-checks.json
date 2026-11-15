@@ -1,0 +1,189 @@
+{
+  "checks": [
+    {
+      "verb": "create",
+      "resource": "jobs.batch",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "jobs.batch",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "jobs.batch",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "delete",
+      "resource": "jobs.batch",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "create",
+      "resource": "configmaps",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "configmaps",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "delete",
+      "resource": "configmaps",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "pods",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "delete",
+      "resource": "pods",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "events",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "events",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "networkpolicies.networking.k8s.io",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "networkpolicies.projectcalico.org",
+      "namespace": "kata-lab",
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "runtimeclasses.node.k8s.io/kata-qemu-runtime-rs",
+      "namespace": null,
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "namespaces/kata-lab",
+      "namespace": null,
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "list",
+      "resource": "globalnetworkpolicies.projectcalico.org",
+      "namespace": null,
+      "allowed": true,
+      "expected": true
+    },
+    {
+      "verb": "get",
+      "resource": "secrets",
+      "namespace": "kata-lab",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "create",
+      "resource": "roles.rbac.authorization.k8s.io",
+      "namespace": "kata-lab",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "create",
+      "resource": "rolebindings.rbac.authorization.k8s.io",
+      "namespace": "kata-lab",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "patch",
+      "resource": "nodes",
+      "namespace": null,
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "create",
+      "resource": "jobs.batch",
+      "namespace": "default",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "get",
+      "resource": "namespaces/default",
+      "namespace": null,
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "get",
+      "resource": "pods",
+      "namespace": "default",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "create",
+      "resource": "pods/exec",
+      "namespace": "kata-lab",
+      "allowed": false,
+      "expected": false
+    },
+    {
+      "verb": "create",
+      "resource": "pods/attach",
+      "namespace": "kata-lab",
+      "allowed": false,
+      "expected": false
+    }
+  ],
+  "namespace": "kata-lab",
+  "runtime_handler": "kata-qemu-runtime-rs",
+  "tls_verified": true
+}

@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-11-11T11:00:21Z",
+  "namespace": "kata-lab",
+  "namespace_inventory": [
+    "configmap/kube-root-ca.crt"
+  ],
+  "kata_sandbox_records": 0,
+  "kata_shim_processes": 0,
+  "qemu_processes": 0,
+  "existing_system_runc_sandboxes_preserved": 12,
+  "scope": "Final read-only namespace, ctr sandbox and process inventory; individual API cleanup recorded per run in live-results.json",
+  "scratch_node_observation": {
+    "observed_at": "2026-11-11T10:56:58Z",
+    "pod_uid": "5d52cafa-dc92-4e4b-9e05-b9a5abbfe452",
+    "host_mount_options": "rw,relatime,size=16384k,inode64,noswap",
+    "guest_reported_bytes": 100691968,
+    "guest_mountinfo": "107 99 0:41 / /tmp rw,relatime - tmpfs tmpfs rw",
+    "limit_verified": false
+  }
+}

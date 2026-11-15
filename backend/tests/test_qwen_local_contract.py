@@ -66,7 +66,8 @@ def test_configured_9b_queue_uses_provisional_contract_and_fake_preset(monkeypat
     assert json.loads(payload['messages'][1]['content']) == {'question': question, 'columns': ['quantity', 'unit_price_thb']}
     assert 'PRIVATE_ROW_SENTINEL' not in json.dumps(payload)
     prompt = payload['messages'][0]['content'].lower()
-    assert 'dataframe' in prompt and 'df' in prompt
+    assert '/inputs/data.csv' in prompt and '/tmp/result.json' in prompt
+    assert 'dataframe' not in prompt and 'pandas' not in prompt
     assert 'result' in prompt and 'answer' in prompt and 'json' in prompt
     assert payload['temperature'] == 0.6 and payload['top_p'] == 0.95
     assert payload['top_k'] == 20 and payload['min_p'] == 0.0

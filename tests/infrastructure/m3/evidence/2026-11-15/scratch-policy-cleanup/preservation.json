@@ -1,0 +1,88 @@
+{
+  "checked_at": "2026-11-15T06:41:48.9179376Z",
+  "compared_to": "working tree at start of cleanup, including preexisting edits",
+  "verified_file_count": 20,
+  "unchanged": true,
+  "files": [
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/final-inventory.json",
+      "sha256": "357e753e4682b0ee5ab4aa5a39f150a0c5b3466ccfc452b98d3927d2e6973b4b"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/live-results.json",
+      "sha256": "c3360b287670c43c6eecbc91a47f0c71440c0bc9445009f7e1dd09197776273c"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/node-security.json",
+      "sha256": "30aba90d2c18eed7bb235e942879c69fa5bd80f91161030df81edec50d18bc7e"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/README.md",
+      "sha256": "4ad0363b822f720a1097e9e161e60fdf0553a7613cb67876423aa5089c0a08e2"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/release.json",
+      "sha256": "fbc09f4bfbcaf89085f9b3a8104bea0994fdcad80efa487b68ce3a3215bedfc0"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/scratch-failed-diagnostics.jsonl",
+      "sha256": "a28cf587f373ba8b2b3ad3ca547e5c4f057a1a5044b8d0ad9b750f8a81f203f7"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/scratch-failed-pod.json",
+      "sha256": "a8774de5937d76b8f230d451db100109b6dba05f9cd285c1bd429ec7d625df43"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-11/scratch-runtime-investigation.json",
+      "sha256": "c31a3428eb02458601f22a87c38ae9fba73d4876c31a13d2018efae56c172e4f"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-15/docker-version.txt",
+      "sha256": "00da852f7579ecb45c1810ced5d14fb4e08183878228795912fb430791ddac1c"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-15/host-tests.txt",
+      "sha256": "88abda36dbae4b7a0c7572c4f12b781e5f9e100edfea3552debcfe22875a7ee1"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-15/preparation.json",
+      "sha256": "a391784fe144f38829d51bfb5283e3cb6e3a3277a4a8e73d0784ba086779cac1"
+    },
+    {
+      "path": "tests/infrastructure/m3/evidence/2026-11-15/README.md",
+      "sha256": "95826ed90ec7a1d9b9c09a5cf77fbfacb196996ba793e642bb187ff686cd27cd"
+    },
+    {
+      "path": "docs/infrastructure/M3_SCRATCH_INVESTIGATION.md",
+      "sha256": "a40d305ccb67eb79604a84a28f32828c8fbdd9b3a6d6e331b1a619974cc9f038"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/network.py",
+      "sha256": "cd098d8e671d1448316942146f774870bb3ff29c9b6c9cc6da87f539b9e6748e"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/sales.py",
+      "sha256": "f0f4fdc1b657a60fae181d8780e4007500715ce968f6b50234c2ef2774986daf"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/scratch-layout.py",
+      "sha256": "f0858f8fa410390de146ed45139de7782a5dd28652cb854796b46edcc014a499"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/scratch-multifile.py",
+      "sha256": "8101a506fc30b86b3fcd8427e4941e54fb0414ab6546d7c817e468d9c06e6c2d"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/scratch.py",
+      "sha256": "784c230e428301a45215de9b93348d2fb342ef274837aa7e3b9114c909b7feca"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/security.py",
+      "sha256": "9ee5cf42266c7dc1625c1543fa09864a9d2a4f08f3765439414c83f98a65da4e"
+    },
+    {
+      "path": "tests/infrastructure/m3/fixtures/totals.py",
+      "sha256": "de2c66ba0c20e9447b3d8de18d025f2d3a097ecb218445f9c345cdbeaebdef7d"
+    }
+  ]
+}

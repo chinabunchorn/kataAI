@@ -12,7 +12,14 @@ From `backend/`, run `.venv/bin/python -m pytest tests/test_qwen_mvp_fixture.py 
 
 The provisional *normalized* response shape is `{"finish_reason":"tool_calls","tool_calls":[{"name":"run_python","arguments":{"code":"..."}}],"content":null}` for proposals; a candidate no-tool clarification is `{"finish_reason":"stop","tool_calls":[],"content":"..."}`. A length finish is `truncated`; invalid envelopes are `malformed`. A nonempty no-tool message is only a **candidate** clarification: human review must distinguish real clarifications from refusals, irrelevant text, or unsupported answers. `matches_expected_kind` is a structural check, not a semantic grade. Record transport errors, timeouts, provider refusals, and parser failures separately before normalization; never relabel them as clarifications. No free-text candidate automatically passes semantic review.
 
-A hypothetical runner contract, **not an implemented execution interface**: the trusted runtime would supply the uploaded dataset as `df` (a pandas DataFrame with the exact CSV columns), and the proposed analysis would produce a JSON-serializable `result` object `{"answer": <number>}`. This is an evaluation convention only; it is not evidence the app currently supplies `df` or executes anything. No generated code may be run until a separate implementation, security review, and explicit execution authorization exist. Compare the fixed oracle to results only if such a separately approved execution path is built; never report a preset fake as a real computation.
+The current MVP prompt targets Runner 0.1.1: Python 3.12 standard library only,
+read `/inputs/data.csv` with `utf-8-sig`, and explicitly write a JSON object or
+array to `/tmp/result.json` within 2048 bytes and 30 seconds. Calculation questions
+prefer `{"answer": <computed value>}`; other object/array roots remain valid.
+There is no pandas DataFrame or result-variable capture. See
+[the native macOS runbook](../../../../docs/MVP_E2E.md) for explicit private demo
+authorization and actual verification status. The fake worker still returns presets;
+only a collected remote result can establish computation.
 
 ## Real-model probe strategy and observations
 

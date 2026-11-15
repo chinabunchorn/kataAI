@@ -1,0 +1,38 @@
+Sun Nov 15 07:21:59 UTC 2026
+NAME     STATUS   ROLES           AGE     VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION             CONTAINER-RUNTIME
+katavm   Ready    control-plane   3d23h   v1.37.2   10.77.10.138   <none>        Ubuntu 24.04.3 LTS   6.8.0-71-generic (amd64)   containerd://2.4.2
+active
+NAME                         DATA   AGE
+configmap/kube-root-ca.crt   1      3d22h
+ID                                                               CREATED                                 RUNTIME               
+0810cae29f8578e1e2336f8f2949a899287d381421c53d338cb1b03a80e3f66f 2026-11-11 07:45:35.531030902 +0000 UTC io.containerd.runc.v2 
+3cda59f8cc239a44fa320b160609f650829d96ffab43c6f517b9cae1d0437a45 2026-11-11 07:49:57.601527256 +0000 UTC io.containerd.runc.v2 
+3e9b1a8a9a32e2292aae2cec7d1026e49dd68dbd3c20bae2efaa229f1aa9f928 2026-11-11 07:45:21.494373475 +0000 UTC io.containerd.runc.v2 
+4aed18563b1cd78c380bb5e38487c894ee3b0babb0db83c103bf821ddf27ef57 2026-11-11 07:45:21.484153622 +0000 UTC io.containerd.runc.v2 
+67d2249c7ddb938b547efe7d381e7ef962312cbfdd920d0f4572f06ab370cc1b 2026-11-11 07:45:21.466526695 +0000 UTC io.containerd.runc.v2 
+a2a0b4facd02519ab2701687f1a4779bdffb11fb0d26668ffca1577d005d00ca 2026-11-11 07:51:05.507474956 +0000 UTC io.containerd.runc.v2 
+b3adfde3751620198e0ce335f1331ef9d67c29ea5428539566b382cd2c0d2c4a 2026-11-11 07:51:06.297420261 +0000 UTC io.containerd.runc.v2 
+bf98323a3fd1ca8f2e34019c58951992677484c75c2c2ce5cb09aefdcadd65fc 2026-11-11 07:49:57.4972245 +0000 UTC   io.containerd.runc.v2 
+c1d8709447ba5010c54a405ad0a7957a743eb82dd1ed0498a114ea02ff3c20c4 2026-11-11 07:48:18.667417037 +0000 UTC io.containerd.runc.v2 
+d96075c93242cd9bf22ae3906fb63c9340dc63f0896f83d5e1394dc5fb5efc21 2026-11-11 07:45:21.468216884 +0000 UTC io.containerd.runc.v2 
+e0480ed5298e04311a48821c23b1db8fe1764bf044dc710e2384bb110bfbb81b 2026-11-11 07:51:06.28795326 +0000 UTC  io.containerd.runc.v2 
+e76a65b4745b2561750055c0ad4ea16935820cbea04f60c76ef686fc99de8a5a 2026-11-11 07:51:06.26945843 +0000 UTC  io.containerd.runc.v2 
+    PID    PPID                  STARTED COMMAND
+ctr: failed to load sandbox 848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6
+/proc/1565141 absent=0
+/proc/1565166 absent=0
+/run/kata/848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6 absent=0
+/run/vc/vm/848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6 absent=0
+/var/lib/kubelet/pods/dd08f322-e02a-4ca6-becc-2f9f6ff8646a absent=0
+drwx------ 2 ubuntu ubuntu 4096 Nov 15 07:06 /tmp/kataai-runner-011-20261115-0705
+total 42284
+-rw-rw-r-- 1 ubuntu ubuntu 43295232 Nov 15 07:07 runner.oci.tar
+3b3b90076419f21648a175cb5dc764dc38718bb049500e2662772b64eca35a2f  /tmp/kataai-runner-011-20261115-0705/runner.oci.tar
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        23G  9.8G   13G  45% /
+               total        used        free      shared  buff/cache   available
+Mem:            7941        1610         416           6        6227        6330
+Swap:              0           0           0
+/tmp/kataai-runner-011-20261115-0705/runner.oci.tar: OK
+Sun Nov 15 07:22:23 UTC 2026
+inspected_temporary_staging_absent=true

@@ -1,0 +1,107 @@
+Sun Nov 15 07:06:43 UTC 2026
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE     SELECTOR
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   3d23h   <none>
+NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                  AGE     SELECTOR
+kube-dns   ClusterIP   10.96.0.10   <none>        53/UDP,53/TCP,9153/TCP   3d23h   k8s-app=kube-dns
+NAME                       READY   STATUS    RESTARTS   AGE     IP             NODE     NOMINATED NODE   READINESS GATES
+coredns-559f6c778d-nfbt6   1/1     Running   0          3d23h   10.244.253.4   katavm   <none>           <none>
+coredns-559f6c778d-t5nxt   1/1     Running   0          3d23h   10.244.253.3   katavm   <none>           <none>
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "addressType": "IPv4",
+            "apiVersion": "discovery.k8s.io/v1",
+            "endpoints": [
+                {
+                    "addresses": [
+                        "10.244.253.3"
+                    ],
+                    "conditions": {
+                        "ready": true,
+                        "serving": true,
+                        "terminating": false
+                    },
+                    "nodeName": "katavm",
+                    "targetRef": {
+                        "kind": "Pod",
+                        "name": "coredns-559f6c778d-t5nxt",
+                        "namespace": "kube-system",
+                        "uid": "593c45d5-dd22-4352-80ca-6c3bbf4c07d4"
+                    }
+                },
+                {
+                    "addresses": [
+                        "10.244.253.4"
+                    ],
+                    "conditions": {
+                        "ready": true,
+                        "serving": true,
+                        "terminating": false
+                    },
+                    "nodeName": "katavm",
+                    "targetRef": {
+                        "kind": "Pod",
+                        "name": "coredns-559f6c778d-nfbt6",
+                        "namespace": "kube-system",
+                        "uid": "7eb481b9-5d97-4cae-a862-43d8e2795fc4"
+                    }
+                }
+            ],
+            "kind": "EndpointSlice",
+            "metadata": {
+                "annotations": {
+                    "endpoints.kubernetes.io/last-change-trigger-time": "2026-11-11T07:51:08Z"
+                },
+                "creationTimestamp": "2026-11-11T07:45:35Z",
+                "generateName": "kube-dns-",
+                "generation": 5,
+                "labels": {
+                    "endpointslice.kubernetes.io/managed-by": "endpointslice-controller.k8s.io",
+                    "k8s-app": "kube-dns",
+                    "kubernetes.io/cluster-service": "true",
+                    "kubernetes.io/name": "CoreDNS",
+                    "kubernetes.io/service-name": "kube-dns"
+                },
+                "name": "kube-dns-4sk56",
+                "namespace": "kube-system",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Service",
+                        "name": "kube-dns",
+                        "uid": "00fcd800-a317-4e8b-a728-fa215178b398"
+                    }
+                ],
+                "resourceVersion": "1326",
+                "uid": "6c8dbe59-e734-430e-91ea-cb7677fadd78"
+            },
+            "ports": [
+                {
+                    "name": "dns",
+                    "port": 53,
+                    "protocol": "UDP"
+                },
+                {
+                    "name": "dns-tcp",
+                    "port": 53,
+                    "protocol": "TCP"
+                },
+                {
+                    "name": "metrics",
+                    "port": 9153,
+                    "protocol": "TCP"
+                }
+            ]
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+controlled_peer_tcp_exit=0
+node_api_tcp_exit=0
+kubelet_tcp_exit=0

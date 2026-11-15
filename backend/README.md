@@ -1,13 +1,18 @@
 # Backend: provisional local prototype
 
-`GET /health` reports process health, not model, executor, database or isolation
-readiness. Explicitly configured dataset and request APIs use PostgreSQL and a
-private local dataset root. Request intents are durable; a separate, explicitly
-invoked fake-only worker processes at most one per run. An opt-in demo worker can
-use a local model with a fake executor. There is no generated-code execution or
-remote executor. Fake completion is not computation or a benchmark measurement.
+The current native macOS ARM64 integration is documented in
+[the MVP runbook](../docs/MVP_E2E.md). `app.kata_demo_worker` uses local Qwen,
+the existing PostgreSQL queue and the remote `KataExecutor`; dispatch is disabled
+unless `KATAAI_PRIVATE_EXPERIMENTAL_DEMO=1`. `app.demo_cli` uploads and polls.
+The fake workers remain available for regression tests and label their presets
+`fake_completed`. A valid model proposal does not establish correct computation.
 
-## MVP direction: real model-generated code, narrowly evaluated
+`GET /health` reports process health only. Earlier milestone observations and
+fake-only workflows below are retained as historical context. Statements about
+unimplemented real integration in those historical sections are superseded by
+the MVP runbook, whose evidence distinguishes implemented from live-verified behavior.
+
+## Historical MVP direction: real model-generated code, narrowly evaluated
 
 **Selected local model:** Qwen3.5-9B Q4_K_M is the current MVP candidate after
 comparison with 4B. The operator must explicitly start the 9B llama.cpp server;
@@ -99,8 +104,9 @@ proof that it will compute a correct answer or be safe to execute.
 provisional runner description—**never CSV rows**—and accepts exactly one
 `run_python` function call with a bounded code string. The code is untrusted,
 inert text. Dataset identity, files, runtime, permissions and budgets are never
-model-selected. No automatic retries or repair are performed. The runner's
-`df` description is a provisional future contract, not an implemented executor.
+model-selected. No automatic retries or repair are performed. The current prompt
+uses Python 3.12 standard library, `/inputs/data.csv`, UTF-8 BOM handling, and an
+explicit JSON file at `/tmp/result.json` (2048 bytes, 30-second script budget).
 Prompt instructions alone do not prevent injection or unsafe proposals.
 
 `summarize(question, result)` validates bounded JSON and sends the question and
@@ -182,16 +188,16 @@ explicitly (this is a one-process demo, not authentication):
 
 ```sh
 llama-server --model "$HOME/Library/Caches/kataai/models/Qwen3.5-9B-Q4_K_M.gguf" \
-  --host 127.0.0.1 --port 18942 --ctx-size 8192 --gpu-layers 99 \
+  --host 127.0.0.1 --port 18942 --ctx-size 4096 --device MTL0 --gpu-layers 99 \
   --parallel 1 --jinja --reasoning on
 ```
 
 The server controls which weights are used; the worker's model name is a
 request identifier and does not establish the loaded model's identity. The
-adapter sends the provisional MVP prompt asking for `result = {"answer": ...}`
+adapter sends the current runner file contract, preferring `{"answer": ...}`
 with a Python numeric value and explicitly requests coding-oriented sampling
 (temperature 0.6, top-p 0.95, top-k 20, min-p 0, presence penalty 0, repeat
-penalty 1). The JSON convention is not an approved remote runner contract;
+penalty 1). The answer key is a prompt convention, not a runner root restriction;
 validating the `run_python` envelope does not verify the generated program,
 result type or answer. Do not assume that a server enforces or supports every
 sampling option without checking its behavior. The model call has a maximum

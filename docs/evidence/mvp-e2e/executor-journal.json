@@ -1,0 +1,1436 @@
+[
+  {
+    "request_id": "9ce50b09-30f9-4851-b0bf-9f72219047d9",
+    "run_id": "5e3c4476-c41b-4f6a-8672-379e6c6461e9",
+    "dataset_id": "f5636448-ba41-4565-b8f9-60424edd0b3c",
+    "code_hash": "60d0ca946203271002763a08aa86b4522c21fbdc26531df29362157c360ef5dc",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-5e3c4476c41b4f6a8672379e6c6461e9",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-5e3c4476c41b4f6a8672379e6c6461e9-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-5e3c4476c41b4f6a8672379e6c6461e9"
+        },
+        "annotations": {
+          "kataai/script-sha256": "60d0ca946203271002763a08aa86b4522c21fbdc26531df29362157c360ef5dc",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "9ce50b09-30f9-4851-b0bf-9f72219047d9",
+          "kataai/run-id": "5e3c4476-c41b-4f6a-8672-379e6c6461e9",
+          "kataai/dataset-id": "f5636448-ba41-4565-b8f9-60424edd0b3c",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "35b5b252c89d98f31b35dabb671829103a19128eb8e88a686f14785313b1356c"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ndata_path = Path(\"/inputs/data.csv\")\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    rows = list(reader)\n\n# Filter for East region and sum quantity\ntotal_quantity = 0\nfor row in rows:\n    if row[\"region\"] == \"East\":\n        total_quantity += int(row[\"quantity\"])\n\n# Write result to JSON\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)\n\nprint(f\"Total quantity in East region: {total_quantity}\")",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-5e3c4476c41b4f6a8672379e6c6461e9",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-5e3c4476c41b4f6a8672379e6c6461e9"
+        },
+        "annotations": {
+          "kataai/request-id": "9ce50b09-30f9-4851-b0bf-9f72219047d9",
+          "kataai/run-id": "5e3c4476-c41b-4f6a-8672-379e6c6461e9",
+          "kataai/dataset-id": "f5636448-ba41-4565-b8f9-60424edd0b3c",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "35b5b252c89d98f31b35dabb671829103a19128eb8e88a686f14785313b1356c"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-5e3c4476c41b4f6a8672379e6c6461e9"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-5e3c4476c41b4f6a8672379e6c6461e9"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-5e3c4476c41b4f6a8672379e6c6461e9-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "e98b6c1c-6ddd-4fc9-a14b-4904c9cbc356",
+    "job_uid": "7a44a8ad-7f2b-4ac0-9b1f-fabc79007cde",
+    "pods": {
+      "792597fa-1732-4fd7-b7ff-27025f83b5a0": {
+        "name": "ka-5e3c4476c41b4f6a8672379e6c6461e9-xttvk",
+        "node": "katavm",
+        "uid": "792597fa-1732-4fd7-b7ff-27025f83b5a0",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://35883a67b276487edfeda8b1892a930972635e9bae53b3c094c99be2ae681589",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-5e3c4476c41b4f6a8672379e6c6461e9",
+      "job_uid": "7a44a8ad-7f2b-4ac0-9b1f-fabc79007cde",
+      "pod_uid": "792597fa-1732-4fd7-b7ff-27025f83b5a0",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 6
+      },
+      "result_bytes": "{\"answer\":6}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "1a3b5b53-ceb4-4d53-b67e-98e75c93dbbd",
+    "run_id": "6f3a2941-e747-406e-8432-4cbe1053187a",
+    "dataset_id": "19db9029-cf0d-43d9-8704-8d36d783b716",
+    "code_hash": "a1598bf3bf22122853a9916939c6737a84dde9cc3c28feb0e48933c61f0a14fc",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-6f3a2941e747406e84324cbe1053187a",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-6f3a2941e747406e84324cbe1053187a-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+        },
+        "annotations": {
+          "kataai/script-sha256": "a1598bf3bf22122853a9916939c6737a84dde9cc3c28feb0e48933c61f0a14fc",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "1a3b5b53-ceb4-4d53-b67e-98e75c93dbbd",
+          "kataai/run-id": "6f3a2941-e747-406e-8432-4cbe1053187a",
+          "kataai/dataset-id": "19db9029-cf0d-43d9-8704-8d36d783b716",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "91beb80de2b46e7ff0b558431f499faaebb81e7a4c5c4c668252dac17d4eab41"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path(\"/inputs/data.csv\")\ntotal_quantity = 0\n\nwith open(csv_path, encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        if row[\"region\"] == \"East\":\n            quantity = int(row[\"quantity\"])\n            total_quantity += quantity\n\n# Write result to JSON\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)\n\nprint(f\"Total quantity sold in East region: {total_quantity}\")",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-6f3a2941e747406e84324cbe1053187a",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+        },
+        "annotations": {
+          "kataai/request-id": "1a3b5b53-ceb4-4d53-b67e-98e75c93dbbd",
+          "kataai/run-id": "6f3a2941-e747-406e-8432-4cbe1053187a",
+          "kataai/dataset-id": "19db9029-cf0d-43d9-8704-8d36d783b716",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "91beb80de2b46e7ff0b558431f499faaebb81e7a4c5c4c668252dac17d4eab41"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-6f3a2941e747406e84324cbe1053187a"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-6f3a2941e747406e84324cbe1053187a-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "b4c0eb7b-7ede-4099-b81f-11a788ab521c",
+    "job_uid": "65365754-176a-4992-abef-d16757afe957",
+    "pods": {
+      "3881156f-87d2-45e1-99e2-93d375c75779": {
+        "name": "ka-6f3a2941e747406e84324cbe1053187a-9tk7v",
+        "node": "katavm",
+        "uid": "3881156f-87d2-45e1-99e2-93d375c75779",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://8ddb053379dda8c331d5f53d21ec60cbc4e2ad732788a84c64a770994dea87ba",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-6f3a2941e747406e84324cbe1053187a",
+      "job_uid": "65365754-176a-4992-abef-d16757afe957",
+      "pod_uid": "3881156f-87d2-45e1-99e2-93d375c75779",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 6
+      },
+      "result_bytes": "{\"answer\":6}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "eb8f2f02-a88a-44be-8ca3-8dbfce9176b4",
+    "run_id": "7dc86571-1351-4b27-9e4e-19f5d5dcbbea",
+    "dataset_id": "a90825dc-d50a-4c1b-ad98-a449d6040aaf",
+    "code_hash": "f7ea24f0d6b379cb8b3f7960a4489b6ff53142cb6ea7672077caac785cef8158",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-7dc8657113514b279e4e19f5d5dcbbea",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-7dc8657113514b279e4e19f5d5dcbbea-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-7dc8657113514b279e4e19f5d5dcbbea"
+        },
+        "annotations": {
+          "kataai/script-sha256": "f7ea24f0d6b379cb8b3f7960a4489b6ff53142cb6ea7672077caac785cef8158",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "eb8f2f02-a88a-44be-8ca3-8dbfce9176b4",
+          "kataai/run-id": "7dc86571-1351-4b27-9e4e-19f5d5dcbbea",
+          "kataai/dataset-id": "a90825dc-d50a-4c1b-ad98-a449d6040aaf",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "5d3c088a3a86a2ed3da4b96c4247002a8a0e41e40a3aad6d693223a5c8e36e3e"
+        }
+      },
+      "data": {
+        "script.py": "import csv, json\nwith open('/inputs/data.csv', encoding='utf-8-sig', newline='') as f:\n    rows = list(csv.DictReader(f))\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump({'rows': len(rows), 'columns': list(rows[0]) if rows else []}, f)\n",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-7dc8657113514b279e4e19f5d5dcbbea",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-7dc8657113514b279e4e19f5d5dcbbea"
+        },
+        "annotations": {
+          "kataai/request-id": "eb8f2f02-a88a-44be-8ca3-8dbfce9176b4",
+          "kataai/run-id": "7dc86571-1351-4b27-9e4e-19f5d5dcbbea",
+          "kataai/dataset-id": "a90825dc-d50a-4c1b-ad98-a449d6040aaf",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "5d3c088a3a86a2ed3da4b96c4247002a8a0e41e40a3aad6d693223a5c8e36e3e"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-7dc8657113514b279e4e19f5d5dcbbea"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-7dc8657113514b279e4e19f5d5dcbbea"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-7dc8657113514b279e4e19f5d5dcbbea-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "54573962-34d6-4b76-80b6-5eb45b441b70",
+    "job_uid": "3a965a0d-2949-4b87-b74a-5da1bddbeb9e",
+    "pods": {
+      "386bd2e9-117a-4b34-90bf-a1e4712e233d": {
+        "name": "ka-7dc8657113514b279e4e19f5d5dcbbea-mzppj",
+        "node": "katavm",
+        "uid": "386bd2e9-117a-4b34-90bf-a1e4712e233d",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://ffd7def2446e8f44d9aee8b4d577d5aaaf863e0310d026dd7cc9944c4b50040c",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-7dc8657113514b279e4e19f5d5dcbbea",
+      "job_uid": "3a965a0d-2949-4b87-b74a-5da1bddbeb9e",
+      "pod_uid": "386bd2e9-117a-4b34-90bf-a1e4712e233d",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "rows": 4,
+        "columns": [
+          "order_id",
+          "region",
+          "quantity",
+          "unit_price_thb"
+        ]
+      },
+      "result_bytes": "{\"rows\":4,\"columns\":[\"order_id\",\"region\",\"quantity\",\"unit_price_thb\"]}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "f1dd6a6e-acc6-4b76-b380-e45833364129",
+    "run_id": "a8997e47-0352-444e-a66a-3e0b9f7cbc77",
+    "dataset_id": "3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc",
+    "code_hash": "4ad09f0b123e073f40d0a17e6a5b14131be10b32262cce05f215e924594c3c0f",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-a8997e470352444ea66a3e0b9f7cbc77",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-a8997e470352444ea66a3e0b9f7cbc77-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-a8997e470352444ea66a3e0b9f7cbc77"
+        },
+        "annotations": {
+          "kataai/script-sha256": "4ad09f0b123e073f40d0a17e6a5b14131be10b32262cce05f215e924594c3c0f",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "f1dd6a6e-acc6-4b76-b380-e45833364129",
+          "kataai/run-id": "a8997e47-0352-444e-a66a-3e0b9f7cbc77",
+          "kataai/dataset-id": "3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "a25e1f2fc7d6f01db8f35d154a4f56e299cb3094b488456d4febb6b30f889662"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path(\"/inputs/data.csv\")\norders = []\n\nwith open(csv_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row[\"quantity\"])\n        unit_price_thb = float(row[\"unit_price_thb\"])\n        revenue = quantity * unit_price_thb\n        orders.append(revenue)\n\n# Calculate total revenue\ntotal_revenue = sum(orders)\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-a8997e470352444ea66a3e0b9f7cbc77",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-a8997e470352444ea66a3e0b9f7cbc77"
+        },
+        "annotations": {
+          "kataai/request-id": "f1dd6a6e-acc6-4b76-b380-e45833364129",
+          "kataai/run-id": "a8997e47-0352-444e-a66a-3e0b9f7cbc77",
+          "kataai/dataset-id": "3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "a25e1f2fc7d6f01db8f35d154a4f56e299cb3094b488456d4febb6b30f889662"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-a8997e470352444ea66a3e0b9f7cbc77"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-a8997e470352444ea66a3e0b9f7cbc77"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-a8997e470352444ea66a3e0b9f7cbc77-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "a5582319-6b8b-4e03-a668-95fc2485432b",
+    "job_uid": "1e21ba31-257e-4eb8-8dfb-71b69d3b7319",
+    "pods": {
+      "9b11d684-af19-4f48-9315-789d4bbfbffc": {
+        "name": "ka-a8997e470352444ea66a3e0b9f7cbc77-vjvrw",
+        "node": "katavm",
+        "uid": "9b11d684-af19-4f48-9315-789d4bbfbffc",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://ebea4615236c0609e1c2c839d7fede59bac720a68ab4498a8ff946187037f2ca",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-a8997e470352444ea66a3e0b9f7cbc77",
+      "job_uid": "1e21ba31-257e-4eb8-8dfb-71b69d3b7319",
+      "pod_uid": "9b11d684-af19-4f48-9315-789d4bbfbffc",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 770.0
+      },
+      "result_bytes": "{\"answer\":770.0}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "9606f7e5-c41b-4b6b-b758-7e399ac6d0b7",
+    "run_id": "acc24b77-44d1-4360-aa49-80265030625b",
+    "dataset_id": "bcfc0680-bbc1-4880-a2db-2bc5a2c79f78",
+    "code_hash": "a08e8910357790439dfd322645c9eadd3802e96a02c1ac7fd8b8259352098ad7",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-acc24b7744d14360aa4980265030625b",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-acc24b7744d14360aa4980265030625b-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-acc24b7744d14360aa4980265030625b"
+        },
+        "annotations": {
+          "kataai/script-sha256": "a08e8910357790439dfd322645c9eadd3802e96a02c1ac7fd8b8259352098ad7",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "9606f7e5-c41b-4b6b-b758-7e399ac6d0b7",
+          "kataai/run-id": "acc24b77-44d1-4360-aa49-80265030625b",
+          "kataai/dataset-id": "bcfc0680-bbc1-4880-a2db-2bc5a2c79f78",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "99b469fd84600dcf050d13170198a60eb1bea76a58ac450db54220bfff32f29f"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom decimal import Decimal\n\ntotal_revenue = Decimal('0')\n\nwith open('/inputs/data.csv', 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row['quantity'])\n        unit_price_thb = Decimal(row['unit_price_thb'])\n        total_revenue += quantity * unit_price_thb\n\nresult = {\"answer\": float(total_revenue)}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-acc24b7744d14360aa4980265030625b",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-acc24b7744d14360aa4980265030625b"
+        },
+        "annotations": {
+          "kataai/request-id": "9606f7e5-c41b-4b6b-b758-7e399ac6d0b7",
+          "kataai/run-id": "acc24b77-44d1-4360-aa49-80265030625b",
+          "kataai/dataset-id": "bcfc0680-bbc1-4880-a2db-2bc5a2c79f78",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "99b469fd84600dcf050d13170198a60eb1bea76a58ac450db54220bfff32f29f"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-acc24b7744d14360aa4980265030625b"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-acc24b7744d14360aa4980265030625b"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-acc24b7744d14360aa4980265030625b-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "cc83c6b0-4c81-4860-addc-7179ab4138fb",
+    "job_uid": "787baa67-300e-44c0-b045-fc881cda3ce1",
+    "pods": {
+      "15481339-058d-410d-8dd8-3a60036ef69c": {
+        "name": "ka-acc24b7744d14360aa4980265030625b-pb69t",
+        "node": "katavm",
+        "uid": "15481339-058d-410d-8dd8-3a60036ef69c",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://42abd3abc6d3d20ada18dc20914864a84f6ff9b2d90852d28cc57cb57e9437ef",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-acc24b7744d14360aa4980265030625b",
+      "job_uid": "787baa67-300e-44c0-b045-fc881cda3ce1",
+      "pod_uid": "15481339-058d-410d-8dd8-3a60036ef69c",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 770.0
+      },
+      "result_bytes": "{\"answer\":770.0}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "720c62a4-0adf-468b-942d-0d0d654de614",
+    "run_id": "c4787a19-5818-4f53-882f-af0dd8242692",
+    "dataset_id": "24379a8e-3a68-48c4-a7b6-7a74bd14aeb3",
+    "code_hash": "8e2520f533001fb1e8ca9ed0df9aa3d09a4b8cd1cf76a1486e52e51db0edf2b7",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-c4787a1958184f53882faf0dd8242692",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-c4787a1958184f53882faf0dd8242692-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-c4787a1958184f53882faf0dd8242692"
+        },
+        "annotations": {
+          "kataai/script-sha256": "8e2520f533001fb1e8ca9ed0df9aa3d09a4b8cd1cf76a1486e52e51db0edf2b7",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "720c62a4-0adf-468b-942d-0d0d654de614",
+          "kataai/run-id": "c4787a19-5818-4f53-882f-af0dd8242692",
+          "kataai/dataset-id": "24379a8e-3a68-48c4-a7b6-7a74bd14aeb3",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "fbb9c49f8aa6b17c337d34a6ba3e5abb7c53f0b07d2a81aa7779c112c67c1ae8"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom pathlib import Path\n\n# Read CSV file\ndata_path = Path(\"/inputs/data.csv\")\nrows = []\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        rows.append(row)\n\n# Filter for East region and sum quantity\ntotal_quantity = 0\nfor row in rows:\n    if row[\"region\"] == \"East\":\n        total_quantity += int(row[\"quantity\"])\n\n# Write result\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-c4787a1958184f53882faf0dd8242692",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-c4787a1958184f53882faf0dd8242692"
+        },
+        "annotations": {
+          "kataai/request-id": "720c62a4-0adf-468b-942d-0d0d654de614",
+          "kataai/run-id": "c4787a19-5818-4f53-882f-af0dd8242692",
+          "kataai/dataset-id": "24379a8e-3a68-48c4-a7b6-7a74bd14aeb3",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "fbb9c49f8aa6b17c337d34a6ba3e5abb7c53f0b07d2a81aa7779c112c67c1ae8"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-c4787a1958184f53882faf0dd8242692"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-c4787a1958184f53882faf0dd8242692"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-c4787a1958184f53882faf0dd8242692-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "c43f6548-78ad-431c-a430-3fec0cc0136a",
+    "job_uid": "0a3b87a1-9a00-4977-bd57-475f31f8140b",
+    "pods": {
+      "19f39491-b6a9-47a0-aed3-0e70ff79a2e6": {
+        "name": "ka-c4787a1958184f53882faf0dd8242692-dppw6",
+        "node": "katavm",
+        "uid": "19f39491-b6a9-47a0-aed3-0e70ff79a2e6",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://9b413959e0b9401a4444af6d25ea5a3d5339268e75f8db867042aed9099c1622",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-c4787a1958184f53882faf0dd8242692",
+      "job_uid": "0a3b87a1-9a00-4977-bd57-475f31f8140b",
+      "pod_uid": "19f39491-b6a9-47a0-aed3-0e70ff79a2e6",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 6
+      },
+      "result_bytes": "{\"answer\":6}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  },
+  {
+    "request_id": "266a6d1f-62c3-4e8b-a867-56f90b28f6e3",
+    "run_id": "c597574a-7b3c-4d91-a5e3-74827f9f93a3",
+    "dataset_id": "e803c9c6-6f2a-448d-b135-f06e4fc2fa9d",
+    "code_hash": "e825a451f2454aea23353f4493f25e6fc48b7dfd46b0efe5a04b851d7cf1cca4",
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "name": "ka-c597574a7b3c4d91a5e374827f9f93a3",
+    "cm": {
+      "apiVersion": "v1",
+      "kind": "ConfigMap",
+      "immutable": true,
+      "metadata": {
+        "name": "ka-c597574a7b3c4d91a5e374827f9f93a3-inputs",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-c597574a7b3c4d91a5e374827f9f93a3"
+        },
+        "annotations": {
+          "kataai/script-sha256": "e825a451f2454aea23353f4493f25e6fc48b7dfd46b0efe5a04b851d7cf1cca4",
+          "kataai/csv-sha256": "db4798029e24eecfaf1c1e5730961830b2b48073b2b664f434fde3a8ca8ac5f5",
+          "kataai/request-id": "266a6d1f-62c3-4e8b-a867-56f90b28f6e3",
+          "kataai/run-id": "c597574a-7b3c-4d91-a5e3-74827f9f93a3",
+          "kataai/dataset-id": "e803c9c6-6f2a-448d-b135-f06e4fc2fa9d",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "e67c5c75df487c77aaea4553ba82fbba547ba4298706c7ea0e7e94bd1e59b47b"
+        }
+      },
+      "data": {
+        "script.py": "import csv\nimport json\nfrom pathlib import Path\n\n# Read CSV file\ncsv_path = Path('/inputs/data.csv')\ntotal_revenue = 0.0\n\nwith open(csv_path, 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row['quantity'])\n        unit_price_thb = float(row['unit_price_thb'])\n        total_revenue += quantity * unit_price_thb\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+        "data.csv": "order_id,region,quantity,unit_price_thb\n1,East,2,100\n2,East,1,150\n3,East,3,40\n4,West,4,75\n"
+      }
+    },
+    "job": {
+      "apiVersion": "batch/v1",
+      "kind": "Job",
+      "metadata": {
+        "name": "ka-c597574a7b3c4d91a5e374827f9f93a3",
+        "namespace": "kata-lab",
+        "labels": {
+          "kataai-m3-run": "ka-c597574a7b3c4d91a5e374827f9f93a3"
+        },
+        "annotations": {
+          "kataai/request-id": "266a6d1f-62c3-4e8b-a867-56f90b28f6e3",
+          "kataai/run-id": "c597574a-7b3c-4d91-a5e3-74827f9f93a3",
+          "kataai/dataset-id": "e803c9c6-6f2a-448d-b135-f06e4fc2fa9d",
+          "kataai/protocol": "kataai.runner.v1",
+          "kataai/fingerprint": "e67c5c75df487c77aaea4553ba82fbba547ba4298706c7ea0e7e94bd1e59b47b"
+        }
+      },
+      "spec": {
+        "completions": 1,
+        "parallelism": 1,
+        "backoffLimit": 0,
+        "activeDeadlineSeconds": 120,
+        "template": {
+          "metadata": {
+            "labels": {
+              "kataai-m3-run": "ka-c597574a7b3c4d91a5e374827f9f93a3"
+            }
+          },
+          "spec": {
+            "runtimeClassName": "kata-qemu-runtime-rs",
+            "restartPolicy": "Never",
+            "automountServiceAccountToken": false,
+            "enableServiceLinks": false,
+            "terminationGracePeriodSeconds": 5,
+            "securityContext": {
+              "runAsNonRoot": true,
+              "runAsUser": 10001,
+              "runAsGroup": 10001,
+              "fsGroup": 10001,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            },
+            "containers": [
+              {
+                "name": "runner",
+                "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+                "imagePullPolicy": "IfNotPresent",
+                "command": [
+                  "python3",
+                  "-I",
+                  "-B",
+                  "/opt/kataai/runner.py"
+                ],
+                "env": [
+                  {
+                    "name": "KATAAI_RUN_ID",
+                    "value": "ka-c597574a7b3c4d91a5e374827f9f93a3"
+                  },
+                  {
+                    "name": "KATAAI_POD_UID",
+                    "valueFrom": {
+                      "fieldRef": {
+                        "fieldPath": "metadata.uid"
+                      }
+                    }
+                  }
+                ],
+                "terminationMessagePath": "/tmp/runner-termination.json",
+                "terminationMessagePolicy": "File",
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "readOnlyRootFilesystem": true,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "128Mi",
+                    "ephemeral-storage": "16Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "256Mi",
+                    "ephemeral-storage": "64Mi"
+                  }
+                },
+                "volumeMounts": [
+                  {
+                    "name": "inputs",
+                    "mountPath": "/inputs",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "scratch",
+                    "mountPath": "/tmp"
+                  }
+                ]
+              }
+            ],
+            "volumes": [
+              {
+                "name": "inputs",
+                "configMap": {
+                  "name": "ka-c597574a7b3c4d91a5e374827f9f93a3-inputs",
+                  "defaultMode": 292,
+                  "items": [
+                    {
+                      "key": "script.py",
+                      "path": "script.py"
+                    },
+                    {
+                      "key": "data.csv",
+                      "path": "data.csv"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "scratch",
+                "emptyDir": {
+                  "medium": "Memory",
+                  "sizeLimit": "16Mi"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "cm_uid": "d9d38341-28d8-44e9-96f0-6148899bddab",
+    "job_uid": "97154df7-c337-4894-93b2-0dd29d6c56fd",
+    "pods": {
+      "1082d2ae-9c03-4a12-92be-2ae4ac25dbf0": {
+        "name": "ka-c597574a7b3c4d91a5e374827f9f93a3-c9bhs",
+        "node": "katavm",
+        "uid": "1082d2ae-9c03-4a12-92be-2ae4ac25dbf0",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://e467667bc7b2c7b6c936a0782eb9c2713fff6ab10d682e037b95af6d0e538003",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "cm_intent": true,
+    "job_intent": true,
+    "cancel": false,
+    "state": "completed",
+    "cleanup": "pending",
+    "outcome": {
+      "run_id": "ka-c597574a7b3c4d91a5e374827f9f93a3",
+      "job_uid": "97154df7-c337-4894-93b2-0dd29d6c56fd",
+      "pod_uid": "1082d2ae-9c03-4a12-92be-2ae4ac25dbf0",
+      "code": "OK",
+      "exit_code": 0,
+      "script_exit_code": 0,
+      "result": {
+        "answer": 770.0
+      },
+      "result_bytes": "{\"answer\":770.0}"
+    },
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "last_error": null
+  }
+]

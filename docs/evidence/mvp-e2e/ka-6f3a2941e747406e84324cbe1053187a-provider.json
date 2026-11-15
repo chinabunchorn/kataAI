@@ -1,0 +1,812 @@
+{
+  "job": {
+    "kind": "Job",
+    "apiVersion": "batch/v1",
+    "metadata": {
+      "name": "ka-6f3a2941e747406e84324cbe1053187a",
+      "namespace": "kata-lab",
+      "uid": "65365754-176a-4992-abef-d16757afe957",
+      "resourceVersion": "679441",
+      "generation": 1,
+      "creationTimestamp": "2026-11-15T11:13:49Z",
+      "labels": {
+        "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+      },
+      "annotations": {
+        "kataai/dataset-id": "19db9029-cf0d-43d9-8704-8d36d783b716",
+        "kataai/fingerprint": "91beb80de2b46e7ff0b558431f499faaebb81e7a4c5c4c668252dac17d4eab41",
+        "kataai/protocol": "kataai.runner.v1",
+        "kataai/request-id": "1a3b5b53-ceb4-4d53-b67e-98e75c93dbbd",
+        "kataai/run-id": "6f3a2941-e747-406e-8432-4cbe1053187a"
+      },
+      "managedFields": [
+        {
+          "manager": "kube-controller-manager",
+          "operation": "Update",
+          "apiVersion": "batch/v1",
+          "time": "2026-11-15T11:13:49Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:status": {
+              "f:active": {},
+              "f:ready": {},
+              "f:startTime": {},
+              "f:terminating": {},
+              "f:uncountedTerminatedPods": {}
+            }
+          },
+          "subresource": "status"
+        },
+        {
+          "manager": "kubectl",
+          "operation": "Update",
+          "apiVersion": "batch/v1",
+          "time": "2026-11-15T11:13:49Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:metadata": {
+              "f:annotations": {
+                ".": {},
+                "f:kataai/dataset-id": {},
+                "f:kataai/fingerprint": {},
+                "f:kataai/protocol": {},
+                "f:kataai/request-id": {},
+                "f:kataai/run-id": {}
+              },
+              "f:labels": {
+                ".": {},
+                "f:kataai-m3-run": {}
+              }
+            },
+            "f:spec": {
+              "f:activeDeadlineSeconds": {},
+              "f:backoffLimit": {},
+              "f:completionMode": {},
+              "f:completions": {},
+              "f:manualSelector": {},
+              "f:parallelism": {},
+              "f:podReplacementPolicy": {},
+              "f:suspend": {},
+              "f:template": {
+                "f:metadata": {
+                  "f:labels": {
+                    ".": {},
+                    "f:kataai-m3-run": {}
+                  }
+                },
+                "f:spec": {
+                  "f:automountServiceAccountToken": {},
+                  "f:containers": {
+                    "k:{\"name\":\"runner\"}": {
+                      ".": {},
+                      "f:command": {},
+                      "f:env": {
+                        ".": {},
+                        "k:{\"name\":\"KATAAI_POD_UID\"}": {
+                          ".": {},
+                          "f:name": {},
+                          "f:valueFrom": {
+                            ".": {},
+                            "f:fieldRef": {}
+                          }
+                        },
+                        "k:{\"name\":\"KATAAI_RUN_ID\"}": {
+                          ".": {},
+                          "f:name": {},
+                          "f:value": {}
+                        }
+                      },
+                      "f:image": {},
+                      "f:imagePullPolicy": {},
+                      "f:name": {},
+                      "f:resources": {
+                        ".": {},
+                        "f:limits": {
+                          ".": {},
+                          "f:cpu": {},
+                          "f:ephemeral-storage": {},
+                          "f:memory": {}
+                        },
+                        "f:requests": {
+                          ".": {},
+                          "f:cpu": {},
+                          "f:ephemeral-storage": {},
+                          "f:memory": {}
+                        }
+                      },
+                      "f:securityContext": {
+                        ".": {},
+                        "f:allowPrivilegeEscalation": {},
+                        "f:capabilities": {
+                          ".": {},
+                          "f:drop": {}
+                        },
+                        "f:readOnlyRootFilesystem": {}
+                      },
+                      "f:terminationMessagePath": {},
+                      "f:terminationMessagePolicy": {},
+                      "f:volumeMounts": {
+                        ".": {},
+                        "k:{\"mountPath\":\"/inputs\"}": {
+                          ".": {},
+                          "f:mountPath": {},
+                          "f:name": {},
+                          "f:readOnly": {}
+                        },
+                        "k:{\"mountPath\":\"/tmp\"}": {
+                          ".": {},
+                          "f:mountPath": {},
+                          "f:name": {}
+                        }
+                      }
+                    }
+                  },
+                  "f:dnsPolicy": {},
+                  "f:enableServiceLinks": {},
+                  "f:restartPolicy": {},
+                  "f:runtimeClassName": {},
+                  "f:schedulerName": {},
+                  "f:securityContext": {
+                    ".": {},
+                    "f:fsGroup": {},
+                    "f:runAsGroup": {},
+                    "f:runAsNonRoot": {},
+                    "f:runAsUser": {},
+                    "f:seccompProfile": {
+                      ".": {},
+                      "f:type": {}
+                    }
+                  },
+                  "f:terminationGracePeriodSeconds": {},
+                  "f:volumes": {
+                    ".": {},
+                    "k:{\"name\":\"inputs\"}": {
+                      ".": {},
+                      "f:configMap": {
+                        ".": {},
+                        "f:defaultMode": {},
+                        "f:items": {},
+                        "f:name": {}
+                      },
+                      "f:name": {}
+                    },
+                    "k:{\"name\":\"scratch\"}": {
+                      ".": {},
+                      "f:emptyDir": {
+                        ".": {},
+                        "f:medium": {},
+                        "f:sizeLimit": {}
+                      },
+                      "f:name": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "spec": {
+      "parallelism": 1,
+      "completions": 1,
+      "activeDeadlineSeconds": 120,
+      "backoffLimit": 0,
+      "selector": {
+        "matchLabels": {
+          "batch.kubernetes.io/controller-uid": "65365754-176a-4992-abef-d16757afe957"
+        }
+      },
+      "manualSelector": false,
+      "template": {
+        "metadata": {
+          "labels": {
+            "batch.kubernetes.io/controller-uid": "65365754-176a-4992-abef-d16757afe957",
+            "batch.kubernetes.io/job-name": "ka-6f3a2941e747406e84324cbe1053187a",
+            "controller-uid": "65365754-176a-4992-abef-d16757afe957",
+            "job-name": "ka-6f3a2941e747406e84324cbe1053187a",
+            "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+          }
+        },
+        "spec": {
+          "volumes": [
+            {
+              "name": "inputs",
+              "configMap": {
+                "name": "ka-6f3a2941e747406e84324cbe1053187a-inputs",
+                "items": [
+                  {
+                    "key": "script.py",
+                    "path": "script.py"
+                  },
+                  {
+                    "key": "data.csv",
+                    "path": "data.csv"
+                  }
+                ],
+                "defaultMode": 292
+              }
+            },
+            {
+              "name": "scratch",
+              "emptyDir": {
+                "medium": "Memory",
+                "sizeLimit": "16Mi"
+              }
+            }
+          ],
+          "containers": [
+            {
+              "name": "runner",
+              "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+              "command": [
+                "python3",
+                "-I",
+                "-B",
+                "/opt/kataai/runner.py"
+              ],
+              "env": [
+                {
+                  "name": "KATAAI_RUN_ID",
+                  "value": "ka-6f3a2941e747406e84324cbe1053187a"
+                },
+                {
+                  "name": "KATAAI_POD_UID",
+                  "valueFrom": {
+                    "fieldRef": {
+                      "apiVersion": "v1",
+                      "fieldPath": "metadata.uid"
+                    }
+                  }
+                }
+              ],
+              "resources": {
+                "limits": {
+                  "cpu": "1",
+                  "ephemeral-storage": "64Mi",
+                  "memory": "256Mi"
+                },
+                "requests": {
+                  "cpu": "100m",
+                  "ephemeral-storage": "16Mi",
+                  "memory": "128Mi"
+                }
+              },
+              "volumeMounts": [
+                {
+                  "name": "inputs",
+                  "readOnly": true,
+                  "mountPath": "/inputs"
+                },
+                {
+                  "name": "scratch",
+                  "mountPath": "/tmp"
+                }
+              ],
+              "terminationMessagePath": "/tmp/runner-termination.json",
+              "terminationMessagePolicy": "File",
+              "imagePullPolicy": "IfNotPresent",
+              "securityContext": {
+                "capabilities": {
+                  "drop": [
+                    "ALL"
+                  ]
+                },
+                "readOnlyRootFilesystem": true,
+                "allowPrivilegeEscalation": false
+              }
+            }
+          ],
+          "restartPolicy": "Never",
+          "terminationGracePeriodSeconds": 5,
+          "dnsPolicy": "ClusterFirst",
+          "automountServiceAccountToken": false,
+          "securityContext": {
+            "runAsUser": 10001,
+            "runAsGroup": 10001,
+            "runAsNonRoot": true,
+            "fsGroup": 10001,
+            "seccompProfile": {
+              "type": "RuntimeDefault"
+            }
+          },
+          "schedulerName": "default-scheduler",
+          "runtimeClassName": "kata-qemu-runtime-rs",
+          "enableServiceLinks": false
+        }
+      },
+      "completionMode": "NonIndexed",
+      "suspend": false,
+      "podReplacementPolicy": "TerminatingOrFailed"
+    },
+    "status": {
+      "startTime": "2026-11-15T11:13:49Z",
+      "active": 1,
+      "terminating": 0,
+      "uncountedTerminatedPods": {},
+      "ready": 0
+    }
+  },
+  "pod": {
+    "metadata": {
+      "name": "ka-6f3a2941e747406e84324cbe1053187a-9tk7v",
+      "generateName": "ka-6f3a2941e747406e84324cbe1053187a-",
+      "namespace": "kata-lab",
+      "uid": "3881156f-87d2-45e1-99e2-93d375c75779",
+      "resourceVersion": "679443",
+      "generation": 1,
+      "creationTimestamp": "2026-11-15T11:13:49Z",
+      "labels": {
+        "batch.kubernetes.io/controller-uid": "65365754-176a-4992-abef-d16757afe957",
+        "batch.kubernetes.io/job-name": "ka-6f3a2941e747406e84324cbe1053187a",
+        "controller-uid": "65365754-176a-4992-abef-d16757afe957",
+        "job-name": "ka-6f3a2941e747406e84324cbe1053187a",
+        "kataai-m3-run": "ka-6f3a2941e747406e84324cbe1053187a"
+      },
+      "ownerReferences": [
+        {
+          "apiVersion": "batch/v1",
+          "kind": "Job",
+          "name": "ka-6f3a2941e747406e84324cbe1053187a",
+          "uid": "65365754-176a-4992-abef-d16757afe957",
+          "controller": true,
+          "blockOwnerDeletion": true
+        }
+      ],
+      "finalizers": [
+        "batch.kubernetes.io/job-tracking"
+      ],
+      "managedFields": [
+        {
+          "manager": "kube-controller-manager",
+          "operation": "Update",
+          "apiVersion": "v1",
+          "time": "2026-11-15T11:13:49Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:metadata": {
+              "f:finalizers": {
+                ".": {},
+                "v:\"batch.kubernetes.io/job-tracking\"": {}
+              },
+              "f:generateName": {},
+              "f:labels": {
+                ".": {},
+                "f:batch.kubernetes.io/controller-uid": {},
+                "f:batch.kubernetes.io/job-name": {},
+                "f:controller-uid": {},
+                "f:job-name": {},
+                "f:kataai-m3-run": {}
+              },
+              "f:ownerReferences": {
+                ".": {},
+                "k:{\"uid\":\"65365754-176a-4992-abef-d16757afe957\"}": {}
+              }
+            },
+            "f:spec": {
+              "f:automountServiceAccountToken": {},
+              "f:containers": {
+                "k:{\"name\":\"runner\"}": {
+                  ".": {},
+                  "f:command": {},
+                  "f:env": {
+                    ".": {},
+                    "k:{\"name\":\"KATAAI_POD_UID\"}": {
+                      ".": {},
+                      "f:name": {},
+                      "f:valueFrom": {
+                        ".": {},
+                        "f:fieldRef": {}
+                      }
+                    },
+                    "k:{\"name\":\"KATAAI_RUN_ID\"}": {
+                      ".": {},
+                      "f:name": {},
+                      "f:value": {}
+                    }
+                  },
+                  "f:image": {},
+                  "f:imagePullPolicy": {},
+                  "f:name": {},
+                  "f:resources": {
+                    ".": {},
+                    "f:limits": {
+                      ".": {},
+                      "f:cpu": {},
+                      "f:ephemeral-storage": {},
+                      "f:memory": {}
+                    },
+                    "f:requests": {
+                      ".": {},
+                      "f:cpu": {},
+                      "f:ephemeral-storage": {},
+                      "f:memory": {}
+                    }
+                  },
+                  "f:securityContext": {
+                    ".": {},
+                    "f:allowPrivilegeEscalation": {},
+                    "f:capabilities": {
+                      ".": {},
+                      "f:drop": {}
+                    },
+                    "f:readOnlyRootFilesystem": {}
+                  },
+                  "f:terminationMessagePath": {},
+                  "f:terminationMessagePolicy": {},
+                  "f:volumeMounts": {
+                    ".": {},
+                    "k:{\"mountPath\":\"/inputs\"}": {
+                      ".": {},
+                      "f:mountPath": {},
+                      "f:name": {},
+                      "f:readOnly": {}
+                    },
+                    "k:{\"mountPath\":\"/tmp\"}": {
+                      ".": {},
+                      "f:mountPath": {},
+                      "f:name": {}
+                    }
+                  }
+                }
+              },
+              "f:dnsPolicy": {},
+              "f:enableServiceLinks": {},
+              "f:restartPolicy": {},
+              "f:runtimeClassName": {},
+              "f:schedulerName": {},
+              "f:securityContext": {
+                ".": {},
+                "f:fsGroup": {},
+                "f:runAsGroup": {},
+                "f:runAsNonRoot": {},
+                "f:runAsUser": {},
+                "f:seccompProfile": {
+                  ".": {},
+                  "f:type": {}
+                }
+              },
+              "f:terminationGracePeriodSeconds": {},
+              "f:volumes": {
+                ".": {},
+                "k:{\"name\":\"inputs\"}": {
+                  ".": {},
+                  "f:configMap": {
+                    ".": {},
+                    "f:defaultMode": {},
+                    "f:items": {},
+                    "f:name": {}
+                  },
+                  "f:name": {}
+                },
+                "k:{\"name\":\"scratch\"}": {
+                  ".": {},
+                  "f:emptyDir": {
+                    ".": {},
+                    "f:medium": {},
+                    "f:sizeLimit": {}
+                  },
+                  "f:name": {}
+                }
+              }
+            }
+          }
+        },
+        {
+          "manager": "kubelet",
+          "operation": "Update",
+          "apiVersion": "v1",
+          "time": "2026-11-15T11:13:49Z",
+          "fieldsType": "FieldsV1",
+          "fieldsV1": {
+            "f:status": {
+              "f:allocatedResources": {
+                ".": {},
+                "f:cpu": {},
+                "f:ephemeral-storage": {},
+                "f:memory": {}
+              },
+              "f:conditions": {
+                "k:{\"type\":\"ContainersReady\"}": {
+                  ".": {},
+                  "f:lastProbeTime": {},
+                  "f:lastTransitionTime": {},
+                  "f:message": {},
+                  "f:observedGeneration": {},
+                  "f:reason": {},
+                  "f:status": {},
+                  "f:type": {}
+                },
+                "k:{\"type\":\"Initialized\"}": {
+                  ".": {},
+                  "f:lastProbeTime": {},
+                  "f:lastTransitionTime": {},
+                  "f:observedGeneration": {},
+                  "f:status": {},
+                  "f:type": {}
+                },
+                "k:{\"type\":\"PodReadyToStartContainers\"}": {
+                  ".": {},
+                  "f:lastProbeTime": {},
+                  "f:lastTransitionTime": {},
+                  "f:message": {},
+                  "f:observedGeneration": {},
+                  "f:reason": {},
+                  "f:status": {},
+                  "f:type": {}
+                },
+                "k:{\"type\":\"PodScheduled\"}": {
+                  "f:observedGeneration": {}
+                },
+                "k:{\"type\":\"Ready\"}": {
+                  ".": {},
+                  "f:lastProbeTime": {},
+                  "f:lastTransitionTime": {},
+                  "f:message": {},
+                  "f:observedGeneration": {},
+                  "f:reason": {},
+                  "f:status": {},
+                  "f:type": {}
+                }
+              },
+              "f:containerStatuses": {},
+              "f:hostIP": {},
+              "f:hostIPs": {},
+              "f:observedGeneration": {},
+              "f:resources": {
+                ".": {},
+                "f:limits": {
+                  ".": {},
+                  "f:cpu": {},
+                  "f:ephemeral-storage": {},
+                  "f:memory": {}
+                },
+                "f:requests": {
+                  ".": {},
+                  "f:cpu": {},
+                  "f:ephemeral-storage": {},
+                  "f:memory": {}
+                }
+              },
+              "f:startTime": {}
+            }
+          },
+          "subresource": "status"
+        }
+      ]
+    },
+    "spec": {
+      "volumes": [
+        {
+          "name": "inputs",
+          "configMap": {
+            "name": "ka-6f3a2941e747406e84324cbe1053187a-inputs",
+            "items": [
+              {
+                "key": "script.py",
+                "path": "script.py"
+              },
+              {
+                "key": "data.csv",
+                "path": "data.csv"
+              }
+            ],
+            "defaultMode": 292
+          }
+        },
+        {
+          "name": "scratch",
+          "emptyDir": {
+            "medium": "Memory",
+            "sizeLimit": "16Mi"
+          }
+        }
+      ],
+      "containers": [
+        {
+          "name": "runner",
+          "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+          "command": [
+            "python3",
+            "-I",
+            "-B",
+            "/opt/kataai/runner.py"
+          ],
+          "env": [
+            {
+              "name": "KATAAI_RUN_ID",
+              "value": "ka-6f3a2941e747406e84324cbe1053187a"
+            },
+            {
+              "name": "KATAAI_POD_UID",
+              "valueFrom": {
+                "fieldRef": {
+                  "apiVersion": "v1",
+                  "fieldPath": "metadata.uid"
+                }
+              }
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "1",
+              "ephemeral-storage": "64Mi",
+              "memory": "256Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "ephemeral-storage": "16Mi",
+              "memory": "128Mi"
+            }
+          },
+          "volumeMounts": [
+            {
+              "name": "inputs",
+              "readOnly": true,
+              "mountPath": "/inputs"
+            },
+            {
+              "name": "scratch",
+              "mountPath": "/tmp"
+            }
+          ],
+          "terminationMessagePath": "/tmp/runner-termination.json",
+          "terminationMessagePolicy": "File",
+          "imagePullPolicy": "IfNotPresent",
+          "securityContext": {
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            },
+            "readOnlyRootFilesystem": true,
+            "allowPrivilegeEscalation": false
+          }
+        }
+      ],
+      "restartPolicy": "Never",
+      "terminationGracePeriodSeconds": 5,
+      "dnsPolicy": "ClusterFirst",
+      "nodeSelector": {
+        "kata-deploy.katacontainers.io/default": "true",
+        "katacontainers.io/kata-runtime": "true"
+      },
+      "serviceAccountName": "default",
+      "serviceAccount": "default",
+      "automountServiceAccountToken": false,
+      "nodeName": "katavm",
+      "securityContext": {
+        "runAsUser": 10001,
+        "runAsGroup": 10001,
+        "runAsNonRoot": true,
+        "fsGroup": 10001,
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        }
+      },
+      "schedulerName": "default-scheduler",
+      "tolerations": [
+        {
+          "key": "node.kubernetes.io/not-ready",
+          "operator": "Exists",
+          "effect": "NoExecute",
+          "tolerationSeconds": 300
+        },
+        {
+          "key": "node.kubernetes.io/unreachable",
+          "operator": "Exists",
+          "effect": "NoExecute",
+          "tolerationSeconds": 300
+        }
+      ],
+      "priority": 0,
+      "runtimeClassName": "kata-qemu-runtime-rs",
+      "enableServiceLinks": false,
+      "preemptionPolicy": "PreemptLowerPriority",
+      "overhead": {
+        "cpu": "250m",
+        "memory": "320Mi"
+      }
+    },
+    "status": {
+      "observedGeneration": 1,
+      "phase": "Pending",
+      "conditions": [
+        {
+          "type": "PodReadyToStartContainers",
+          "observedGeneration": 1,
+          "status": "False",
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-11-15T11:13:49Z",
+          "reason": "PodSandboxNotReady",
+          "message": "no pod sandbox exists"
+        },
+        {
+          "type": "Initialized",
+          "observedGeneration": 1,
+          "status": "True",
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-11-15T11:13:49Z"
+        },
+        {
+          "type": "Ready",
+          "observedGeneration": 1,
+          "status": "False",
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-11-15T11:13:49Z",
+          "reason": "ContainersNotReady",
+          "message": "containers with unready status: [runner]"
+        },
+        {
+          "type": "ContainersReady",
+          "observedGeneration": 1,
+          "status": "False",
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-11-15T11:13:49Z",
+          "reason": "ContainersNotReady",
+          "message": "containers with unready status: [runner]"
+        },
+        {
+          "type": "PodScheduled",
+          "observedGeneration": 1,
+          "status": "True",
+          "lastProbeTime": null,
+          "lastTransitionTime": "2026-11-15T11:13:49Z"
+        }
+      ],
+      "hostIP": "10.77.10.138",
+      "hostIPs": [
+        {
+          "ip": "10.77.10.138"
+        }
+      ],
+      "startTime": "2026-11-15T11:13:49Z",
+      "containerStatuses": [
+        {
+          "name": "runner",
+          "state": {
+            "waiting": {
+              "reason": "ContainerCreating"
+            }
+          },
+          "lastState": {},
+          "ready": false,
+          "restartCount": 0,
+          "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+          "imageID": "",
+          "started": false,
+          "volumeMounts": [
+            {
+              "name": "inputs",
+              "mountPath": "/inputs",
+              "readOnly": true,
+              "recursiveReadOnly": "Disabled"
+            },
+            {
+              "name": "scratch",
+              "mountPath": "/tmp"
+            }
+          ]
+        }
+      ],
+      "qosClass": "Burstable",
+      "allocatedResources": {
+        "cpu": "350m",
+        "ephemeral-storage": "16Mi",
+        "memory": "448Mi"
+      },
+      "resources": {
+        "limits": {
+          "cpu": "1250m",
+          "ephemeral-storage": "64Mi",
+          "memory": "576Mi"
+        },
+        "requests": {
+          "cpu": "350m",
+          "ephemeral-storage": "16Mi",
+          "memory": "448Mi"
+        }
+      }
+    }
+  }
+}

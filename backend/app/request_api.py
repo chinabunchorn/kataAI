@@ -21,9 +21,14 @@ def error(status, code, message):
 
 
 def public_record(record, *, include_detail=False):
-    if record.status not in {'queued', 'running', 'fake_completed', 'unknown', 'cancelled', 'cancel_requested'}:
+    if record.status not in {'queued', 'running', 'fake_completed', 'unknown', 'cancelled', 'cancel_requested', 'completed', 'failed', 'needs_clarification'}:
         raise ValueError('unsupported status')
     result = {'id': str(UUID(str(record.id))), 'status': record.status, 'provisional': True}
+    if record.status in {'completed', 'failed', 'needs_clarification'} or getattr(record, 'run_id', None):
+        result.update(fake=False, run_id=str(record.run_id) if record.run_id else None,
+                      result=record.real_result, answer=record.answer, error_code=record.error_code)
+        if include_detail:
+            result['code'] = record.generated_code
     if include_detail:
         if not isinstance(record.question, str) or not 1 <= len(record.question) <= 4096:
             raise ValueError('invalid question')

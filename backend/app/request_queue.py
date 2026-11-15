@@ -67,9 +67,14 @@ class RequestRecord:
     created_at: datetime
     updated_at: datetime
     fake_result: dict | None = field(default=None, repr=False)
+    run_id: UUID | None = None
+    real_result: dict | list | None = field(default=None, repr=False)
+    generated_code: str | None = field(default=None, repr=False)
+    answer: str | None = field(default=None, repr=False)
+    error_code: str | None = None
 
 
-_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result'
+_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result, run_id, real_result, generated_code, answer, error_code'
 
 
 class RequestQueue:
@@ -168,6 +173,42 @@ class RequestQueue:
             return row[0] if row is not None else False
         except SQLAlchemyError:
             raise RequestStorageError() from None
+
+    def bind_run(self, request_id, token, run_id, code):
+        if any(type(v) is not UUID for v in (request_id, token, run_id)):
+            raise InvalidRequest()
+        _text(code, MAX_CODE_BYTES)
+        row = self._connection.execute(sa.text(
+            "UPDATE request_intents SET run_id=:run, generated_code=:code, updated_at=clock_timestamp() "
+            "WHERE id=:id AND claim_token=:token AND status='running' AND run_id IS NULL RETURNING id"),
+            {'id': request_id, 'token': token, 'run': run_id, 'code': code}).one_or_none()
+        return row is not None
+
+    def finish_real(self, request_id, token, status, *, result=None, answer=None, error_code=None):
+        if (type(request_id) is not UUID or type(token) is not UUID
+                or status not in {'completed', 'failed', 'needs_clarification', 'unknown'}):
+            raise InvalidRequest()
+        if status == 'completed':
+            if type(result) not in (dict, list):
+                raise InvalidRequest()
+            encoded = _json_value(result, 2048).decode('utf-8')
+        else:
+            if result is not None:
+                raise InvalidRequest()
+            encoded = None
+        if answer is not None:
+            _text(answer, MAX_SUMMARY_BYTES)
+        if error_code is not None:
+            import re
+            if not isinstance(error_code, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,63}', error_code):
+                raise InvalidRequest()
+        row = self._connection.execute(sa.text(
+            "UPDATE request_intents SET status=:status, real_result=CAST(:result AS jsonb), "
+            "answer=:answer, error_code=:error, claim_token=NULL, updated_at=clock_timestamp() "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') RETURNING status"),
+            {'id': request_id, 'token': token, 'status': status, 'result': encoded,
+             'answer': answer, 'error': error_code}).one_or_none()
+        return row[0] if row is not None else False
 
     def mark_unknown_running(self):
         """Caller must hold the exclusive worker session lock throughout recovery."""

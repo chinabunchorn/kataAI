@@ -1,0 +1,4 @@
+Sun Nov 15 07:14:18 UTC 2026
+c9a43977c61ff649c8233efd9ce6cf28e0bf777523071e838b8ebc3362f57016  /opt/kata/runtime-rs/bin/containerd-shim-kata-v2
+Kata Containers containerd shim (Rust): id: io.containerd.kata.v2, version: 4.3.1, commit: 03cf2ec06a5d302f23af811744f6bcea49988bfb
+security_guest_dir_absent=0
