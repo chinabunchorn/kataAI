@@ -108,16 +108,25 @@ def process_claim(connection, root, claim, *, model, executor, queue=None,
     submitted = False
     cancel = False
     status, result, answer, error = 'failed', None, None, 'DATASET_UNAVAILABLE'
+    def stage(name):
+        _require_ownership(connection)
+        if not queue.set_stage(claim.id, token, name):
+            raise OwnershipLost('CLAIM_LOST')
+        connection.commit()  # Browser GETs can observe progress while model/provider calls block.
+
     try:
+        stage('preparing_input')
         dataset = _dataset(connection, claim.dataset_id)
         columns = read_dataset_columns(root, dataset.storage_key)
         connection.commit()
         error = 'MODEL_GENERATION_FAILED'
         try:
+            stage('generating_code')
             proposals = model.generate(claim.question, columns)
         except ModelTextOnlyOutcome as outcome:
             status, answer, error = 'needs_clarification', outcome.text, None
         else:
+            stage('validating_code')
             error = 'INVALID_TOOL_PROPOSAL'
             proposal = validate_proposals(proposals)
             _require_ownership(connection)
@@ -127,6 +136,7 @@ def process_claim(connection, root, claim, *, model, executor, queue=None,
                 raise OwnershipLost('CLAIM_LOST')
             connection.commit()  # Real UUID and code precede ANY Kubernetes side effect.
             error = 'EXECUTION_FAILED'
+            stage('starting_execution')
             submitted = True  # Submit can have an uncertain response.
             ack = _correlate(executor.submit(request), claim, run_id)
             if ack.status != ExecutorStatus.ACCEPTED:
@@ -138,6 +148,7 @@ def process_claim(connection, root, claim, *, model, executor, queue=None,
                     error = record['last_error']
                 cancel = True
             else:
+                stage('waiting_for_container')
                 deadline = clock() + wait_seconds
                 while True:
                     _require_ownership(connection)
@@ -147,13 +158,19 @@ def process_claim(connection, root, claim, *, model, executor, queue=None,
                         status, error, cancel = 'unknown', 'CANCEL_REQUESTED', True
                         break
                     observation = _correlate(executor.status(claim.id, run_id), claim, run_id)
+                    if observation.state == RunState.UNKNOWN:
+                        stage('checking_execution')
+                    if observation.state == RunState.RUNNING:
+                        stage('running_in_kata')
                     if observation.state == RunState.COMPLETED:
+                        stage('collecting_result')
                         raw = executor.read_result(claim.id, run_id)
                         if type(raw) is not bytes or len(raw) > 2048:
                             raise ValueError('INVALID_RUNNER_RESULT')
                         result = decode_execution_result(raw)
                         if type(result) not in (dict, list):
                             raise ValueError('INVALID_RUNNER_RESULT')
+                        stage('summarizing')
                         # summarize() preserves computed data; never replace it with model data.
                         try:
                             _, answer, error = model.summarize(claim.question, result)

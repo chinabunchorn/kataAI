@@ -379,3 +379,21 @@ CSV bytes are uploaded before idempotent request creation. Saved history stores
 identities and the question for retry, never reconstructed sample Files/results.
 See [frontend instructions](../frontend/README.md) for browser tests, failure
 handling, privacy details and the opt-in real browser acceptance command.
+
+## Persisted execution-stage timings
+
+Migration `0007_execution_stages` adds a bounded JSONB observation timeline to
+requests. Upgrade using the migration command above, then restart API and worker.
+Stage updates are claim-token fenced and committed before blocking model/executor
+operations. GET details expose additive `execution_stages` and `observed_at` fields.
+Each stage has `name`, `started_at`, `finished_at`, `duration_ms`, `elapsed_ms` and,
+when ended, `outcome`. PostgreSQL timestamps define stage boundaries. Queue wait
+uses persisted creation time. Active `elapsed_ms` is sampled by the backend on GET.
+
+The UI displays LLM generation, validation, dispatch, startup, observed container
+execution, collection and summarization with actual latencies. Pod Pending/Running
+observations approximate startup/execution; no exact VM boot or guest Python
+instrumentation is claimed. Unobserved fast stages are omitted. Recovery closes
+abandoned stage tracking as unknown, preserving history without replay. Historical
+terminal requests have no retroactively fabricated timing. Cleanup still uses the
+existing independent executor evidence, outside the answer latency timeline.

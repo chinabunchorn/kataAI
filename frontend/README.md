@@ -90,3 +90,19 @@ PostgreSQL and executor journal/provider evidence separately; a passing browser
 test alone does not establish cleanup or independent guest teardown.
 
 Historical `evidence/` screenshots describe the earlier UI, not current acceptance.
+
+## Execution timeline
+
+New real requests include persisted stage timings: queue wait, dataset preparation,
+LLM processing, code validation, dispatch, Kata container/VM startup, observed Kata
+execution, result collection and LLM summarization. The active stage displays elapsed
+latency as of the latest backend poll; ended stages display their recorded duration.
+Only observed stages appear. A fast execution may finish between polls and omit
+the running stage; historical requests without stage records stay without timings.
+
+These are worker/provider observation boundaries, not exact guest Python or VM boot
+instrumentation. Startup includes Kubernetes scheduling/container setup. A terminal
+failure/unknown closes tracking with that outcome; it does not prove execution or
+guest teardown ended. Timings survive reload and are never inferred from animation.
+Apply migration `0007_execution_stages` with the existing `alembic upgrade head`
+workflow and restart both API and worker when upgrading an existing installation.

@@ -39,6 +39,15 @@ test('uploads CSV bytes, creates one request, polls and restores without fake fi
         result: { answer: 770 },
         answer: 'Test model summary',
         run_id: 'test-run',
+        execution_stages: [
+          {
+            name: 'generating_code',
+            started_at: '2026-11-15T00:00:00Z',
+            finished_at: '2026-11-15T00:00:02Z',
+            duration_ms: 2000,
+            elapsed_ms: 2000,
+          },
+        ],
       },
     })
   })
@@ -48,6 +57,8 @@ test('uploads CSV bytes, creates one request, polls and restores without fake fi
   await page.getByTitle('Send question').click()
   await expect(page.getByText('Completed', { exact: true })).toBeVisible({ timeout: 10000 })
   await expect(page.getByText('# test generated code')).toBeVisible()
+  await expect(page.getByText('LLM processing', { exact: true })).toBeVisible()
+  await expect(page.getByText('2.0 s', { exact: true })).toBeVisible()
   await expect(page.getByText(/"answer": 770/)).toBeVisible()
   expect(creates).toBe(1)
   expect(uploads).toBe(1)

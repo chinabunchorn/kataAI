@@ -30,6 +30,7 @@ import {
   uploadDataset,
 } from './lib/api'
 import type { RequestRecord } from './lib/api'
+import ExecutionTimeline, { stageLabel } from './lib/ExecutionTimeline'
 
 const DEFAULT_SAMPLE_FILE = new File(
   [
@@ -635,9 +636,14 @@ export default function App() {
                           {msg.record
                             ? msg.record.fake
                               ? 'Legacy fake execution — not a real result'
-                              : statusLabel(msg.record.status)
+                              : `${statusLabel(msg.record.status)}${msg.record.status === 'running' && msg.record.execution_stages?.at(-1)?.finished_at === null ? ` — ${stageLabel(msg.record.execution_stages.at(-1)!.name)}` : ''}`
                             : msg.notice}
                         </div>
+                        {msg.record &&
+                          !msg.record.fake &&
+                          msg.record.status !== 'fake_completed' && (
+                            <ExecutionTimeline stages={msg.record.execution_stages} />
+                          )}
                         {msg.error && <p role="alert">{msg.error}</p>}
                         {current?.requestId && (
                           <button type="button" onClick={() => refresh(currentSessionId!)}>

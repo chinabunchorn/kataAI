@@ -1,7 +1,7 @@
 """Provisional request HTTP boundary; no execution is performed here."""
 import base64
 import binascii
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi.responses import JSONResponse, Response
@@ -36,6 +36,15 @@ def public_record(record, *, include_detail=False):
             raise ValueError('invalid timestamp')
         result.update(dataset_id=str(UUID(str(record.dataset_id))), question=record.question,
                       created_at=record.created_at.isoformat())
+    if include_detail and (getattr(record, 'execution_stages', []) or record.status == 'queued'):
+        from .execution_stages import public_stages
+        observed_at = datetime.now(timezone.utc)
+        stages = getattr(record, 'execution_stages', [])
+        if not stages and record.status == 'queued':
+            stages = [{'name': 'queued', 'started_at': record.created_at.isoformat(),
+                       'finished_at': None, 'duration_ms': None}]
+        result['execution_stages'] = public_stages(stages, observed_at)
+        result['observed_at'] = observed_at.isoformat()
     if record.status == 'fake_completed':
         result['fake'] = True
         if include_detail and getattr(record, 'fake_result', None) is not None:

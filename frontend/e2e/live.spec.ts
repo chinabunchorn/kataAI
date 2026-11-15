@@ -29,6 +29,20 @@ test('real browser → PostgreSQL → Qwen → Kata → browser', async ({ page 
   await writeFile('/tmp/kataai-browser-live.json', JSON.stringify(record, null, 2))
   await page.screenshot({ path: '/tmp/kataai-browser-live.png', fullPage: true })
   expect(record.status).toBe('completed')
+  expect(record.execution_stages.map((s: { name: string }) => s.name)).toEqual(
+    expect.arrayContaining([
+      'queued',
+      'generating_code',
+      'starting_execution',
+      'collecting_result',
+      'summarizing',
+    ]),
+  )
+  for (const stage of record.execution_stages) {
+    expect(stage.finished_at).toBeTruthy()
+    expect(stage.duration_ms).toBeGreaterThanOrEqual(0)
+  }
+  await expect(page.getByRole('region', { name: 'Execution stages' })).toBeVisible()
   expect(record.fake).toBe(false)
   expect(record.run_id).toMatch(/^[a-f0-9-]{36}$/)
   expect(record.result.answer).toBe(770)

@@ -19,6 +19,11 @@ class Queue:
     def __init__(self, claim, events):
         self.claim, self.events = claim, events
         self.finished = None
+    def set_stage(self, identifier, token, name):
+        if not hasattr(self, 'stages'):
+            self.stages = []
+        self.stages.append(name)
+        return True
     def get(self, identifier): return self.claim
     def bind_run(self, identifier, token, run_id, code):
         self.events.append('bind')
@@ -188,3 +193,12 @@ def test_cleanup_failure_does_not_erase_committed_result(monkeypatch, tmp_path, 
     worker.process_claim(Connection(), tmp_path, claim, model=model, executor=executor, queue=queue)
     assert queue.finished[0] == 'completed' and queue.finished[1]['result'] == {'answer': 770}
     assert 'CLEANUP_PENDING' in capsys.readouterr().err
+
+
+def test_records_real_boundaries_and_skips_unobserved_running(monkeypatch, tmp_path):
+    claim, queue, executor, _ = setup(monkeypatch, tmp_path)
+    model = SimpleNamespace(generate=lambda *a: [{'name': 'run_python', 'arguments': {'code': '# inert'}}],
+                            summarize=lambda q, r: (r, 'Actual summary', None))
+    worker.process_claim(Connection(), tmp_path, claim, model=model, executor=executor, queue=queue)
+    assert queue.stages == ['preparing_input', 'generating_code', 'validating_code',
+                            'starting_execution', 'waiting_for_container', 'collecting_result', 'summarizing']

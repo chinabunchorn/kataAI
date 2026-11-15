@@ -8,7 +8,17 @@ export type RequestStatus =
   | 'cancelled'
   | 'unknown'
   | 'fake_completed'
+export type ExecutionStage = {
+  name: string
+  started_at: string
+  finished_at: string | null
+  duration_ms: number | null
+  elapsed_ms: number
+  outcome?: string
+}
 export type RequestRecord = {
+  execution_stages?: ExecutionStage[]
+  observed_at?: string
   id: string
   status: RequestStatus
   dataset_id?: string

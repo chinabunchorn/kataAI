@@ -83,3 +83,6 @@ Firefox verification or multi-user support. The frontend retains its conservativ
 safe recovery; CSV previews/code/results do not. Existing credentials still expire
 at the time recorded in the runbook and require manual renewal; no automatic
 permission grant or credential renewal was introduced.
+
+Subsequent persisted execution-stage latency implementation and real verification
+are recorded separately in [STAGES.md](STAGES.md).

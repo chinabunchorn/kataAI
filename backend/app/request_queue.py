@@ -72,9 +72,10 @@ class RequestRecord:
     generated_code: str | None = field(default=None, repr=False)
     answer: str | None = field(default=None, repr=False)
     error_code: str | None = None
+    execution_stages: list = field(default_factory=list, repr=False)
 
 
-_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result, run_id, real_result, generated_code, answer, error_code'
+_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result, run_id, real_result, generated_code, answer, error_code, execution_stages'
 
 
 class RequestQueue:
@@ -174,6 +175,34 @@ class RequestQueue:
         except SQLAlchemyError:
             raise RequestStorageError() from None
 
+    def set_stage(self, request_id, token, name):
+        from .execution_stages import advance_stage
+        if type(request_id) is not UUID or type(token) is not UUID:
+            raise InvalidRequest()
+        row = self._connection.execute(sa.text(
+            "SELECT execution_stages, created_at, clock_timestamp() FROM request_intents "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') FOR UPDATE"),
+            {'id': request_id, 'token': token}).one_or_none()
+        if row is None:
+            return False
+        stages = advance_stage(row[0], name, row[2], row[1])
+        if stages != row[0]:
+            self._connection.execute(sa.text(
+                "UPDATE request_intents SET execution_stages=CAST(:stages AS jsonb) WHERE id=:id"),
+                {'id': request_id, 'stages': json.dumps(stages)})
+        return True
+
+    def _close_stages(self, request_id, token, outcome):
+        from .execution_stages import close_stage
+        row = self._connection.execute(sa.text(
+            "SELECT execution_stages, clock_timestamp() FROM request_intents "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') FOR UPDATE"),
+            {'id': request_id, 'token': token}).one_or_none()
+        if row is not None and row[0]:
+            self._connection.execute(sa.text(
+                "UPDATE request_intents SET execution_stages=CAST(:stages AS jsonb) WHERE id=:id"),
+                {'id': request_id, 'stages': json.dumps(close_stage(row[0], row[1], outcome))})
+
     def bind_run(self, request_id, token, run_id, code):
         if any(type(v) is not UUID for v in (request_id, token, run_id)):
             raise InvalidRequest()
@@ -202,6 +231,7 @@ class RequestQueue:
             import re
             if not isinstance(error_code, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,63}', error_code):
                 raise InvalidRequest()
+        self._close_stages(request_id, token, status)
         row = self._connection.execute(sa.text(
             "UPDATE request_intents SET status=:status, real_result=CAST(:result AS jsonb), "
             "answer=:answer, error_code=:error, claim_token=NULL, updated_at=clock_timestamp() "
@@ -213,6 +243,10 @@ class RequestQueue:
     def mark_unknown_running(self):
         """Caller must hold the exclusive worker session lock throughout recovery."""
         try:
+            rows = self._connection.execute(sa.text(
+                "SELECT id, claim_token FROM request_intents WHERE status IN ('running','cancel_requested') FOR UPDATE")).all()
+            for request_id, token in rows:
+                self._close_stages(request_id, token, 'unknown')
             result = self._connection.execute(sa.text(
                 "UPDATE request_intents SET status='unknown', claim_token=NULL, updated_at=clock_timestamp() "
                 "WHERE status IN ('running','cancel_requested')"))

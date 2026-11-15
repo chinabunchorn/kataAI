@@ -96,7 +96,11 @@ def test_history_returns_bounded_safe_statuses(monkeypatch):
         response = client.get('/v1/requests?limit=2')
         assert response.status_code == 200
         assert response.headers['cache-control'] == 'no-store'
-        assert response.json() == {'requests': [{'id': 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+        body = response.json()
+        timing = body['requests'][0].pop('execution_stages')
+        assert timing[0]['name'] == 'queued' and timing[0]['elapsed_ms'] >= 0
+        assert body['requests'][0].pop('observed_at')
+        assert body == {'requests': [{'id': 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
             'status': 'queued', 'provisional': True, 'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
             'question': 'secret', 'created_at': '2026-01-02T00:00:00+00:00'}]}
         assert client.get('/v1/requests?limit=101').status_code == 422
@@ -130,7 +134,10 @@ def test_status_get_and_missing(monkeypatch):
         response = client.get('/v1/requests/' + str(rid))
         assert response.status_code == 200
         assert response.headers['cache-control'] == 'no-store'
-        assert response.json() == {'id': str(rid), 'status': 'queued', 'provisional': True,
+        body = response.json()
+        assert body.pop('execution_stages')[0]['name'] == 'queued'
+        assert body.pop('observed_at')
+        assert body == {'id': str(rid), 'status': 'queued', 'provisional': True,
                                    'dataset_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
                                    'question': 'secret', 'created_at': '2026-01-02T00:00:00+00:00'}
         assert client.get('/v1/requests/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa').status_code == 404
