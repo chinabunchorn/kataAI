@@ -1,0 +1,667 @@
+Sun Nov 15 07:06:41 UTC 2026
+katavm
+NAME     STATUS   ROLES           AGE     VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION             CONTAINER-RUNTIME
+katavm   Ready    control-plane   3d23h   v1.37.2   10.77.10.138   <none>        Ubuntu 24.04.3 LTS   6.8.0-71-generic (amd64)   containerd://2.4.2
+Name:               katavm
+Roles:              control-plane
+Labels:             beta.kubernetes.io/arch=amd64
+                    beta.kubernetes.io/os=linux
+                    kata-deploy-job-dispatcher/result=succeeded
+                    kata-deploy.katacontainers.io/default=true
+                    katacontainers.io/kata-runtime=true
+                    kubernetes.io/arch=amd64
+                    kubernetes.io/hostname=katavm
+                    kubernetes.io/os=linux
+                    node-role.kubernetes.io/control-plane=
+                    node.kubernetes.io/exclude-from-external-load-balancers=
+Annotations:        csi.volume.kubernetes.io/nodeid: {"csi.tigera.io":"katavm"}
+                    kata-deploy-job-dispatcher/finished-at: 2026-11-11T08:08:02Z
+                    node.alpha.kubernetes.io/ttl: 0
+                    projectcalico.org/IPv4Address: 10.77.10.138/24
+                    projectcalico.org/IPv4VXLANTunnelAddr: 10.244.253.0
+                    projectcalico.org/Interfaces: [{"name":"ens3","addresses":["10.77.10.138"]}]
+                    volumes.kubernetes.io/controller-managed-attach-detach: true
+CreationTimestamp:  Wed, 11 Nov 2026 07:45:24 +0000
+Taints:             <none>
+Unschedulable:      false
+Lease:
+  HolderIdentity:  katavm
+  AcquireTime:     <unset>
+  RenewTime:       Sun, 15 Nov 2026 07:06:34 +0000
+Conditions:
+  Type                 Status  LastHeartbeatTime                 LastTransitionTime                Reason                       Message
+  ----                 ------  -----------------                 ------------------                ------                       -------
+  NetworkUnavailable   False   Wed, 11 Nov 2026 07:51:03 +0000   Wed, 11 Nov 2026 07:51:03 +0000   CalicoIsUp                   Calico is running on this node
+  MemoryPressure       False   Sun, 15 Nov 2026 07:04:14 +0000   Wed, 11 Nov 2026 07:45:22 +0000   KubeletHasSufficientMemory   kubelet has sufficient memory available
+  DiskPressure         False   Sun, 15 Nov 2026 07:04:14 +0000   Wed, 11 Nov 2026 07:45:22 +0000   KubeletHasNoDiskPressure     kubelet has no disk pressure
+  PIDPressure          False   Sun, 15 Nov 2026 07:04:14 +0000   Wed, 11 Nov 2026 07:45:22 +0000   KubeletHasSufficientPID      kubelet has sufficient PID available
+  Ready                True    Sun, 15 Nov 2026 07:04:14 +0000   Wed, 11 Nov 2026 07:51:05 +0000   KubeletReady                 kubelet is posting ready status
+Addresses:
+  InternalIP:  10.77.10.138
+  Hostname:    katavm
+Capacity:
+  cpu:                4
+  ephemeral-storage:  23843045376
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             8131904Ki
+  pods:               110
+Allocatable:
+  cpu:                4
+  ephemeral-storage:  21458740803
+  hugepages-1Gi:      0
+  hugepages-2Mi:      0
+  memory:             8029504Ki
+  pods:               110
+System Info:
+  Machine ID:                 a289c1a08db74171a9b3d4f5130cfacf
+  System UUID:                a289c1a0-8db7-4171-a9b3-d4f5130cfacf
+  Boot ID:                    23d1f7fd-964e-48d6-bf8e-537423fea77b
+  Kernel Version:             6.8.0-71-generic
+  OS Image:                   Ubuntu 24.04.3 LTS
+  Operating System:           linux
+  Architecture:               amd64
+  Container Runtime Version:  containerd://2.4.2
+  Kubelet Version:            v1.37.2
+PodCIDR:                      10.244.0.0/24
+PodCIDRs:                     10.244.0.0/24
+Non-terminated Pods:          (12 in total)
+  Namespace                   Name                                        CPU Requests  CPU Limits  Memory Requests  Memory Limits  Age
+  ---------                   ----                                        ------------  ----------  ---------------  -------------  ---
+  calico-system               calico-kube-controllers-6ccc67c574-8l66h    0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+  calico-system               calico-node-2l2bd                           0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+  calico-system               calico-typha-57bd8dccc4-pgtwc               0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+  calico-system               csi-node-driver-td7rt                       0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+  kube-system                 coredns-559f6c778d-nfbt6                    100m (2%)     0 (0%)      70Mi (0%)        170Mi (2%)     3d23h
+  kube-system                 coredns-559f6c778d-t5nxt                    100m (2%)     0 (0%)      70Mi (0%)        170Mi (2%)     3d23h
+  kube-system                 etcd-katavm                                 100m (2%)     0 (0%)      100Mi (1%)       0 (0%)         3d23h
+  kube-system                 kube-apiserver-katavm                       250m (6%)     0 (0%)      0 (0%)           0 (0%)         3d23h
+  kube-system                 kube-controller-manager-katavm              200m (5%)     0 (0%)      0 (0%)           0 (0%)         3d23h
+  kube-system                 kube-proxy-mfvs4                            0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+  kube-system                 kube-scheduler-katavm                       100m (2%)     0 (0%)      0 (0%)           0 (0%)         3d23h
+  tigera-operator             tigera-operator-7c96ff8686-p5g7s            0 (0%)        0 (0%)      0 (0%)           0 (0%)         3d23h
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource           Requests    Limits
+  --------           --------    ------
+  cpu                850m (21%)  0 (0%)
+  memory             240Mi (3%)  340Mi (4%)
+  ephemeral-storage  0 (0%)      0 (0%)
+  hugepages-1Gi      0 (0%)      0 (0%)
+  hugepages-2Mi      0 (0%)      0 (0%)
+Events:              <none>
+active
+{
+    "apiVersion": "node.k8s.io/v1",
+    "handler": "kata-qemu-runtime-rs",
+    "kind": "RuntimeClass",
+    "metadata": {
+        "annotations": {
+            "katacontainers.io/kata-version": "4.3.1",
+            "meta.helm.sh/release-name": "kata-deploy",
+            "meta.helm.sh/release-namespace": "kata-system"
+        },
+        "creationTimestamp": "2026-11-11T08:01:57Z",
+        "labels": {
+            "app.kubernetes.io/managed-by": "Helm",
+            "kata-deploy/instance": "default"
+        },
+        "name": "kata-qemu-runtime-rs",
+        "resourceVersion": "2603",
+        "uid": "97380e5b-2565-41fa-851e-82cee3dfc70f"
+    },
+    "overhead": {
+        "podFixed": {
+            "cpu": "250m",
+            "memory": "320Mi"
+        }
+    },
+    "scheduling": {
+        "nodeSelector": {
+            "kata-deploy.katacontainers.io/default": "true",
+            "katacontainers.io/kata-runtime": "true"
+        }
+    }
+}
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "networking.k8s.io/v1",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "annotations": {
+                    "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"NetworkPolicy\",\"metadata\":{\"annotations\":{},\"name\":\"default-deny\",\"namespace\":\"kata-lab\"},\"spec\":{\"podSelector\":{},\"policyTypes\":[\"Ingress\",\"Egress\"]}}\n"
+                },
+                "creationTimestamp": "2026-11-11T08:25:23Z",
+                "generation": 1,
+                "name": "default-deny",
+                "namespace": "kata-lab",
+                "resourceVersion": "5430",
+                "uid": "4da3eb78-8193-4f2b-85c6-3f52df396063"
+            },
+            "spec": {
+                "podSelector": {},
+                "policyTypes": [
+                    "Ingress",
+                    "Egress"
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+{
+    "apiVersion": "v1",
+    "items": [],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+{
+    "apiVersion": "v1",
+    "items": [
+        {
+            "apiVersion": "projectcalico.org/v3",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "creationTimestamp": "2026-11-11T07:49:57Z",
+                "generation": 1,
+                "labels": {
+                    "app.kubernetes.io/component": "Installation.operator.tigera.io",
+                    "app.kubernetes.io/instance": "default",
+                    "app.kubernetes.io/managed-by": "tigera-operator",
+                    "app.kubernetes.io/name": "calico-system.default-deny",
+                    "app.kubernetes.io/part-of": "Calico",
+                    "k8s-app": "calico-system.default-deny",
+                    "projectcalico.org/tier": "calico-system"
+                },
+                "name": "calico-system.default-deny",
+                "namespace": "calico-system",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "operator.tigera.io/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Installation",
+                        "name": "default",
+                        "uid": "7b2cc723-4743-468c-b154-a582bd5d618b"
+                    }
+                ],
+                "resourceVersion": "1001",
+                "uid": "402b2a0e-245a-43c6-ae01-b42a3b61742f"
+            },
+            "spec": {
+                "selector": "k8s-app != 'calico-apiserver'",
+                "tier": "calico-system",
+                "types": [
+                    "Ingress",
+                    "Egress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "projectcalico.org/v3",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "creationTimestamp": "2026-11-11T07:49:57Z",
+                "generation": 2,
+                "labels": {
+                    "app.kubernetes.io/component": "Installation.operator.tigera.io",
+                    "app.kubernetes.io/instance": "default",
+                    "app.kubernetes.io/managed-by": "tigera-operator",
+                    "app.kubernetes.io/name": "calico-system.kube-controller-access",
+                    "app.kubernetes.io/part-of": "Calico",
+                    "k8s-app": "calico-system.kube-controller-access",
+                    "projectcalico.org/tier": "calico-system"
+                },
+                "name": "calico-system.kube-controller-access",
+                "namespace": "calico-system",
+                "ownerReferences": [
+                    {
+                        "apiVersion": "operator.tigera.io/v1",
+                        "blockOwnerDeletion": true,
+                        "controller": true,
+                        "kind": "Installation",
+                        "name": "default",
+                        "uid": "7b2cc723-4743-468c-b154-a582bd5d618b"
+                    }
+                ],
+                "resourceVersion": "1319",
+                "uid": "4a47f2bb-5916-4eef-a937-ff0d8b12d2b4"
+            },
+            "spec": {
+                "egress": [
+                    {
+                        "action": "Allow",
+                        "destination": {
+                            "namespaceSelector": "kubernetes.io/metadata.name == 'kube-system'",
+                            "ports": [
+                                53
+                            ],
+                            "selector": "k8s-app in { 'kube-dns', 'coredns' }"
+                        },
+                        "protocol": "UDP"
+                    },
+                    {
+                        "action": "Allow",
+                        "destination": {
+                            "ports": [
+                                443,
+                                6443,
+                                12388
+                            ]
+                        },
+                        "protocol": "TCP"
+                    },
+                    {
+                        "action": "Allow",
+                        "destination": {
+                            "nets": [
+                                "10.96.0.1/32"
+                            ],
+                            "ports": [
+                                443
+                            ]
+                        },
+                        "protocol": "TCP"
+                    }
+                ],
+                "ingress": [
+                    {
+                        "action": "Allow",
+                        "destination": {
+                            "ports": [
+                                9094
+                            ]
+                        },
+                        "protocol": "TCP",
+                        "source": {
+                            "namespaceSelector": "name == 'tigera-prometheus'",
+                            "selector": "k8s-app == 'tigera-prometheus'"
+                        }
+                    }
+                ],
+                "order": 1,
+                "selector": "k8s-app == 'calico-kube-controllers'",
+                "tier": "calico-system",
+                "types": [
+                    "Egress",
+                    "Ingress"
+                ]
+            }
+        },
+        {
+            "apiVersion": "projectcalico.org/v3",
+            "kind": "NetworkPolicy",
+            "metadata": {
+                "creationTimestamp": "2026-11-11T07:49:53Z",
+                "generation": 1,
+                "labels": {
+                    "projectcalico.org/tier": "calico-system"
+                },
+                "name": "calico-system.cluster-dns",
+                "namespace": "kube-system",
+                "resourceVersion": "902",
+                "uid": "45bfe720-223b-4930-a2ec-252cc5f4a60d"
+            },
+            "spec": {
+                "egress": [
+                    {
+                        "action": "Allow"
+                    }
+                ],
+                "ingress": [
+                    {
+                        "action": "Allow",
+                        "source": {
+                            "namespaceSelector": "all()",
+                            "selector": "projectcalico.org/namespace in {'calico-system'}"
+                        }
+                    },
+                    {
+                        "action": "Pass"
+                    }
+                ],
+                "order": 1,
+                "selector": "k8s-app in { 'kube-dns', 'coredns' }",
+                "tier": "calico-system",
+                "types": [
+                    "Ingress",
+                    "Egress"
+                ]
+            }
+        }
+    ],
+    "kind": "List",
+    "metadata": {
+        "resourceVersion": ""
+    }
+}
+NAME                         DATA   AGE
+configmap/kube-root-ca.crt   1      3d22h
+               total        used        free      shared  buff/cache   available
+Mem:            7941        1575         170           6        6508        6365
+Swap:              0           0           0
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1        23G  9.8G   13G  44% /
+ID                                                               CREATED                                 RUNTIME               
+0810cae29f8578e1e2336f8f2949a899287d381421c53d338cb1b03a80e3f66f 2026-11-11 07:45:35.531030902 +0000 UTC io.containerd.runc.v2 
+3cda59f8cc239a44fa320b160609f650829d96ffab43c6f517b9cae1d0437a45 2026-11-11 07:49:57.601527256 +0000 UTC io.containerd.runc.v2 
+3e9b1a8a9a32e2292aae2cec7d1026e49dd68dbd3c20bae2efaa229f1aa9f928 2026-11-11 07:45:21.494373475 +0000 UTC io.containerd.runc.v2 
+4aed18563b1cd78c380bb5e38487c894ee3b0babb0db83c103bf821ddf27ef57 2026-11-11 07:45:21.484153622 +0000 UTC io.containerd.runc.v2 
+67d2249c7ddb938b547efe7d381e7ef962312cbfdd920d0f4572f06ab370cc1b 2026-11-11 07:45:21.466526695 +0000 UTC io.containerd.runc.v2 
+a2a0b4facd02519ab2701687f1a4779bdffb11fb0d26668ffca1577d005d00ca 2026-11-11 07:51:05.507474956 +0000 UTC io.containerd.runc.v2 
+b3adfde3751620198e0ce335f1331ef9d67c29ea5428539566b382cd2c0d2c4a 2026-11-11 07:51:06.297420261 +0000 UTC io.containerd.runc.v2 
+bf98323a3fd1ca8f2e34019c58951992677484c75c2c2ce5cb09aefdcadd65fc 2026-11-11 07:49:57.4972245 +0000 UTC   io.containerd.runc.v2 
+c1d8709447ba5010c54a405ad0a7957a743eb82dd1ed0498a114ea02ff3c20c4 2026-11-11 07:48:18.667417037 +0000 UTC io.containerd.runc.v2 
+d96075c93242cd9bf22ae3906fb63c9340dc63f0896f83d5e1394dc5fb5efc21 2026-11-11 07:45:21.468216884 +0000 UTC io.containerd.runc.v2 
+e0480ed5298e04311a48821c23b1db8fe1764bf044dc710e2384bb110bfbb81b 2026-11-11 07:51:06.28795326 +0000 UTC  io.containerd.runc.v2 
+e76a65b4745b2561750055c0ad4ea16935820cbea04f60c76ef686fc99de8a5a 2026-11-11 07:51:06.26945843 +0000 UTC  io.containerd.runc.v2 
+time="2026-11-15T07:06:42Z" level=warning msg="Configuration migrated from version 0, use `containerd config migrate` to avoid migration" t="13.942µs"
+version = 4
+root = '/var/lib/containerd'
+state = '/run/containerd'
+temp = ''
+disabled_plugins = []
+required_plugins = []
+oom_score = 0
+imports = ['/etc/containerd/conf.d/*.toml']
+
+[debug]
+  level = ''
+  format = ''
+  log_trace_id = false
+
+[plugins]
+  [plugins.'io.containerd.cri.v1.images']
+    snapshotter = 'overlayfs'
+    disable_snapshot_annotations = true
+    discard_unpacked_layers = false
+    max_concurrent_downloads = 3
+    concurrent_layer_fetch_buffer = 0
+    image_pull_progress_timeout = '5m0s'
+    image_pull_with_sync_fs = false
+    stats_collect_period = 10
+    use_local_image_pull = false
+
+    [plugins.'io.containerd.cri.v1.images'.pinned_images]
+      sandbox = 'registry.k8s.io/pause:3.10.2'
+
+    [plugins.'io.containerd.cri.v1.images'.registry]
+      config_path = ''
+
+    [plugins.'io.containerd.cri.v1.images'.image_decryption]
+      key_model = 'node'
+
+  [plugins.'io.containerd.cri.v1.runtime']
+    enable_selinux = false
+    selinux_category_range = 1024
+    max_container_log_line_size = 16384
+    disable_apparmor = false
+    restrict_oom_score_adj = false
+    disable_proc_mount = false
+    unset_seccomp_profile = ''
+    tolerate_missing_hugetlb_controller = true
+    disable_hugetlb_controller = true
+    device_ownership_from_security_context = false
+    ignore_image_defined_volumes = false
+    netns_mounts_under_state_dir = false
+    enable_unprivileged_ports = true
+    enable_unprivileged_icmp = true
+    cdi_spec_dirs = ['/etc/cdi', '/var/run/cdi']
+    drain_exec_sync_io_timeout = '0s'
+    ignore_deprecation_warnings = []
+    stats_collect_period = ''
+    stats_retention_period = ''
+    enable_criu = true
+
+    [plugins.'io.containerd.cri.v1.runtime'.containerd]
+      default_runtime_name = 'runc'
+      ignore_blockio_not_enabled_errors = false
+      ignore_rdt_not_enabled_errors = false
+
+      [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes]
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu-runtime-rs]
+          runtime_type = 'io.containerd.kata-qemu-runtime-rs.v2'
+          runtime_path = '/opt/kata/runtime-rs/bin/containerd-shim-kata-v2'
+          pod_annotations = ['io.katacontainers.config.hypervisor.default_memory', 'io.katacontainers.config.hypervisor.default_vcpus', 'io.katacontainers.config.hypervisor.enable_iommu', 'io.katacontainers.config.hypervisor.kernel_params', 'io.katacontainers.config.hypervisor.kernel_verity_params']
+          container_annotations = ['io.kubernetes.container.terminationMessage*']
+          privileged_without_host_devices = true
+          privileged_without_host_devices_all_devices_allowed = false
+          cgroup_writable = false
+          base_runtime_spec = ''
+          cni_conf_dir = ''
+          cni_max_conf_num = 0
+          snapshotter = ''
+          sandboxer = ''
+          disable_pause_image_pull = false
+          io_type = ''
+
+          [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.kata-qemu-runtime-rs.options]
+            ConfigPath = '/opt/kata/share/defaults/kata-containers/runtime-rs/runtimes/qemu-runtime-rs/configuration-qemu-runtime-rs.toml'
+
+        [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc]
+          runtime_type = 'io.containerd.runc.v2'
+          runtime_path = ''
+          pod_annotations = []
+          container_annotations = []
+          privileged_without_host_devices = false
+          privileged_without_host_devices_all_devices_allowed = false
+          cgroup_writable = false
+          base_runtime_spec = ''
+          cni_conf_dir = ''
+          cni_max_conf_num = 0
+          snapshotter = ''
+          sandboxer = 'podsandbox'
+          disable_pause_image_pull = false
+          io_type = ''
+
+          [plugins.'io.containerd.cri.v1.runtime'.containerd.runtimes.runc.options]
+            BinaryName = ''
+            CriuImagePath = ''
+            CriuWorkPath = ''
+            IoGid = 0
+            IoUid = 0
+            NoNewKeyring = false
+            Root = ''
+            ShimCgroup = ''
+            SystemdCgroup = true
+
+    [plugins.'io.containerd.cri.v1.runtime'.cni]
+      bin_dirs = ['/opt/cni/bin']
+      conf_dir = '/etc/cni/net.d'
+      max_conf_num = 1
+      setup_serially = false
+      conf_template = ''
+      ip_pref = ''
+      use_internal_loopback = false
+
+  [plugins.'io.containerd.differ.v1.erofs']
+    mkfs_options = []
+    enable_tar_index = false
+    enable_dmverity = false
+
+  [plugins.'io.containerd.gc.v1.scheduler']
+    pause_threshold = 0.02
+    deletion_threshold = 0
+    mutation_threshold = 100
+    schedule_delay = '0s'
+    startup_delay = '100ms'
+
+  [plugins.'io.containerd.grpc.v1.cri']
+    disable_tcp_service = true
+    stream_server_address = '127.0.0.1'
+    stream_server_port = '0'
+    stream_idle_timeout = '4h0m0s'
+    enable_tls_streaming = false
+
+    [plugins.'io.containerd.grpc.v1.cri'.x509_key_pair_streaming]
+      tls_cert_file = ''
+      tls_key_file = ''
+
+  [plugins.'io.containerd.image-verifier.v1.bindir']
+    bin_dir = '/opt/containerd/image-verifier/bin'
+    max_verifiers = 10
+    per_verifier_timeout = '10s'
+
+  [plugins.'io.containerd.internal.v1.opt']
+    path = '/opt/containerd'
+
+  [plugins.'io.containerd.metadata.v1.bolt']
+    content_sharing_policy = 'shared'
+    no_sync = false
+
+  [plugins.'io.containerd.metrics.v1.grpc-prometheus']
+    grpc_histogram = false
+
+  [plugins.'io.containerd.monitor.container.v1.restart']
+    interval = '10s'
+
+  [plugins.'io.containerd.monitor.task.v1.cgroups']
+    no_prometheus = false
+
+  [plugins.'io.containerd.mount-handler.v1.erofs']
+  [plugins.'io.containerd.nri.v1.nri']
+    disable = false
+    socket_path = '/var/run/nri/nri.sock'
+    plugin_path = '/opt/nri/plugins'
+    plugin_config_path = '/etc/nri/conf.d'
+    plugin_registration_timeout = '5s'
+    plugin_request_timeout = '2s'
+    disable_connections = false
+
+    [plugins.'io.containerd.nri.v1.nri'.default_validator]
+      enable = false
+      reject_oci_hook_adjustment = false
+      reject_runtime_default_seccomp_adjustment = false
+      reject_unconfined_seccomp_adjustment = false
+      reject_custom_seccomp_adjustment = false
+      reject_namespace_adjustment = false
+      reject_sysctl_adjustment = false
+      required_plugins = []
+      tolerate_missing_plugins_annotation = ''
+
+  [plugins.'io.containerd.runtime.v2.task']
+    platforms = ['linux/amd64']
+
+  [plugins.'io.containerd.server.v1.debug']
+    address = ''
+    uid = 0
+    gid = 0
+
+  [plugins.'io.containerd.server.v1.grpc']
+    address = '/run/containerd/containerd.sock'
+    uid = 0
+    gid = 0
+    max_recv_message_size = 16777216
+    max_send_message_size = 16777216
+
+  [plugins.'io.containerd.server.v1.grpc-tcp']
+    address = ''
+    tls_ca = ''
+    tls_cert = ''
+    tls_key = ''
+    tls_common_name = ''
+    max_recv_message_size = 16777216
+    max_send_message_size = 16777216
+
+  [plugins.'io.containerd.server.v1.metrics']
+    address = ''
+
+  [plugins.'io.containerd.server.v1.ttrpc']
+    address = '/run/containerd/containerd.sock.ttrpc'
+    uid = 0
+    gid = 0
+
+  [plugins.'io.containerd.service.v1.diff-service']
+    default = ['walking']
+    sync_fs = false
+
+  [plugins.'io.containerd.service.v1.tasks-service']
+    blockio_config_file = ''
+    rdt_config_file = ''
+
+  [plugins.'io.containerd.shim.v1.manager']
+    env = []
+    socket_dir = ''
+
+  [plugins.'io.containerd.snapshotter.v1.blockfile']
+    root_path = ''
+    scratch_file = ''
+    fs_type = ''
+    mount_options = []
+    recreate_scratch = false
+
+  [plugins.'io.containerd.snapshotter.v1.btrfs']
+    root_path = ''
+
+  [plugins.'io.containerd.snapshotter.v1.devmapper']
+    root_path = ''
+    pool_name = ''
+    base_image_size = ''
+    async_remove = false
+    discard_blocks = false
+    fs_type = ''
+    fs_options = ''
+
+  [plugins.'io.containerd.snapshotter.v1.erofs']
+    root_path = ''
+    ovl_mount_options = []
+    enable_fsverity = false
+    set_immutable = false
+    default_size = ''
+    dmverity_mode = ''
+    layer_content_caches = []
+
+  [plugins.'io.containerd.snapshotter.v1.native']
+    root_path = ''
+
+  [plugins.'io.containerd.snapshotter.v1.overlayfs']
+    root_path = ''
+    upperdir_label = false
+    sync_remove = false
+    slow_chown = false
+    mount_options = []
+
+  [plugins.'io.containerd.snapshotter.v1.zfs']
+    root_path = ''
+
+  [plugins.'io.containerd.transfer.v1.local']
+    max_concurrent_downloads = 3
+    concurrent_layer_fetch_buffer = 0
+    max_concurrent_uploaded_layers = 3
+    check_platform_supported = false
+    config_path = ''
+    max_concurrent_unpacks = 1
+
+[cgroup]
+  path = ''
+
+[timeouts]
+  'io.containerd.timeout.bolt.open' = '0s'
+  'io.containerd.timeout.cri.defercleanup' = '1m0s'
+  'io.containerd.timeout.metrics.shimstats' = '2s'
+  'io.containerd.timeout.shim.cleanup' = '5s'
+  'io.containerd.timeout.shim.load' = '5s'
+  'io.containerd.timeout.shim.shutdown' = '3s'
+  'io.containerd.timeout.task.state' = '2s'
+
+[stream_processors]
+  [stream_processors.'io.containerd.ocicrypt.decoder.v1.tar']
+    accepts = ['application/vnd.oci.image.layer.v1.tar+encrypted']
+    returns = 'application/vnd.oci.image.layer.v1.tar'
+    path = 'ctd-decoder'
+    args = ['--decryption-keys-path', '/etc/containerd/ocicrypt/keys']
+    env = ['OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf']
+
+  [stream_processors.'io.containerd.ocicrypt.decoder.v1.tar.gzip']
+    accepts = ['application/vnd.oci.image.layer.v1.tar+gzip+encrypted']
+    returns = 'application/vnd.oci.image.layer.v1.tar+gzip'
+    path = 'ctd-decoder'
+    args = ['--decryption-keys-path', '/etc/containerd/ocicrypt/keys']
+    env = ['OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf']

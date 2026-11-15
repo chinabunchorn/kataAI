@@ -1,101 +1,110 @@
-# Fixed Python runner 0.1.1 release preparation
+# Fixed Python runner 0.1.1 release verification
 
-Date: 2026-11-15 (Asia/Bangkok). **HOLD — not released; candidate live acceptance pending.**
+Date: 2026-11-15 (Asia/Bangkok). **RELEASED — user approved Runner 0.1.1 and M3 closure.**
+All eight technical release gates passed. Runner 0.1.1 is approved for
+trusted-fixture integration with the existing KataExecutor adapter.
+The user subsequently instructed: “I approve runner 0.1.1 Commit the changes, close M3 in the master roadmap and push the commits”.
+This authorizes committing and pushing the verified release records on `kata-infra`.
+No merge, Git tag or registry publication is included.
 
-KataAI uses the existing unmodified Kata Containers runtime. Exact 16 MiB guest
-scratch enforcement is no longer a release requirement. The abandoned custom
-Rust patch, installation/correction proposals and patch review have been removed.
-Original check logs/provenance were archived; the investigation, fixture bytes
-and all original test evidence remain unchanged. No commit, push or tag was made.
+## Artifact and provenance
 
-## Artifact and source identity
-
-| Field | Value |
+| Field | Verified value |
 |---|---|
-| Runner version | `0.1.1` in contract, OCI label, builder tag validation, digest-reference construction and release metadata |
-| Wire protocol | `kataai.runner.v1` |
-| Source base commit | `84eb0fd07c6e7bcd9369caae153b69cebe312d21` |
-| Candidate commit | None; uncommitted working tree, including preexisting preparation changes |
-| Candidate image digest / archive SHA-256 | Unavailable; no 0.1.1 candidate built |
-| Platform / base interpreter metadata | Linux/amd64; Python 3.12.16, Debian trixie; inherited pinned-base metadata, not a new image observation |
+| Source branch / commit | `kata-infra` / `11d5465cb95d7ff78fd74f903813a1dba40f966e` |
+| Build source state | Clean; `source_worktree_status: []`; all 15 provenance files unchanged after build and finalization |
+| Runner / protocol | `0.1.1` / `kataai.runner.v1` |
+| Platform / interpreter | Linux/amd64 / Python 3.12.16; Debian trixie base metadata |
 | Immutable base | `docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b` |
+| Runner manifest digest | `sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9` |
+| Config digest | `sha256:19e8bd4750d918f4c21daaea258434eeec3f080a61ae3821181cc1925245af12` |
+| OCI archive SHA-256 | `3b3b90076419f21648a175cb5dc764dc38718bb049500e2662772b64eca35a2f` |
+| Builder | Docker Desktop 4.83.0, Linux engine 29.6.2, BuildKit 0.31.2, buildx 0.35.0-desktop.2 |
+| Built at | 2026-11-15 14:05:54 Asia/Bangkok (07:05:54Z) |
+| Build command | `./infra/runner/build.ps1 -Repository 'docker.io/kataai/runner:0.1.1'` |
+| Local archive | `.m3-runs/build-20261115T070549-3d8be925/runner.oci.tar` (ignored, retained locally) |
 
-Historical 0.1.0 image:
-`docker.io/kataai/runner@sha256:3fe4d6049f25c44d3b126f6b9de7462dfb019d3164bada7e775921a1b13abba8`.
-Its evidence does not certify 0.1.1. Historical records retain their original
-versions, hashes and outcomes. The earlier preparation evidence and investigation
-may reference removed proposals; those references describe abandoned work.
+Use only this immutable execution reference:
+`docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9`.
 
-The builder records all runner source/context/build/inspection hashes before
-building, HEAD and dirty status, verifies unchanged source afterward, and requires
-BuildKit's manifest digest to match static OCI inspection. Inspection verifies
-version, non-root layout and exact packaged source, including `scratch.py`.
-A successful build still records `live_kata_acceptance_verified=false`.
-After the user's commit, rebuild to establish committed provenance; never relabel
-a dirty artifact as built from that later commit.
+[Build release metadata](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/release.json),
+[BuildKit materials](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/build-metadata.json),
+[static inspection](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/inspection.json), and
+[base lineage](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/base-lineage.json) record provenance. The base's layer
+descriptors and rootfs diff IDs match the candidate prefix. All packaged trusted
+source hashes match the clean revision. Static inspection verifies OCI blob
+digests, linux/amd64, version, Python metadata, USER `10001:10001`, `/tmp` working
+directory, root-owned non-writable traversable paths and the exact entrypoint
+`python3 -I -B /opt/kataai/runner.py`. The live security fixture independently
+observed UID/GID 10001. No candidate executed during build/inspection or on the host.
+The build record's false live-acceptance flag describes build time; subsequent
+acceptance is recorded separately, without rewriting provenance.
 
-## Revised contract and acceptance
+Docker initially had no Linux engine pipe. The CLI start command failed because
+its registry lookup could not locate Docker Desktop. Starting the existing
+Docker Desktop executable outside the sandbox succeeded. No reinstall, system
+configuration change, registry service or new builder was needed.
 
-The [amended M3 acceptance policy](docs/infrastructure/M3_ACCEPTANCE.md) and
-[design](docs/milestone-3-design.md) define the current contract.
+## Verification results
 
-| Boundary | Requirement |
+| Gate | Result / evidence |
 |---|---|
-| Scratch | Distinct writable guest tmpfs at `/tmp`, positive capacity and available space; bounded valid mountinfo and writable flags; actual guest writes observed by the existing trusted security fixture |
-| Scratch configuration | Keep memory emptyDir `sizeLimit: 16Mi`; this is not a verified guest quota. Capacity may be smaller or larger than 16 MiB |
-| Input | Script 32 KiB; CSV 512 KiB; serialized immutable ConfigMap 768 KiB; strict nonempty UTF-8, no NUL; exactly two projected keys |
-| Result | `/tmp/result.json`, object/array, 2048 raw bytes; depth 16; 128 entries/collection, 256 total; strict JSON/Unicode/numeric validation |
-| Report | `/tmp/runner-termination.json`, 3072 bytes; Kubernetes File termination policy; strict identity, exit and result validation; no log fallback |
-| Diagnostics | 8192 retained bytes per stdout/stderr; terminate above 16384 combined observed bytes |
-| Time / retry | 30 s measured child budget; 120 s Job deadline; 5 s termination grace; one completion, no retries, restart Never |
-| Resources | Requests 100m CPU / 128Mi memory / 16Mi ephemeral storage; limits 1 CPU / 256Mi memory / 64Mi ephemeral storage |
-| Placement | Namespace `kata-lab`; RuntimeClass and handler `kata-qemu-runtime-rs`; existing RuntimeClass overhead additional |
-| Security | UID/GID/fsGroup 10001; root and inputs read-only; no escalation; ALL capabilities dropped; RuntimeDefault seccomp; no token automount or service links; existing network denial |
+| Host runner tests | **48 passed**: `python -B -m unittest discover -s tests/unit/runner -v` |
+| Host executor tests | **39 passed**: `python -B -m unittest discover -s tests/unit/executor -v` |
+| Static checks | PowerShell parser, 19 trusted Python AST files, harness help, Docker build checks (no warnings), active documentation links and `git diff --check` passed |
+| OCI artifact | Real manifest/config/archive hashes; source/layout/permissions/base lineage inspected |
+| Distribution | Approved SSH/SCP → unique temporary archive → existing `ctr -n k8s.io images import --platform linux/amd64 --digests`; archive hash and manifest content verified; exact digest reference registered in cache |
+| Live trusted catalog | **30 passed, 0 failed, 0 unrun**, serially; all executed Pods used the exact manifest imageID; missing-runtime created zero Pods |
+| Kata placement | Security Job/Pod UID → containerd sandbox labels/runtime → shim 1565141 → QEMU 1565166, `accel=kvm`, guest kernel 6.18.56 |
+| Cleanup | Exact-UID Job/ConfigMap deletion and associated Pod absence for every case; per-case node process/path observations; exact security PIDs/guest paths stopped and sandbox metadata later absent |
+| Documentation / regressions | Current docs reconciled; historical failures preserved; no blocking runner regression observed |
 
-Exit codes remain `OK=0`, `SCRIPT_FAILED=10`, result errors 11–16,
-`RUN_TIMEOUT=17`, `DIAGNOSTIC_LIMIT=18`, `INPUT_INVALID=19`, `RUNNER_INTERNAL=20`.
-Scratch can consume memory beyond 16 MiB. No report is guaranteed after full
-scratch or abrupt death; collection fails closed. No new effective memory bound
-or untrusted-code isolation guarantee is claimed.
+[Complete evidence index](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/README.md) links host logs, deployed image checks,
+all case snapshots/outcomes/cleanup, network target health and final node inventory.
+[Live matrix](tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/live-results.json) records exact identities, expected/observed
+codes and bounded diagnostics. Security cleanup's first snapshot retained stopped
+sandbox metadata, so the suite paused for investigation; exact PID/path absence
+and later metadata garbage collection were recorded. Security was not rerun.
+Successful API deletion alone was never treated as guest teardown proof.
 
-The original `scratch`, `scratch-failure` and proposed `scratch-multifile` probes
-are preserved with their original expectations in `LEGACY_SCRATCH_CASES` and
-fixture files, excluded from executable release choices. Historical acceptance
-remains 30 passing checks, one failed quota check and one dependent unrun case;
-the guest accepted 20 MiB on a 100,691,968-byte tmpfs. Changing release policy
-does not turn that failed test into a pass.
+The node was Ready, containerd active, with 4 allocatable CPUs, about 7.66 GiB
+allocatable memory and 13 GiB free disk at preflight. The existing RuntimeClass,
+handler and default-deny policy matched their historical UIDs. Applicable Calico
+policy checks passed. Network target addresses/healthy CoreDNS peer and node API/
+kubelet reachability were rechecked without relaxing policy. Kata shim fingerprint
+matches the historical standard runtime. No runtime, cluster installation,
+RBAC, policy or VM allocation was changed. Only trusted catalog fixtures ran in Kata.
 
-## Current validation evidence
+## Contract, limitations and release boundary
 
-[Cleanup evidence](tests/infrastructure/m3/evidence/2026-11-15/scratch-policy-cleanup/README.md)
-is separate from the untouched earlier preparation and live test records.
+The [approved design](docs/milestone-3-design.md) retains namespace `kata-lab`,
+RuntimeClass/handler `kata-qemu-runtime-rs`, read-only root/inputs, UID/GID/fsGroup
+10001, no escalation, dropped capabilities, RuntimeDefault seccomp and no token
+automount/service links. Input caps remain script 32 KiB, CSV 512 KiB, ConfigMap
+768 KiB. Results are JSON object/array, 2048 raw bytes, depth 16, 128 entries per
+collection / 256 total; File termination reports are capped at 3072 bytes.
+Diagnostics retain 8192 bytes per stream and terminate above 16384 observed bytes
+combined. Script/Job deadlines are 30/120 s, no retries, restart Never. Resource
+requests/limits and protocol exits are unchanged.
 
-- **48 Runner host tests passed**, including capacity variation, unsuitable scratch
-  rejection before launch, legacy quota exclusion, version/tag consistency and
-  static OCI source/version checks. Tests execute trusted host code and mocked
-  launches; no candidate fixture or model-generated Python executed.
-- **39 executor host tests passed** with fake transport/processes.
-- M3 harness `--help`, PowerShell build-script syntax and `git diff --check` passed.
-- Docker client is available, but `docker version` failed because the existing
-  Linux engine pipe is absent. No engine was started, builder installed or
-  candidate built/distributed. Candidate live tests were not run because no
-  inspected 0.1.1 image/digest is available.
-- No installed Kata runtime, Kubernetes configuration, RBAC or network policy
-  was modified. No cluster workload was submitted by this cleanup.
+Standard Kata exposes writable guest tmpfs at `/tmp`, observed capacity and
+available space **100,691,968 bytes**, with `rw` mount flags and actual successful
+security-fixture writes. `emptyDir.sizeLimit: 16Mi` remains configuration, **not
+a verified guest quota**. Exact quota and quota-exhaustion probes are excluded
+from active release gates. The custom Rust shim/agent patch was abandoned.
+Historical 0.1.0 evidence remains **30 passing checks, one failed quota check and
+one dependent unrun case**, with the bounded 20 MiB write failure unchanged.
+The historical 0.1.0 digest is not this release.
 
-## Remaining release gates
+Scratch may consume memory beyond 16 MiB; full scratch/abrupt death may prevent a
+report and collection fails closed. Same-UID report/process tampering, diagnostic
+bypass, selected network/credential probe scope and host-only OOM/infrastructure
+mapping evidence remain limitations. No general untrusted-code isolation or new
+effective memory bound is claimed. M6/M8 still gate generated Python.
 
-On an available approved builder, build and inspect 0.1.1 without candidate
-execution, then record its actual digest, archive hash and source provenance.
-Distribute/import that exact artifact through the approved path. With existing
-authorized operator access, run the full **30-case active trusted catalog** on
-the unmodified Kata runtime: security writes, scratch-layout, results/negative
-cases, timeouts, diagnostics, network and missing RuntimeClass. Recheck network
-target identity/health, capture runtime/image/Pod identity, exact-UID API cleanup
-and independently observed live guest correlation/teardown. Retain failures and
-unrun cases. Do not execute model-generated Python or alter infrastructure.
-
-Review the actual evidence before acceptance. Same-UID report tampering, selected
-network/credential probe scope and partly host-only OOM/infrastructure mappings
-remain limitations; later M6/M8 gates still apply before untrusted execution.
-**Runner 0.1.1 remains unreleased. Committing and pushing are left to the user.**
+The existing [KataExecutor](infra/executor/README.md) is host-tested and uses this
+runner contract. Live adapter/application integration, real worker wiring,
+PostgreSQL/journal coordination, authorization/image/teardown callbacks,
+application credentials, admission and recovery tests remain **M4/M5**, outside
+this task. User approval closes M3 and authorizes committing/pushing these records.
+The image remains in the verified lab cache; no registry publication is claimed.

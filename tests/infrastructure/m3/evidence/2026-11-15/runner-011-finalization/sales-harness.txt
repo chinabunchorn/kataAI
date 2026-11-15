@@ -1,0 +1,1 @@
+sales: OK; API checks passed, node VM evidence still required

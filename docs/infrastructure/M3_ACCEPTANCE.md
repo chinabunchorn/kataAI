@@ -27,15 +27,43 @@ historical capacity test remains **failed** and the dependent case remains
 [M3_SCRATCH_INVESTIGATION.md](M3_SCRATCH_INVESTIGATION.md) and original evidence
 are preserved without rewriting their results.
 
-Runner 0.1.1 remains **unreleased, pending a real candidate build and live Kata
-acceptance**. Require an inspected digest-pinned 0.1.1 artifact, source/build
-provenance, passing host checks, the full active trusted catalog (including
-security, scratch-layout, results/errors/timeouts/diagnostics/network and missing
-RuntimeClass), exact-UID API cleanup and independently observed runtime/guest
-teardown. Network target identity/health must be rechecked. Only existing trusted
-fixtures may execute in Kata; no model-generated Python. No infrastructure change
-is authorized. See [the current release record](../../RELEASE_0.1.1.md) for actual
-validation evidence and unmet prerequisites. Host tests alone cannot release it.
+## Current 0.1.1 verification — 2026-11-15
+
+**M3 COMPLETE — Runner 0.1.1 RELEASED with user approval on 2026-11-15.**
+All current M3 verification requirements passed under the amended standard-Kata
+policy. The user explicitly approved Runner 0.1.1, closing M3, and committing
+and pushing the verified records. M4/M5 and M6/M8 remain separate open gates.
+
+- Clean source commit `11d5465cb95d7ff78fd74f903813a1dba40f966e`; inspected manifest
+  `sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9`.
+- 48 runner and 39 executor host tests passed. PowerShell, trusted AST, Docker
+  static build checks, harness help, active links and diff checks passed.
+- Exact OCI archive imported through the approved existing containerd cache path;
+  manifest content and all executed Pods' actual imageID match the inspected digest.
+- Full **30-case active trusted catalog: 30 passed, 0 failed, 0 unrun**, serially.
+  Canonical object/array, invalid/missing/bounded results, syntax/runtime/status
+  spoofing, timeouts, stdout/stderr bounds, security, scratch-layout, network and
+  missing RuntimeClass passed. The negative runtime case created zero Pods.
+- Security Pod `dd08f322-e02a-4ca6-becc-2f9f6ff8646a` matched Job UID
+  `1bf66a13-e0a3-4e56-8932-dc484bd2941a`, sandbox
+  `848a251799be5f736b104abc9f7e06e3b70092d28a212e040e498e1365d0d6e6`,
+  Kata shim PID 1565141 and child QEMU PID 1565166 with `accel=kvm`.
+- Every run reached exact-UID API cleanup and node-side stopped-process/path
+  checks. Exact security PIDs and guest/runtime/kubelet directories were absent;
+  initially retained stopped sandbox metadata was investigated and later absent.
+  API cleanup records retain `vm_teardown_verified: false`; independent node
+  evidence supplies the separate teardown proof rather than altering those records.
+- Scratch-layout observed writable guest tmpfs with capacity/available space
+  100,691,968 bytes. Security observed actual writes. No exact quota is claimed.
+- Installed standard shim hash matches historical evidence. No installed runtime,
+  policies, credentials, cluster configuration or VM allocations were changed.
+
+See [current release decision](../../RELEASE_0.1.1.md),
+[complete evidence](../../tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/README.md),
+[live results](../../tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/live-results.json) and
+[independent VM correlation](../../tests/infrastructure/m3/evidence/2026-11-15/runner-011-finalization/node-security.json).
+Historical 0.1.0 observations below remain unchanged and do not certify 0.1.1.
+M4/M5 application integration and M6/M8 generated-code gates remain open.
 
 ## Historical 0.1.0 acceptance — unchanged observations
 
@@ -184,7 +212,7 @@ inspection found `shared_fs = "virtio-fs"`, `emptydir_mode = "shared-fs"`,
 kernel fields, not a demonstrated per-volume capacity override. Do not infer that
 switching to a block/disk emptyDir fixes it: upstream [storage limitations](https://github.com/kata-containers/kata-containers/blob/main/docs/Limitations.md)
 also require review. Any runtime/infrastructure correction requires the user's
-explicit approval. M3 cannot be accepted with this failed scratch boundary.
+explicit approval. Under that historical contract M3 could not be accepted with this failed scratch boundary. The current policy excludes exact guest quota enforcement.
 
 ## Cleanup and evidence scope
 
@@ -201,7 +229,11 @@ Only the security run has separately captured live shim/QEMU/KVM correlation;
 short cases have API/runtime/image evidence and the final aggregate absence check.
 No per-case VM boot time or precise cleanup latency is claimed.
 
-## Remaining acceptance
+## Historical remaining acceptance at 0.1.0
+
+The following original follow-ups describe the earlier quota contract. The
+2026-11-15 policy above supersedes the quota-fix/rerun gate; no custom runtime
+correction is required. Current 0.1.1 evidence is separate.
 
 - Resolve the failed scratch-capacity boundary under a separately approved design;
   preserve the current failure and rerun both scratch cases after a real fix.

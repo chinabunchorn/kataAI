@@ -77,7 +77,7 @@ def summarize(image):
         rows.setdefault(name, {"case": name, "status": "not_run", "expected_code": CASES[name][1]})
     return {"image": image, "counts": {status: sum(row["status"] == status for row in rows.values())
             for status in ("passed", "failed", "not_run")}, "cases": list(rows.values()),
-            "scope": "Fixture contract/API outcomes only; node-security.json records the separate live VM correlation. M3 scratch-capacity acceptance is not waived."}
+            "scope": "Active trusted fixture contract/API outcomes only; independent node evidence is required for VM correlation and teardown. Exact 16 MiB guest scratch capacity is excluded by the 2026-11-15 policy; historical failed/unrun quota evidence is preserved separately."}
 
 
 if __name__ == "__main__":

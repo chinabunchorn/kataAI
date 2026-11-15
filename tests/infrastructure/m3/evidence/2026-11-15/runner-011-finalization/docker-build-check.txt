@@ -1,0 +1,19 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 706B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+#2 DONE 1.7s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 160B done
+#4 DONE 0.0s
+Check complete, no warnings found.

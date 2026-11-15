@@ -1,0 +1,66 @@
+{
+  "buildx.build.provenance": {
+    "builder": {
+      "id": ""
+    },
+    "buildType": "https://mobyproject.org/buildkit@v1",
+    "materials": [
+      {
+        "uri": "pkg:docker/python?digest=sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b\u0026platform=linux%2Famd64",
+        "digest": {
+          "sha256": "5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b"
+        }
+      }
+    ],
+    "invocation": {
+      "configSource": {
+        "entryPoint": "Dockerfile"
+      },
+      "parameters": {
+        "frontend": "dockerfile.v0",
+        "locals": [
+          {
+            "name": "context"
+          },
+          {
+            "name": "dockerfile"
+          }
+        ],
+        "root": {
+          "configSource": {
+            "path": "Dockerfile"
+          },
+          "request": {
+            "args": {
+              "vcs:localdir:context": "infra\\runner",
+              "vcs:localdir:dockerfile": "infra\\runner",
+              "vcs:revision": "11d5465cb95d7ff78fd74f903813a1dba40f966e",
+              "vcs:source": "https://github.com/chinabunchorn/kataAI.git"
+            }
+          }
+        },
+        "compatibilityVersion": 30
+      },
+      "environment": {
+        "dockerfileVersion": "1.25.0",
+        "platform": "linux/amd64"
+      }
+    }
+  },
+  "buildx.build.ref": "desktop-linux/desktop-linux/fyj42jceu5flecq95cx09gfus",
+  "containerimage.config.digest": "sha256:19e8bd4750d918f4c21daaea258434eeec3f080a61ae3821181cc1925245af12",
+  "containerimage.descriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "size": 1619,
+    "annotations": {
+      "org.opencontainers.image.created": "2026-11-15T07:05:52Z"
+    },
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    }
+  },
+  "containerimage.digest": "sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "image.name": "docker.io/kataai/runner:0.1.1"
+}

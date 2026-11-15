@@ -12,7 +12,7 @@ release requirement. Treat the sizeLimit as configuration, not a verified quota.
 The 0.1.1 preflight requires a distinct writable tmpfs at `/tmp`, positive capacity
 and available space, bounded valid mountinfo and a writable mount flag. Capacity
 may differ from 16 MiB. Security tests must still observe actual guest writes.
-Current release decision (pending candidate build and live acceptance):
+Current artifact, verification results and user release-approval status:
 [0.1.1 release record](../../RELEASE_0.1.1.md).
 
 ## Artifact and build
@@ -49,7 +49,15 @@ Distribute the OCI archive through an approved image registry or a separately
 approved node import. Record its exact digest and verify containerd resolves the
 chosen `repository@sha256:digest` before submission. The Dockerfile and build
 script do not install a registry, modify runtime configuration or copy credentials.
-The historical 0.1.0 artifact (not this 0.1.1 candidate) reference is
+The verified 0.1.1 artifact was built from clean commit
+`11d5465cb95d7ff78fd74f903813a1dba40f966e` with the existing Docker Desktop Linux
+engine. Its immutable reference is
+`docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9`.
+Build inspection and current Kata results are in the linked release record;
+Runner 0.1.1 release and M3 closure were approved by the user on 2026-11-15.
+The image is available in the verified lab cache; no registry publication is claimed.
+
+The historical 0.1.0 artifact reference is
 `docker.io/kataai/runner@sha256:3fe4d6049f25c44d3b126f6b9de7462dfb019d3164bada7e775921a1b13abba8`.
 The [release record](../../tests/infrastructure/m3/evidence/2026-11-11/release.json)
 captures its source and archive hashes. It was imported into the existing node

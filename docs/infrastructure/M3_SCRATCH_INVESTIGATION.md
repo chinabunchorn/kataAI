@@ -4,13 +4,22 @@ Date: 2026-11-11 (Asia/Bangkok)
 
 Status: **Cause identified in the installed shim's source revision; no fix deployed.**
 
-2026-11-15 follow-up: a [specific paired shim/agent correction proposal](M3_SCRATCH_FIX_PROPOSAL.md)
-is ready for review. It is not approved or deployed. Runner 0.1.1 preparation
-preserves the fail-closed capacity guard; see [release hold](../../RELEASE_0.1.1.md).
+Current decision (2026-11-15): use standard, unmodified Kata Containers. The
+custom Rust shim/guest-agent patch and its installation proposal were abandoned;
+their [check logs and provenance](../../tests/infrastructure/m3/evidence/2026-11-15/abandoned-scratch-patch/README.md)
+remain historical evidence. No runtime correction is planned for Runner 0.1.1.
+Exact 16 MiB guest quota and quota-exhaustion probes are excluded from current
+release gates. Require a distinct writable guest tmpfs with positive capacity
+and available space, and observe actual writes and mounts. Keep `sizeLimit: 16Mi`
+as declared configuration without claiming enforcement. See the
+[current release decision](../../RELEASE_0.1.1.md) and
+[amended acceptance](M3_ACCEPTANCE.md).
 
-The initial M3 implementation/evidence is committed as `f7f8d06`. M3 remains
-incomplete because the guest scratch filesystem does not enforce the approved
-16 MiB capacity. This investigation changed no infrastructure or runner code.
+The initial M3 implementation/evidence is committed as `f7f8d06`. The technical
+investigation below records the original failed quota boundary and possible
+remediations considered at that time. Those proposals are historical, superseded
+by the accepted standard-Kata limitation. Changing policy does not turn the
+20 MiB write failure into a pass. This investigation changed no infrastructure.
 
 ## Finding
 
@@ -107,7 +116,7 @@ The runner correctly distinguished the fixture's assertion failure as
 `SCRIPT_FAILED`. It must not relabel that as resource exhaustion: the expected
 ENOSPC event did not happen.
 
-## Remediation implications — proposals, not approved changes
+## Historical remediation implications — abandoned alternatives
 
 The enforcement point must bound the **guest filesystem actually receiving the
 writes**, before candidate execution, while preserving non-root execution, dropped

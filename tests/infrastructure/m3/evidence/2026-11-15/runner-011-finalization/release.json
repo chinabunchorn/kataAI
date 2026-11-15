@@ -1,0 +1,51 @@
+{
+  "runner_version": "0.1.1",
+  "platform": "linux/amd64",
+  "built_at": "2026-11-15T07:05:54.5398434Z",
+  "source_revision": "11d5465cb95d7ff78fd74f903813a1dba40f966e",
+  "source_worktree_status": [],
+  "source_sha256": {
+    "Dockerfile": "70e63a9c9e1dadadfd8c9ce8c09638beb15e90c9cb5ec7c78b39bb115e107c5b",
+    "__init__.py": "28105e4af31fe9536221e1525744e1209f34901a58b7cf6b0918b8164e3a65ae",
+    "contract.py": "88192bd68068ecc237229a1921ee06a22eeea66392c76c5bbad4592952345925",
+    "validation.py": "32745d06b3618396b00f1f698bce0edc12f6f05ca74e61286c61558500a8e7f4",
+    "staging.py": "063bc5f3aa198b0daf32273fe356a8ba5681883ca98f9032a5e78e01032909bd",
+    "report.py": "17d053f65f0a4ba2ee621aef1ea753236b0d85915a7514b04694a58563a9a8d9",
+    "scratch.py": "1ab29e9c61906b97aba2467ee77a59527612dedc7c0ed395c19ff18fbe4e566c",
+    "supervisor.py": "63e2092399fc4abd5df685039a6c5264fb72c9b0808eb6784284eaae735fdb8f",
+    "entrypoint.py": "d6469e21d1f1e582654df1998cd8aeba6a3acaf42536ac89a5a44fcd8463b5bf",
+    "job.py": "0676a6f5de1cb2d84209c95186cb330653e64d7c7ff1732e02a14988e54d71ab",
+    "collection.py": "0bcaa89bc22282bd0e3de208f49bffb77e8bd037eabd4652e90d2c123d9db030",
+    ".dockerignore": "c65a26ab338f09b2d0d70fef2afd1dcb887b35f87a91efaf614fc628cada691f",
+    "requirements.txt": "ff8fe93c0a2fab55bfc2ca97beb25722bc0b1778e8e8908699cd5f6e796202a1",
+    "build.ps1": "18c2f4c0d108ee643703fa274032adf74ec5432609e84703646af55a8c91ceff",
+    "verify_artifact.py": "ed31bf924826b245d50f46603e18e64b654ab911de933150f04bce2be833f021"
+  },
+  "builder": "github.com/docker/buildx v0.35.0-desktop.2 b554ce1decd8b509893b1e7c6227eabfb923d094",
+  "artifact_inspection": {
+    "runner_version": "0.1.1",
+    "manifest_digest": "sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "platform": "linux/amd64",
+    "user": "10001:10001",
+    "python": "3.12.16",
+    "source_sha256": {
+      "opt/kataai/runnerlib/__init__.py": "28105e4af31fe9536221e1525744e1209f34901a58b7cf6b0918b8164e3a65ae",
+      "opt/kataai/runnerlib/contract.py": "88192bd68068ecc237229a1921ee06a22eeea66392c76c5bbad4592952345925",
+      "opt/kataai/runnerlib/report.py": "17d053f65f0a4ba2ee621aef1ea753236b0d85915a7514b04694a58563a9a8d9",
+      "opt/kataai/runnerlib/scratch.py": "1ab29e9c61906b97aba2467ee77a59527612dedc7c0ed395c19ff18fbe4e566c",
+      "opt/kataai/runnerlib/staging.py": "063bc5f3aa198b0daf32273fe356a8ba5681883ca98f9032a5e78e01032909bd",
+      "opt/kataai/runnerlib/supervisor.py": "63e2092399fc4abd5df685039a6c5264fb72c9b0808eb6784284eaae735fdb8f",
+      "opt/kataai/runnerlib/validation.py": "32745d06b3618396b00f1f698bce0edc12f6f05ca74e61286c61558500a8e7f4",
+      "opt/kataai/runner.py": "d6469e21d1f1e582654df1998cd8aeba6a3acaf42536ac89a5a44fcd8463b5bf"
+    },
+    "candidate_execution_performed": false
+  },
+  "base_image": "docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+  "base_python_metadata": "3.12.16",
+  "base_os_metadata": "Debian trixie",
+  "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "archive_sha256": "3b3b90076419f21648a175cb5dc764dc38718bb049500e2662772b64eca35a2f",
+  "build_command": "docker buildx build --platform linux/amd64 --provenance=false --tag <repository>:0.1.1 --output type=oci,dest=<archive> --metadata-file <metadata> --file infra/runner/Dockerfile infra/runner",
+  "candidate_execution_performed": false,
+  "live_kata_acceptance_verified": false
+}

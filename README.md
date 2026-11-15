@@ -8,6 +8,7 @@ Kata-based Python execution for a split local application / OpenStack lab.
 - [Fixed runner and M4 interface](infra/runner/README.md)
 - [M3 tests and lab runbook](tests/infrastructure/m3/README.md)
 - [M3 acceptance status and blockers](docs/infrastructure/M3_ACCEPTANCE.md)
+- [Runner 0.1.1 verified artifact and release review](RELEASE_0.1.1.md)
 - [Backend Kubernetes executor adapter](infra/executor/README.md)
 
 Host-only runner tests (no candidate script execution or cluster access):

@@ -3,7 +3,8 @@
 **Historical live tests include a failed scratch-capacity test.** See the
 [acceptance record](../../../docs/infrastructure/M3_ACCEPTANCE.md) for exact
 passed, failed and untested cases and the revised 2026-11-15 policy. Runner 0.1.1
-still requires its own build and actual Kata acceptance. Keep M1 assets and evidence intact. No candidate
+has separate current build and actual Kata evidence in the
+[release record](../../../RELEASE_0.1.1.md). Keep M1 assets and evidence intact. No candidate
 fixture may run on Windows, the Kubernetes node, local Docker or ordinary runc.
 The host harness reads fixture programs as bytes only. It accepts named
 team-controlled cases from `catalog.py`, never an arbitrary script path.
@@ -28,6 +29,16 @@ Build and preserve an immutable runner artifact using
 builder. Review `release.json` and distribute the image through an approved
 registry/import mechanism; no deployment proceeds with a placeholder digest.
 Ensure that the Kata node resolves the exact released image reference.
+
+For the existing lab, the approved mechanism is SSH/SCP to a unique temporary
+node directory, verify the archive SHA-256, import into existing containerd with
+`sudo -n ctr -n k8s.io images import --platform linux/amd64 --digests <archive>`,
+then register/verify `repository@sha256:<manifest>` against that imported manifest.
+The import may also create a tag/config alias; those are not deployment identity.
+Check `ctr content get <manifest> | sha256sum` and the actual Pod `imageID`.
+Remove only the inspected temporary archive/directory; retain the image cache.
+No registry installation, credential copy or runtime change is needed. Current
+commands, hashes and outcomes are retained in the linked release evidence.
 
 Use the existing approved SSH tunnel/private Kubernetes API route with TLS
 verification and an explicit trusted-operator kubeconfig/context. No kubeconfig

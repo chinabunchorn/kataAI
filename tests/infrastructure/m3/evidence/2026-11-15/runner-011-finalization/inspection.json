@@ -1,0 +1,18 @@
+{
+  "runner_version": "0.1.1",
+  "manifest_digest": "sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "platform": "linux/amd64",
+  "user": "10001:10001",
+  "python": "3.12.16",
+  "source_sha256": {
+    "opt/kataai/runnerlib/__init__.py": "28105e4af31fe9536221e1525744e1209f34901a58b7cf6b0918b8164e3a65ae",
+    "opt/kataai/runnerlib/contract.py": "88192bd68068ecc237229a1921ee06a22eeea66392c76c5bbad4592952345925",
+    "opt/kataai/runnerlib/report.py": "17d053f65f0a4ba2ee621aef1ea753236b0d85915a7514b04694a58563a9a8d9",
+    "opt/kataai/runnerlib/scratch.py": "1ab29e9c61906b97aba2467ee77a59527612dedc7c0ed395c19ff18fbe4e566c",
+    "opt/kataai/runnerlib/staging.py": "063bc5f3aa198b0daf32273fe356a8ba5681883ca98f9032a5e78e01032909bd",
+    "opt/kataai/runnerlib/supervisor.py": "63e2092399fc4abd5df685039a6c5264fb72c9b0808eb6784284eaae735fdb8f",
+    "opt/kataai/runnerlib/validation.py": "32745d06b3618396b00f1f698bce0edc12f6f05ca74e61286c61558500a8e7f4",
+    "opt/kataai/runner.py": "d6469e21d1f1e582654df1998cd8aeba6a3acaf42536ac89a5a44fcd8463b5bf"
+  },
+  "candidate_execution_performed": false
+}

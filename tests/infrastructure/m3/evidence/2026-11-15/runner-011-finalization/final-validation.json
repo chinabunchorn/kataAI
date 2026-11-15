@@ -1,0 +1,23 @@
+{
+  "runner_host_tests": 48,
+  "executor_host_tests": 39,
+  "active_live": {
+    "passed": 30,
+    "failed": 0,
+    "not_run": 0
+  },
+  "all_executed_imageIDs_match": true,
+  "all_exact_uid_api_cleanups_absent": true,
+  "security_independent_correlation_and_exact_teardown_reviewed": true,
+  "final_kata_sandboxes_and_guest_processes_absent": true,
+  "original_12_system_runc_sandboxes_unchanged": true,
+  "temporary_remote_archive_removed": true,
+  "runner_15_build_file_hashes_unchanged": true,
+  "trusted_ast_files": 19,
+  "active_local_document_links_passed": true,
+  "diff_check_exit": 0,
+  "fixture_or_model_python_executed_on_host": false,
+  "release_status": "HOLD_PENDING_USER_APPROVAL",
+  "m3_technical_verification": "passed",
+  "scope": "Host tests are trusted/mocked; live acceptance is the M3 harness, not the backend adapter application path. Historical quota failure remains preserved."
+}

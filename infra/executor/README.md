@@ -178,11 +178,12 @@ responses, late creates after cancellation, duplicate/replacement identities,
 bounded transport, TLS checks and interrupted cleanup. No candidate code,
 kubectl, model or cluster is executed by these tests.
 
-Live execution remains unverified. Runner 0.1.1 must be built and accepted under
-the [revised scratch policy](../../docs/infrastructure/M3_ACCEPTANCE.md): use the
+Live **adapter/application** execution remains unverified. Runner 0.1.1's separate
+build and trusted harness results are in [the release record](../../RELEASE_0.1.1.md).
+The [revised scratch policy](../../docs/infrastructure/M3_ACCEPTANCE.md) uses the
 unmodified Kata runtime with writable scratch; exact 16 MiB guest enforcement is
 no longer required. An explicit approval callback cannot manufacture acceptance
-evidence. Actual credential permissions, API behavior,
+evidence. Actual application credential permissions, adapter API behavior,
 runtime image provenance and node teardown require the lab acceptance matrix.
 
 The backend team still needs to connect a real worker to these operations, persist

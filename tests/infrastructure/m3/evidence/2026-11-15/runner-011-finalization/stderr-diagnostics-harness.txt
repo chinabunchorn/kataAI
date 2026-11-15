@@ -1,0 +1,1 @@
+stderr-diagnostics: DIAGNOSTIC_LIMIT; API checks passed, node VM evidence still required

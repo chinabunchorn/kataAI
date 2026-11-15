@@ -1,4 +1,4 @@
-# M3 runner design and decision proposal
+# M3 approved runner design
 
 Status: **Approved — runner contract revision 1, with 2026-11-15 scratch policy amendment**
 
@@ -28,7 +28,7 @@ historical failure is preserved in the acceptance record. The user explicitly
 amended its release requirement on 2026-11-15; no runtime/security reconfiguration
 was performed.
 
-## Authority and inspected baseline
+## Authority and historical design baseline (2026-11-11)
 
 The [master roadmap](../Sandboxed_AI_Inference_Master_Roadmap_v0.3.md), sections
 0, M2, M3, M4 and decision register D07–D11, controls this work. The
@@ -36,10 +36,12 @@ The [master roadmap](../Sandboxed_AI_Inference_Master_Roadmap_v0.3.md), sections
 11–13 and 16.5, supplies M1 evidence. Infrastructure document decision IDs differ
 from roadmap IDs; IDs below refer to the roadmap.
 
-The repository currently contains the roadmap, infrastructure record, README,
-and eight M1 assets. There is no M2 application skeleton, approved JSON contract,
-runner image, M3 implementation, or CI configuration. All M1 assets were inspected;
-they will be preserved. M2 contracts must be coordinated with the backend teammate;
+At initial design inspection, the repository contained the roadmap, infrastructure record, README,
+and eight M1 assets. There was no M2 application skeleton, approved JSON contract,
+runner image, M3 implementation, or CI configuration. All M1 assets were inspected
+and preserved. Current runner and executor implementations are in `infra/runner`
+and `infra/executor`; see their READMEs and the release record for current evidence.
+M2 application contracts must be coordinated with the backend teammate;
 this proposal defines only the runner-side interface, not an HTTP/API envelope.
 
 M1 already demonstrates a tiny run-scoped read-only ConfigMap, UID/GID 10001,
@@ -55,11 +57,12 @@ UID `4da3eb78-8193-4f2b-85c6-3f52df396063`, selecting all Pods with no ingress
 or egress allow rules. This session did not repeat packet probes or inspect all
 Calico policy layers. No cluster resource was changed and no script was executed.
 
-Local Python 3.13, Docker, kubectl and SSH executables exist. `docker version`
+At that inspection, local Python 3.13, Docker, kubectl and SSH executables existed. `docker version`
 reported client 29.6.2 but failed to connect to the Linux engine named pipe.
-Read-only SSH works with network sandbox escalation. No image build, registry
-push, or M3 Kata test has run. Registry destination and approved build environment
-remain operational prerequisites; no infrastructure reinstall is proposed.
+Read-only SSH worked with network sandbox escalation. No image build, registry
+push, or M3 Kata test had run at design time. Subsequent builds, cache import and
+actual Kata results are tracked in the release and acceptance records; these
+historical prerequisites do not describe current release status.
 
 ## Approved decisions
 
@@ -67,7 +70,7 @@ The user approved the numbers and protocols in this section as M3 runner
 defaults. Approval applies to revision 1 as a runner contract; later material
 changes require an explicit revision.
 
-| Decision | Proposed selection | Reason / cost |
+| Decision | Approved selection | Reason / cost |
 |---|---|---|
 | D07 environment | Linux/amd64 Python 3.12 slim, starting from M1's observed immutable base `docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b`; no third-party runtime dependencies | Reuses verified lineage; CSV/JSON fixtures need only stdlib. Exact Python patch and base OS must be extracted from image metadata/build inspection before release; no guessed patch version |
 | D07 artifact | Runner version `0.1.1`, digest-pinned base and deployed runner; fixed files only in build context, no dynamic pip/apt installation | Record source revision, base digest, actual Python version, build command/tool version, platform and output digest. Fixed inputs aid reproducibility; do not promise bit-identical builds without measuring |
@@ -124,7 +127,7 @@ API. Diagnostics remain outside this report. Arbitrary keys inside `result`, suc
 as `status`, have no execution meaning. Report parsing rejects unknown/duplicate
 keys and inconsistent code/result/exit combinations.
 
-The future collector receives expected namespace, Job UID, Pod UID, run ID and
+The implemented collector receives expected namespace, Job UID, Pod UID, run ID and
 container name from its own run record. It checks the exact Pod owner, labels,
 RuntimeClass, image digest, container identity, no restart, terminal state and
 exit code, then bounds and validates its termination report and result anew.
@@ -167,9 +170,9 @@ not proof of OOM; a nonzero exit alone is not proof of timeout. Scratch ENOSPC m
 be an ordinary script failure unless the controlled fixture or Kubernetes evidence
 establishes the resource cause. M4's public error envelope remains its own contract.
 
-## Implementation and proof after approval
+## Implementation and required proof
 
-Proposed layout: `infra/runner/` for Dockerfile, manifest and small runner,
+Implemented layout: `infra/runner/` for Dockerfile, manifest and small runner,
 validation, staging and collection modules; `tests/unit/runner/` for pure tests;
 `tests/infrastructure/m3/` for trusted fixtures, fixed Job/harness and evidence
 instructions. Keep FastAPI/Kubernetes SDK dependencies out of the runner. Staging
