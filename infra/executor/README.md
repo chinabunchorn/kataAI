@@ -178,9 +178,11 @@ responses, late creates after cancellation, duplicate/replacement identities,
 bounded transport, TLS checks and interrupted cleanup. No candidate code,
 kubectl, model or cluster is executed by these tests.
 
-Live execution remains unverified. The known scratch-size propagation failure
-must be resolved and the runner rebuilt/accepted; an explicit approval callback
-cannot manufacture that evidence. Actual credential permissions, API behavior,
+Live execution remains unverified. Runner 0.1.1 must be built and accepted under
+the [revised scratch policy](../../docs/infrastructure/M3_ACCEPTANCE.md): use the
+unmodified Kata runtime with writable scratch; exact 16 MiB guest enforcement is
+no longer required. An explicit approval callback cannot manufacture acceptance
+evidence. Actual credential permissions, API behavior,
 runtime image provenance and node teardown require the lab acceptance matrix.
 
 The backend team still needs to connect a real worker to these operations, persist

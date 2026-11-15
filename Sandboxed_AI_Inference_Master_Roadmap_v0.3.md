@@ -241,6 +241,12 @@ flowchart TD
 
 ## M3 — Harden the fixed Python runner and its staging/result channels
 
+**Policy amendment (2026-11-15):** Use the existing unmodified Kata runtime.
+Exact 16 MiB guest scratch capacity and quota exhaustion are no longer release
+requirements. Require writable guest tmpfs and record actual capacity; preserve
+the historical failure below. Runner 0.1.1 still needs its own build and live
+acceptance under the [revised criteria](docs/infrastructure/M3_ACCEPTANCE.md).
+
 **Implementation update (2026-11-11):** Runner contract defaults were explicitly
 approved in [M3 design revision 1](docs/milestone-3-design.md). Implementation,
 image release and actual-Kata observations are tracked in
@@ -254,11 +260,11 @@ No infrastructure/security configuration was changed to bypass that failure.
 - **M3-T01 — Runner artifact:** Build a team-controlled Python runner image, pin versions/dependencies and image digest, and document the fixed tool environment.
 - **M3-T02 — Input paths:** Make the script and one dataset available at fixed paths (for example `/inputs/script.py`, `/inputs/data.csv` as proposed in the specification). Make inputs read-only, with no extra datasets or secrets.
 - **M3-T03 — Staging mechanism:** Implement the M1-approved, run-scoped staging method; enforce the selected maximum input size and reject invalid/unsafe payloads before creating a Job.
-- **M3-T04 — Non-root execution:** Run with a non-root user, bounded scratch storage, and supported read-only root filesystem settings; test file permissions on Kata rather than trusting container-only tests.
+- **M3-T04 — Non-root execution:** Run with a non-root user, suitable writable guest scratch and supported read-only root filesystem settings; retain declared resource limits without claiming an exact guest scratch quota. Test file permissions on Kata rather than trusting container-only tests.
 - **M3-T05 — Generic JSON result channel:** Implement the approved network-independent result channel; emit exactly one **generic bounded UTF-8 JSON** value and keep stdout/stderr diagnostics independent and bounded. The runner must not hard-code any analysis-specific result fields.
 - **M3-T06 — Result validation:** Reject missing, malformed, **disallowed JSON types**, excessive nesting/collections, invalid UTF-8, and oversized results according to the approved generic contract; associate accepted data with the originating run/Pod. Keep the server outcome separate from user-controlled JSON keys.
 - **M3-T07 — Exit mapping:** Distinguish successful output, script failure, signal/timeout, and invalid result using stable internal outcome codes.
-- **M3-T08 — Tests:** Cover canonical output, a different approved JSON shape, invalid JSON, no output, oversized/deep output, syntax error, read-only input access, and scratch-limit behavior.
+- **M3-T08 — Tests:** Cover canonical output, a different approved JSON shape, invalid JSON, no output, oversized/deep output, syntax error, read-only input access, scratch writes and observed capacity. Preserve historical quota-test failures without requiring exact 16 MiB enforcement for release.
 
 **Deliverables:** Pinned runner image/digest, staging and result adapters, runner contract tests, environment dependency manifest.
 

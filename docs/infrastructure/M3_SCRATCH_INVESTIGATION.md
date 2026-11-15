@@ -4,6 +4,10 @@ Date: 2026-11-11 (Asia/Bangkok)
 
 Status: **Cause identified in the installed shim's source revision; no fix deployed.**
 
+2026-11-15 follow-up: a [specific paired shim/agent correction proposal](M3_SCRATCH_FIX_PROPOSAL.md)
+is ready for review. It is not approved or deployed. Runner 0.1.1 preparation
+preserves the fail-closed capacity guard; see [release hold](../../RELEASE_0.1.1.md).
+
 The initial M3 implementation/evidence is committed as `f7f8d06`. M3 remains
 incomplete because the guest scratch filesystem does not enforce the approved
 16 MiB capacity. This investigation changed no infrastructure or runner code.

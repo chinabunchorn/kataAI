@@ -34,6 +34,13 @@ def temporary_workspace():
 
 
 class HarnessTests(unittest.TestCase):
+    def test_legacy_quota_cases_are_excluded_from_release_execution(self):
+        self.assertEqual({"scratch", "scratch-failure", "scratch-multifile"},
+                         set(catalog.LEGACY_SCRATCH_CASES))
+        self.assertTrue(set(catalog.LEGACY_SCRATCH_CASES).isdisjoint(catalog.CASES))
+        self.assertIn("security", catalog.CASES)
+        self.assertIn("scratch-layout", catalog.CASES)
+
     def test_preflight_distinguishes_namespaced_and_global_policy(self):
         class FakeKube:
             global_items = []

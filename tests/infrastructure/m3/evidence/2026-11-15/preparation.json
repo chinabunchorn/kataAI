@@ -1,0 +1,33 @@
+{
+  "runner_version": "0.1.1",
+  "protocol": "kataai.runner.v1",
+  "date": "2026-11-15",
+  "timezone": "Asia/Bangkok",
+  "source_revision": "84eb0fd07c6e7bcd9369caae153b69cebe312d21",
+  "source_state": "uncommitted release preparation; base commit is not candidate identity",
+  "source_sha256": {
+    "Dockerfile": "70e63a9c9e1dadadfd8c9ce8c09638beb15e90c9cb5ec7c78b39bb115e107c5b",
+    "__init__.py": "28105e4af31fe9536221e1525744e1209f34901a58b7cf6b0918b8164e3a65ae",
+    "contract.py": "7ef5aeb971b5ff38d975d7906b012d58d55855e15ab2112596d6dd4607f0d478",
+    "validation.py": "32745d06b3618396b00f1f698bce0edc12f6f05ca74e61286c61558500a8e7f4",
+    "staging.py": "063bc5f3aa198b0daf32273fe356a8ba5681883ca98f9032a5e78e01032909bd",
+    "report.py": "17d053f65f0a4ba2ee621aef1ea753236b0d85915a7514b04694a58563a9a8d9",
+    "scratch.py": "c4635c4c8bfc6a85c278f2cee6b1e56460f79d898e7504754b77e2ee28a7e4e3",
+    "supervisor.py": "34bf12c2193ee8b78f8f1cf5b93fb2ce6c92c348c0d1f13a0c5a3749c1e98b10",
+    "entrypoint.py": "d6469e21d1f1e582654df1998cd8aeba6a3acaf42536ac89a5a44fcd8463b5bf",
+    "job.py": "0676a6f5de1cb2d84209c95186cb330653e64d7c7ff1732e02a14988e54d71ab",
+    "collection.py": "0bcaa89bc22282bd0e3de208f49bffb77e8bd037eabd4652e90d2c123d9db030",
+    ".dockerignore": "c65a26ab338f09b2d0d70fef2afd1dcb887b35f87a91efaf614fc628cada691f",
+    "requirements.txt": "ff8fe93c0a2fab55bfc2ca97beb25722bc0b1778e8e8908699cd5f6e796202a1",
+    "build.ps1": "18c2f4c0d108ee643703fa274032adf74ec5432609e84703646af55a8c91ceff",
+    "verify_artifact.py": "ed31bf924826b245d50f46603e18e64b654ab911de933150f04bce2be833f021"
+  },
+  "python_host_version": "3.13.15",
+  "host_test_command": "python -B -m unittest discover -s tests/unit/runner -v",
+  "host_tests_passed": 47,
+  "candidate_image_digest": null,
+  "candidate_archive_sha256": null,
+  "build_performed": false,
+  "candidate_execution_performed": false,
+  "live_kata_acceptance_verified": false
+}

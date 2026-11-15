@@ -1,19 +1,32 @@
 # M3 runner design and decision proposal
 
-Status: **Approved — runner contract revision 1**
+Status: **Approved — runner contract revision 1, with 2026-11-15 scratch policy amendment**
 
 Revision: 1, inspected 2026-11-11 (Asia/Bangkok)
 
+Release maintenance note (2026-11-15): the artifact patch candidate is now 0.1.1.
+The artifact is now prepared as 0.1.1 with protocol v1. The user chose the
+existing unmodified Kata runtime: exact 16 MiB guest scratch enforcement and
+quota-exhaustion tests are no longer release requirements. Require writable
+guest tmpfs with positive capacity/available space and actual write observations.
+The configured `sizeLimit: 16Mi` remains, without a verified guest quota. Other
+numeric limits and workload security controls remain required. See
+[release preparation](../RELEASE_0.1.1.md) and the amended
+[acceptance policy](infrastructure/M3_ACCEPTANCE.md). No custom runtime installation
+is planned or authorized.
+
 Approval evidence: user replied “Yes I approve” to revision 1 in this chat on
-2026-11-11. M3 acceptance is blocked by the failed scratch-capacity check below.
+2026-11-11. Historical scratch-capacity failure remains recorded; current candidate
+acceptance requires a real 0.1.1 build and evidence under the amended policy.
 
 Implementation/evidence tracking: [M3 acceptance record](infrastructure/M3_ACCEPTANCE.md).
 Subsequent read-only cached image inspection identified Python 3.12.16 and Debian
 trixie for the approved base digest; no version was inferred from a mutable tag.
 Actual Kata tests later verified the staging/result/non-root contracts but found
 the configured 16 MiB memory emptyDir did not enforce that guest capacity. This
-approved design is not silently relaxed: the failure and required follow-up are
-in the acceptance record; no runtime/security reconfiguration was performed.
+historical failure is preserved in the acceptance record. The user explicitly
+amended its release requirement on 2026-11-15; no runtime/security reconfiguration
+was performed.
 
 ## Authority and inspected baseline
 
@@ -57,7 +70,7 @@ changes require an explicit revision.
 | Decision | Proposed selection | Reason / cost |
 |---|---|---|
 | D07 environment | Linux/amd64 Python 3.12 slim, starting from M1's observed immutable base `docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b`; no third-party runtime dependencies | Reuses verified lineage; CSV/JSON fixtures need only stdlib. Exact Python patch and base OS must be extracted from image metadata/build inspection before release; no guessed patch version |
-| D07 artifact | Runner version `0.1.0`, digest-pinned base and deployed runner; fixed files only in build context, no dynamic pip/apt installation | Record source revision, base digest, actual Python version, build command/tool version, platform and output digest. Fixed inputs aid reproducibility; do not promise bit-identical builds without measuring |
+| D07 artifact | Runner version `0.1.1`, digest-pinned base and deployed runner; fixed files only in build context, no dynamic pip/apt installation | Record source revision, base digest, actual Python version, build command/tool version, platform and output digest. Fixed inputs aid reproducibility; do not promise bit-identical builds without measuring |
 | D09 staging | One immutable ConfigMap per run; exactly `script.py` and `data.csv`, explicitly projected into `/inputs`, mode 0444, read-only volume | Reuses M1; bounded MVP only, unsuitable for large or confidential datasets without separate storage/access review |
 | D08 input caps | Script 32 KiB, CSV 512 KiB, serialized ConfigMap request 768 KiB; strict UTF-8, nonempty, no NUL; no arbitrary additional keys/paths | Leaves space below Kubernetes' 1 MiB ConfigMap data limit; validate bytes and serialized request before any creation. CSV headers remain task-specific; no sales schema imposed |
 | D09 result | Script writes `/tmp/result.json`; supervisor validates and emits a versioned report to `/tmp/runner-termination.json`; Kubernetes `terminationMessagePath` points there, policy `File` | Network independent; separates diagnostics from data; avoids parsing mixed log lines. Actual non-root termination-file behavior must pass a Kata feasibility test |
@@ -66,7 +79,7 @@ changes require an explicit revision.
 | D08 transport cap | Complete compact report at most 3072 UTF-8 bytes; fail closed if report cannot fit, never truncate JSON | Leaves headroom below the single-container 4096-byte termination-message cap. Bound both raw result and encoded envelope; encoding expansion may make an otherwise valid raw result too large |
 | D11 diagnostics | Capture at most 8 KiB each stdout and stderr; combined observed bytes exceeding 16 KiB ends execution with `DIAGNOSTIC_LIMIT` | Bounded pipe reads and retention; diagnostics never interpreted as JSON results. Host log retrieval must also use byte caps and detect truncation |
 | D11 time | Script wall deadline 30 s, Job active deadline 120 s, termination grace 5 s; one run at a time, no retries | Runner deadline starts at subprocess launch; Job deadline also bounds scheduling/startup. Full queue/request budgets remain M4 decisions |
-| D11 resources | M1 requests 100m CPU / 128Mi memory / 16Mi ephemeral storage; limits 1 CPU / 256Mi / 64Mi; scratch 16Mi **memory-backed** emptyDir | tmpfs chosen for a capacity boundary rather than assuming disk emptyDir is an immediate quota. Memory charge, ENOSPC and guest behavior require measurement; RuntimeClass overhead is additional |
+| D11 resources | M1 requests 100m CPU / 128Mi memory / 16Mi ephemeral storage; limits 1 CPU / 256Mi / 64Mi; scratch memory-backed emptyDir with configured sizeLimit 16Mi | Exact guest capacity and ENOSPC at 16 MiB are not release requirements. Require writable guest tmpfs and record actual capacity; do not claim an enforced quota. RuntimeClass overhead is additional |
 | Security configuration | UID/GID 10001, fsGroup 10001 if needed for scratch; read-only root and inputs, no escalation, capabilities ALL dropped, RuntimeDefault seccomp, token automount false, service links disabled | Reuses M1 controls; tmpfs and fsGroup are proposed workload changes requiring live validation. No hostPath, Secret, kubeconfig, extra dataset, network service or sidecar |
 
 ConfigMaps are not secret storage. MVP staging receives only the server-authorized
@@ -162,14 +175,14 @@ validation, staging and collection modules; `tests/unit/runner/` for pure tests;
 instructions. Keep FastAPI/Kubernetes SDK dependencies out of the runner. Staging
 and collection adapters operate on plain bytes/dictionaries; M4 supplies transport.
 
-R1 (M3-T01): Build version 0.1.0 without candidate execution; record actual base
+R1 (M3-T01): Build version 0.1.1 without candidate execution; record actual base
 metadata and immutable resulting image digest. A release without a real digest
 does not satisfy acceptance. Choose an approved build host and distribution path
 first; do not install/reconfigure Docker, a registry or containerd implicitly.
 
 R2 (M3-T02–04): Pure staging tests enforce exact keys and pre-create caps. Kata
 fixtures observe UID/GID, actual denied writes to both inputs/root, scratch write
-success and bounded exhaustion, absent token, and absence of unexpected env/mount
+success and actual capacity (no exact-capacity/exhaustion gate), absent token, and absence of unexpected env/mount
 credentials. Inspect manifests too; a file-path probe alone does not prove absence
 of all credentials. Inspect policy without weakening it and repeat bounded network
 probes in the actual guest. No runtime fallback is permitted.
@@ -181,7 +194,7 @@ runtime/image/exit mismatches, missing or truncated reports, and diagnostic spoo
 
 R4 (M3-T07–08): Actual Kata tests execute canonical sales object and a distinct
 trusted array analysis, malformed/empty/missing/oversize/deep/scalar/non-UTF-8/
-multiple results, syntax error, exception, infinite loop, scratch exhaustion and
+multiple results, syntax error, exception, infinite loop, writable scratch and
 diagnostic flood. Candidate scripts are never executed by host tests or local
 Docker. Host tests run only trusted validation/staging/collection code, with no
 candidate import/exec or subprocess execution.

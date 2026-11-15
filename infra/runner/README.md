@@ -1,13 +1,19 @@
-# Fixed Python runner 0.1.0
+# Fixed Python runner 0.1.1
 
 Contract: [approved M3 design revision 1](../../docs/milestone-3-design.md).
 Implementation status and evidence: [M3 acceptance record](../../docs/infrastructure/M3_ACCEPTANCE.md).
 This runner is **trusted-fixtures-only** until M6 isolation and M8 validation pass.
 
-**Verified M3 blocker:** the configured 16 MiB scratch limit did not stop a 20 MiB
-write inside this Kata guest. Do not treat `emptyDir.sizeLimit` as enforced on
-this stack or mark M3 accepted. The failing test remains intact; see the acceptance
-record before using this artifact beyond supervised trusted fixtures.
+The project uses the existing unmodified Kata runtime. The historical 20 MiB
+write succeeded despite the configured 16 MiB sizeLimit; that failed quota test
+and its evidence remain intact. Exact 16 MiB guest capacity is no longer a
+release requirement. Treat the sizeLimit as configuration, not a verified quota.
+
+The 0.1.1 preflight requires a distinct writable tmpfs at `/tmp`, positive capacity
+and available space, bounded valid mountinfo and a writable mount flag. Capacity
+may differ from 16 MiB. Security tests must still observe actual guest writes.
+Current release decision (pending candidate build and live acceptance):
+[0.1.1 release record](../../RELEASE_0.1.1.md).
 
 ## Artifact and build
 
@@ -23,13 +29,17 @@ guest networking are required independently of this image.
 From the repository root, with a working Docker/BuildKit OCI exporter:
 
 ```powershell
-./infra/runner/build.ps1 -Repository '<approved-repository>/kataai-runner:0.1.0'
+./infra/runner/build.ps1 -Repository '<approved-repository>/kataai-runner:0.1.1'
 ```
 
 The script outputs an OCI archive, BuildKit metadata and `release.json` in a unique
 `.m3-runs/build-*` directory. The release record includes version, real manifest
 digest, archive SHA-256, source file hashes (covering uncommitted code), source
-revision, base, platform and builder. It never launches the runner. Review and
+revision and dirty worktree status, base, platform and builder. `scratch.py` and
+the host-side runner modules are included. Hashes are captured before build and
+checked afterward; the statically inspected manifest must match BuildKit's
+digest. `inspection.json` preserves packaged-source hashes. It never launches
+the runner. Review and
 preserve this record with acceptance evidence. Do not invent a runner digest from
 the base digest or image configuration ID. Rebuild after source changes; repeat
 builds can be compared by archive/manifest hashes, but bitwise equality is not
@@ -39,7 +49,7 @@ Distribute the OCI archive through an approved image registry or a separately
 approved node import. Record its exact digest and verify containerd resolves the
 chosen `repository@sha256:digest` before submission. The Dockerfile and build
 script do not install a registry, modify runtime configuration or copy credentials.
-The built and statically inspected runner reference is
+The historical 0.1.0 artifact (not this 0.1.1 candidate) reference is
 `docker.io/kataai/runner@sha256:3fe4d6049f25c44d3b126f6b9de7462dfb019d3164bada7e775921a1b13abba8`.
 The [release record](../../tests/infrastructure/m3/evidence/2026-11-11/release.json)
 captures its source and archive hashes. It was imported into the existing node
@@ -125,7 +135,8 @@ evidence. Scratch ENOSPC escaping the script is normally `SCRIPT_FAILED`.
 
 ## Required workload controls
 
-UID/GID 10001; read-only root and inputs; fsGroup 10001; 16 MiB memory emptyDir
+UID/GID 10001; read-only root and inputs; fsGroup 10001; memory emptyDir with
+configured `sizeLimit: 16Mi` (not a guaranteed guest capacity)
 at `/tmp`; no escalation, all capabilities dropped, RuntimeDefault seccomp;
 token automount and service-link env disabled; no host mounts, Secrets, init or
 sidecar containers. One Job completion, no retry, restart Never, 30 s measured

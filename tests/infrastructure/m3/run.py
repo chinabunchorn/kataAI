@@ -168,8 +168,6 @@ def execute(args, cm, job, directory):
                     result.get(key) is True for key in ("input_write_denied", "root_readonly",
                         "serviceaccount_absent", "known_credentials_absent", "scratch_writable")):
                     raise RuntimeError("security observations failed")
-            if args.case == "scratch" and outcome["result"].get("scratch_enospc") is not True:
-                raise RuntimeError("scratch limit not observed")
         save(directory, "outcome.json", outcome)
         print(f"{args.case}: {outcome['code']}; API checks passed, node VM evidence still required")
     except Exception as exc:

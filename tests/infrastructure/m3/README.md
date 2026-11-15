@@ -1,8 +1,9 @@
 # M3 trusted Kata tests
 
-**Live tested, with a failing scratch-capacity acceptance gate.** See the
+**Historical live tests include a failed scratch-capacity test.** See the
 [acceptance record](../../../docs/infrastructure/M3_ACCEPTANCE.md) for exact
-passed, failed and untested cases; M3 is not complete. Keep M1 assets and evidence intact. No candidate
+passed, failed and untested cases and the revised 2026-11-15 policy. Runner 0.1.1
+still requires its own build and actual Kata acceptance. Keep M1 assets and evidence intact. No candidate
 fixture may run on Windows, the Kubernetes node, local Docker or ordinary runc.
 The host harness reads fixture programs as bytes only. It accepts named
 team-controlled cases from `catalog.py`, never an arbitrary script path.
@@ -84,9 +85,7 @@ direct Kubernetes API client and lifecycle logic.
 | `sales`, `totals` | Exact canonical object / distinct month-total array, `OK` |
 | `security` | UID/GID 10001, denied script/CSV/runner writes, root read-only, absent token and known credential paths/env, scratch writable; 10 s correlation window |
 | `network` | Bounded TCP and UDP probes to M1-recorded destinations fail while valid result collection works |
-| `scratch` | ENOSPC observed within 16 MiB, file removed, valid observation JSON |
-| `scratch-layout` | Read-only statvfs/mountinfo diagnostic for the observed scratch-capacity blocker; does not certify a limit |
-| `scratch-failure` | Unhandled scratch exhaustion is `SCRIPT_FAILED`, not a guessed timeout/OOM |
+| `scratch-layout` | Record actual statvfs/mountinfo; positive writable tmpfs capacity may differ from 16 MiB; does not certify a quota |
 | `invalid-json`, `multiple`, `duplicate-key`, `nan` | `RESULT_JSON` |
 | `empty`, `blank`, `missing` | `RESULT_EMPTY`, `RESULT_EMPTY`, `RESULT_MISSING` |
 | `oversized`, `deep`, `collection`, `total-items` | `RESULT_LIMIT` |
@@ -96,6 +95,13 @@ direct Kubernetes API client and lifecycle logic.
 | `timeout` | `RUN_TIMEOUT` after supervisor wall budget; no retries |
 | `diagnostics`, `stderr-diagnostics` | `DIAGNOSTIC_LIMIT`, bounded retained log records |
 | `missing-runtime` | Explicit runtime-not-found Job event, zero Pods; no fallback |
+
+The original `scratch`, `scratch-failure` and proposed `scratch-multifile` probes
+and original expectations are retained in `LEGACY_SCRATCH_CASES` and fixture
+files, excluded from CLI choices and release acceptance. Their quota assumptions
+do not apply to the unmodified runtime. Historical failed/unrun outcomes remain
+unchanged. Do not execute new model-generated Python. The existing `security`
+fixture observes actual scratch writes; `scratch-layout` records capacity.
 
 Security probes observe specific paths/env plus fixed manifest controls. They do
 not prove absence of every possible secret or certify M6 isolation. Network probes

@@ -9,12 +9,14 @@ import tempfile
 import unittest
 
 from infra.runner.verify_artifact import inspect_oci
+from infra.runner.contract import VERSION
 
 ROOT = Path(__file__).resolve().parents[3]
 SOURCE = ROOT / "infra/runner"
 
 
-def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_hash=False):
+def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_hash=False,
+                      version=VERSION, omit=None, tamper=None):
     layer_stream = io.BytesIO()
     with tarfile.open(fileobj=layer_stream, mode="w") as layer:
         for name, mode in (("opt", 0o755), ("opt/kataai", directory_mode), ("opt/kataai/runnerlib", 0o555)):
@@ -23,8 +25,12 @@ def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_has
             member.mode = mode
             layer.addfile(member)
         for source in ("__init__.py", "contract.py", "validation.py", "staging.py", "report.py", "scratch.py", "supervisor.py", "entrypoint.py"):
+            if source == omit:
+                continue
             name = "opt/kataai/runner.py" if source == "entrypoint.py" else "opt/kataai/runnerlib/" + source
             raw = (SOURCE / source).read_bytes()
+            if source == tamper:
+                raw += b"\n# altered package\n"
             member = tarfile.TarInfo(name)
             member.mode, member.size = 0o555, len(raw)
             layer.addfile(member, io.BytesIO(raw))
@@ -37,7 +43,7 @@ def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_has
     config = blob(json.dumps({"os": "linux", "architecture": "amd64", "config": {
         "User": user, "Entrypoint": ["python3", "-I", "-B", "/opt/kataai/runner.py"],
         "WorkingDir": "/tmp", "Env": ["PYTHON_VERSION=3.12.16"],
-        "Labels": {"org.opencontainers.image.version": "0.1.1"}}}).encode(),
+        "Labels": {"org.opencontainers.image.version": version}}}).encode(),
         "application/vnd.oci.image.config.v1+json")
     manifest = blob(json.dumps({"schemaVersion": 2, "config": config, "layers": [layer]}).encode(),
                     "application/vnd.oci.image.manifest.v1+json")
@@ -77,6 +83,20 @@ class ArtifactTests(unittest.TestCase):
     def test_blob_tampering_rejected(self):
         with self.assertRaises((ValueError, json.JSONDecodeError)):
             self.check(bad_hash=True)
+
+    def test_stale_image_version_rejected(self):
+        with self.assertRaisesRegex(ValueError, "configuration"):
+            self.check(version="0.1.0")
+
+    def test_scratch_provenance_required_and_verified(self):
+        record = self.check()
+        self.assertEqual(VERSION, record["runner_version"])
+        self.assertEqual(hashlib.sha256((SOURCE / "scratch.py").read_bytes()).hexdigest(),
+                         record["source_sha256"]["opt/kataai/runnerlib/scratch.py"])
+        with self.assertRaisesRegex(ValueError, "missing trusted"):
+            self.check(omit="scratch.py")
+        with self.assertRaisesRegex(ValueError, "packaged source mismatch"):
+            self.check(tamper="scratch.py")
 
 
 if __name__ == "__main__":

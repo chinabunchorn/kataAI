@@ -1579,6 +1579,12 @@ These limitations must be revisited as the project progresses.
 
 ## 20. M3 implementation handoff (2026-11-11)
 
+Current policy note (2026-11-15): the user chose the existing unmodified Kata
+runtime. Exact 16 MiB guest scratch enforcement is no longer a release gate;
+writable guest scratch and real candidate acceptance remain required. See
+[the amended acceptance record](M3_ACCEPTANCE.md). The handoff observations below
+remain historical; no installed runtime or cluster configuration changed.
+
 The user approved [M3 runner contract revision 1](../milestone-3-design.md).
 Runner, staging/result adapters, fixed Job construction and trusted test assets
 are now prepared; [M3 acceptance and build blockers](M3_ACCEPTANCE.md) are tracked

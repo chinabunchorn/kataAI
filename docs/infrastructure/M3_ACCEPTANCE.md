@@ -1,6 +1,49 @@
 # M3 implementation and acceptance record
 
+## Current release policy — 2026-11-15
+
+The user chose the existing **unmodified Kata Containers runtime** for KataAI.
+Exact 16 MiB guest scratch enforcement is **no longer a Runner 0.1.1 release
+requirement**. The custom Rust patch, correction and installation proposals,
+and obsolete patch review were removed. Original patch check logs and provenance
+are retained as [abandoned-work evidence](../../tests/infrastructure/m3/evidence/2026-11-15/abandoned-scratch-patch/README.md).
+No installed runtime, Kubernetes configuration, RBAC or network policy is changed.
+
+Required scratch behavior is a distinct writable guest tmpfs at `/tmp`, positive
+capacity and available space, with bounded valid mountinfo. Preflight checks
+mount identity and writable flags; the existing trusted `security` case must
+observe real writes and `scratch-layout` must record actual capacity. The
+configured memory emptyDir `sizeLimit: 16Mi` remains unchanged, but is not a
+verified guest quota. Memory/CPU limits, read-only root/inputs, non-root identity,
+result/diagnostic bounds, deadlines, runtime placement and network controls remain
+required. Scratch can consume memory beyond 16 MiB; full scratch or abrupt death
+can prevent a report. Do not infer a new effective memory bound from this policy.
+
+The original `scratch` and `scratch-failure` expectations and fixture bytes remain
+preserved, along with the proposed multi-file probe. They are legacy quota tests,
+excluded from the current executable release catalog and acceptance gates. The
+historical capacity test remains **failed** and the dependent case remains
+**unrun**; neither is relabeled as passing or counted toward candidate acceptance.
+[M3_SCRATCH_INVESTIGATION.md](M3_SCRATCH_INVESTIGATION.md) and original evidence
+are preserved without rewriting their results.
+
+Runner 0.1.1 remains **unreleased, pending a real candidate build and live Kata
+acceptance**. Require an inspected digest-pinned 0.1.1 artifact, source/build
+provenance, passing host checks, the full active trusted catalog (including
+security, scratch-layout, results/errors/timeouts/diagnostics/network and missing
+RuntimeClass), exact-UID API cleanup and independently observed runtime/guest
+teardown. Network target identity/health must be rechecked. Only existing trusted
+fixtures may execute in Kata; no model-generated Python. No infrastructure change
+is authorized. See [the current release record](../../RELEASE_0.1.1.md) for actual
+validation evidence and unmet prerequisites. Host tests alone cannot release it.
+
+## Historical 0.1.0 acceptance — unchanged observations
+
 Date: 2026-11-11 (Asia/Bangkok)
+
+This is historical 0.1.0 evidence. The 2026-11-15 preparation of 0.1.1 is recorded
+in [RELEASE_0.1.1.md](../../RELEASE_0.1.1.md). The current policy above supersedes
+the historical exact-capacity release gate, without changing any results below.
 
 Contract: [approved revision 1](../milestone-3-design.md)
 

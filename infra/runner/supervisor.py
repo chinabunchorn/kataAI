@@ -83,7 +83,7 @@ def preflight() -> tuple[str, str]:
         validate_scratch(os.statvfs("/tmp"),
                          _read_file("/proc/self/mountinfo", MOUNTINFO_BYTES, nofollow=True))
     except (ContractError, OSError):
-        raise ContractError("INPUT_INVALID", "guest scratch capacity is not enforced") from None
+        raise ContractError("INPUT_INVALID", "guest scratch filesystem is unavailable or unsuitable") from None
     return run_id, pod_uid
 
 

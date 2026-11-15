@@ -23,6 +23,7 @@ CASES = {
     "totals": (None, "OK", TOTALS),
     "security": (None, "OK", None),
     "scratch": (None, "OK", None),
+    "scratch-multifile": (None, "OK", None),
     "scratch-layout": (None, "OK", None),
     "network": (None, "OK", None),
     "invalid-json": (_raw(b"{oops}"), "RESULT_JSON", None),
@@ -52,6 +53,13 @@ CASES = {
     "status-spoof": (_raw(b'{"status":"success","code":"OK"}') +
                      "raise RuntimeError('result cannot override child failure')\n", "SCRIPT_FAILED", None),
     "missing-runtime": ("# Must never execute\n", "KATA_UNAVAILABLE", None),
+}
+
+# Preserve the original probes and expectations for historical interpretation.
+# They depend on the abandoned exact-capacity contract and are excluded from
+# the executable release catalog; no historical failure is reclassified as OK.
+LEGACY_SCRATCH_CASES = {
+    name: CASES.pop(name) for name in ("scratch", "scratch-failure", "scratch-multifile")
 }
 
 

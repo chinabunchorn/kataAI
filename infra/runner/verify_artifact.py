@@ -6,6 +6,11 @@ import json
 from pathlib import Path
 import tarfile
 
+if __package__:
+    from .contract import VERSION
+else:
+    from contract import VERSION
+
 
 def _json(archive, name):
     member = archive.getmember(name)
@@ -45,7 +50,7 @@ def inspect_oci(path: Path, source: Path) -> dict:
                 or cfg["User"] != "10001:10001"
                 or cfg["Entrypoint"] != ["python3", "-I", "-B", "/opt/kataai/runner.py"]
                 or cfg["WorkingDir"] != "/tmp"
-                or cfg.get("Labels", {}).get("org.opencontainers.image.version") != "0.1.1"
+                or cfg.get("Labels", {}).get("org.opencontainers.image.version") != VERSION
                 or "PYTHON_VERSION=3.12.16" not in cfg["Env"]):
             raise ValueError("fixed image configuration mismatch")
         for descriptor in manifest["layers"]:
@@ -71,7 +76,7 @@ def inspect_oci(path: Path, source: Path) -> dict:
                             raise ValueError("unexpected trusted path type/content")
         if set(found) != set(expected):
             raise ValueError("missing trusted source in image")
-    return {"manifest_digest": digest, "platform": "linux/amd64", "user": "10001:10001",
+    return {"runner_version": VERSION, "manifest_digest": digest, "platform": "linux/amd64", "user": "10001:10001",
             "python": "3.12.16", "source_sha256": found, "candidate_execution_performed": False}
 
 

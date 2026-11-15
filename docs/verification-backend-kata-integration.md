@@ -67,7 +67,13 @@ Provision a separate execution identity and credential lifecycle. Minimum requir
 
 RBAC resource permissions cannot alone restrict a created Job to the approved image/runtime/security template. Use trusted server-owned construction and enforce the applicable admission/isolation controls before accepting model-generated code; verify policy effects and effective resource/network limits in the lab.
 
-### F6 — Blocking acceptance: scratch enforcement is unresolved
+### F6 — Historical acceptance finding: scratch enforcement was unresolved
+
+Policy amendment (2026-11-15): this finding records the earlier review unchanged
+below. The user now requires the existing unmodified Kata runtime and has removed
+exact 16 MiB guest enforcement from release requirements. A runtime correction
+is no longer planned. Runner 0.1.1 still needs its own build and real acceptance
+under the [amended policy](infrastructure/M3_ACCEPTANCE.md).
 
 [M3 acceptance](infrastructure/M3_ACCEPTANCE.md) records a successful 20 MiB write despite the declared 16 MiB guest scratch cap. Thirty other live checks passed; the capacity test failed and its dependent exhaustion test remains unrun. The investigation traces a guest tmpfs size-propagation omission in the installed runtime.
 
