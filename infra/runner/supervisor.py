@@ -13,10 +13,11 @@ import time
 
 from .contract import (
     CSV_BYTES, DIAGNOSTIC_BYTES, DIAGNOSTIC_TOTAL, EXITS, GID, REPORT_PATH,
-    RESULT_BYTES, RESULT_PATH, SCRIPT_BYTES, SCRIPT_SECONDS, UID, ContractError,
+    RESULT_BYTES, RESULT_PATH, SCRIPT_BYTES, SCRIPT_SECONDS, UID, MOUNTINFO_BYTES, ContractError,
 )
 from .report import make_report
 from .staging import check_run_id, input_text
+from .scratch import validate_scratch
 from .validation import encode_json, validate_result
 
 
@@ -78,6 +79,11 @@ def preflight() -> tuple[str, str]:
     # Probe root mount without creating a file if policy is accidentally writable.
     if not os.statvfs("/").f_flag & os.ST_RDONLY:
         raise ContractError("INPUT_INVALID", "root filesystem is not read-only")
+    try:
+        validate_scratch(os.statvfs("/tmp"),
+                         _read_file("/proc/self/mountinfo", MOUNTINFO_BYTES, nofollow=True))
+    except (ContractError, OSError):
+        raise ContractError("INPUT_INVALID", "guest scratch capacity is not enforced") from None
     return run_id, pod_uid
 
 

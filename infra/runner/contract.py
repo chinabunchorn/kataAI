@@ -1,6 +1,6 @@
 """Approved M3 v1 constants. This module never executes candidate code."""
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 PROTOCOL = "kataai.runner.v1"
 BASE_IMAGE = "docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b"
 NAMESPACE = "kata-lab"
@@ -22,6 +22,8 @@ TOTAL_ITEMS = 256
 DIAGNOSTIC_BYTES = 8192
 DIAGNOSTIC_TOTAL = 16384
 SCRIPT_SECONDS = 30
+SCRATCH_BYTES = 16 * 1024 * 1024
+MOUNTINFO_BYTES = 64 * 1024
 JOB_SECONDS = 120
 UID = GID = 10001
 

@@ -22,7 +22,7 @@ def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_has
             member.type = tarfile.DIRTYPE
             member.mode = mode
             layer.addfile(member)
-        for source in ("__init__.py", "contract.py", "validation.py", "staging.py", "report.py", "supervisor.py", "entrypoint.py"):
+        for source in ("__init__.py", "contract.py", "validation.py", "staging.py", "report.py", "scratch.py", "supervisor.py", "entrypoint.py"):
             name = "opt/kataai/runner.py" if source == "entrypoint.py" else "opt/kataai/runnerlib/" + source
             raw = (SOURCE / source).read_bytes()
             member = tarfile.TarInfo(name)
@@ -37,7 +37,7 @@ def synthetic_archive(path, *, directory_mode=0o555, user="10001:10001", bad_has
     config = blob(json.dumps({"os": "linux", "architecture": "amd64", "config": {
         "User": user, "Entrypoint": ["python3", "-I", "-B", "/opt/kataai/runner.py"],
         "WorkingDir": "/tmp", "Env": ["PYTHON_VERSION=3.12.16"],
-        "Labels": {"org.opencontainers.image.version": "0.1.0"}}}).encode(),
+        "Labels": {"org.opencontainers.image.version": "0.1.1"}}}).encode(),
         "application/vnd.oci.image.config.v1+json")
     manifest = blob(json.dumps({"schemaVersion": 2, "config": config, "layers": [layer]}).encode(),
                     "application/vnd.oci.image.manifest.v1+json")

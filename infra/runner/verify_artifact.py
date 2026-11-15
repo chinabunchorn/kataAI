@@ -16,7 +16,7 @@ def _json(archive, name):
 
 def inspect_oci(path: Path, source: Path) -> dict:
     expected = {"opt/kataai/runnerlib/" + name: name for name in (
-        "__init__.py", "contract.py", "validation.py", "staging.py", "report.py", "supervisor.py")}
+        "__init__.py", "contract.py", "validation.py", "staging.py", "report.py", "scratch.py", "supervisor.py")}
     expected["opt/kataai/runner.py"] = "entrypoint.py"
     found = {}
     with tarfile.open(path) as archive:
@@ -45,7 +45,7 @@ def inspect_oci(path: Path, source: Path) -> dict:
                 or cfg["User"] != "10001:10001"
                 or cfg["Entrypoint"] != ["python3", "-I", "-B", "/opt/kataai/runner.py"]
                 or cfg["WorkingDir"] != "/tmp"
-                or cfg.get("Labels", {}).get("org.opencontainers.image.version") != "0.1.0"
+                or cfg.get("Labels", {}).get("org.opencontainers.image.version") != "0.1.1"
                 or "PYTHON_VERSION=3.12.16" not in cfg["Env"]):
             raise ValueError("fixed image configuration mismatch")
         for descriptor in manifest["layers"]:
