@@ -22,3 +22,9 @@ python -B -m unittest discover -s tests/unit/executor -v
 
 Default execution remains disabled. The explicitly opted-in private research MVP
 is described in the runbook; it does not constitute M4/M5/M6/M8 acceptance.
+
+The integrated React UI is served by FastAPI at its configured loopback origin.
+Build it with `cd frontend && npm ci && npm run build`, then launch the API,
+model and approved worker following the [full runbook](docs/MVP_E2E.md).
+See [frontend operation and browser tests](frontend/README.md) and
+[browser integration evidence](docs/evidence/mvp-e2e/FRONTEND.md).

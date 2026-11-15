@@ -12,7 +12,7 @@ This is an explicitly opted-in private research demonstration, not M4/M5/M6/M8 a
 The MacBook Air M2 hosts native ARM64 Python 3.12, FastAPI, PostgreSQL, private
 CSV storage, one worker, llama.cpp/Metal and the executor SQLite journal. The
 existing OpenStack VM hosts Kubernetes, containerd and Kata; its Runner image
-stays **linux/amd64**. No WSL, backend Linux VM, Docker backend, broker or frontend.
+stays **linux/amd64**. React is built locally and served from FastAPI at the same loopback origin. No WSL, backend Linux VM, Docker backend or broker.
 
 `POST /v1/datasets` → existing multipart upload/storage → `POST /v1/requests` →
 PostgreSQL queue → `app.kata_demo_worker` → local `LocalModelAdapter` → validated
@@ -284,7 +284,7 @@ cleanup fails or the process dies, inspect PostgreSQL and the journal and explic
 reconcile the existing run; do not delete the journal or silently create a new run.
 Cancellation during model generation and races at completion are not production
 orchestration. Logical history hiding/deletion APIs retain their earlier scope.
-No multi-user authentication, large datasets, streaming, dashboards or frontend.
+No multi-user authentication, large datasets, streaming or dashboards. The React chat UI uses the same HTTP workflow.
 
 ## Tests
 
@@ -363,3 +363,19 @@ PY
 Then repeat the recorded allow/deny checks and a trusted smoke with an idle queue.
 Do not show the kubeconfig with `--raw`, print the token, check it into Git or
 export it through model/debug logs. The kubeconfig is outside the repository.
+
+## Integrated browser UI
+
+Before launching the API, build the frontend:
+
+```zsh
+(cd frontend && npm ci && npm run build)
+```
+
+Open `http://127.0.0.1:$KATAAI_API_PORT/` at the exact configured port. API startup
+mounts only the public compiled assets, behind the unchanged loopback middleware.
+Start model and explicitly authorized worker in separate terminals as above.
+CSV bytes are uploaded before idempotent request creation. Saved history stores
+identities and the question for retry, never reconstructed sample Files/results.
+See [frontend instructions](../frontend/README.md) for browser tests, failure
+handling, privacy details and the opt-in real browser acceptance command.

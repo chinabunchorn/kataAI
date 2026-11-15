@@ -82,3 +82,50 @@ def test_real_worker_claims_and_persists_using_postgres(request, tmp_path):
                             summarize=lambda q, r: (r, 'Two.', None))
     assert run_once(connection, tmp_path, model=model, executor=Executor()) == 'completed'
     assert queue.get(record.id).real_result == {'answer': 2}
+
+
+@pytest.mark.live_postgres
+def test_browser_http_contract_through_postgres_and_mocked_boundaries(request, tmp_path):
+    """Actual multipart/API/storage/queue/worker; only model and executor are test doubles."""
+    from contextlib import contextmanager
+    from types import SimpleNamespace
+    from fastapi.testclient import TestClient
+    from app.main import app
+    from app.dataset_lookup_api import get_dataset_runtime
+    from app.kata_demo_worker import run_once
+    from app.executor_contract import ExecutorResult, ExecutorStatus, ExecutorObservation, RunState, CleanupState
+
+    connection, _ = request.getfixturevalue('migrated_connection')
+    tmp_path.chmod(0o700)
+    @contextmanager
+    def connect():
+        yield connection
+    runtime = SimpleNamespace(root=tmp_path, connection=connect)
+    app.dependency_overrides[get_dataset_runtime] = lambda: runtime
+    client = TestClient(app, base_url='http://127.0.0.1:8000')
+    headers = {'Origin': 'http://127.0.0.1:8000', 'X-KataAI-Request': '1'}
+    try:
+        uploaded = client.post('/v1/datasets', files={'file': ('data.csv', b'quantity\n2\n', 'text/csv')}, headers=headers)
+        assert uploaded.status_code == 201
+        dataset_id = uploaded.json()['dataset_id']
+        payload = {'schema_version': '1.0', 'client_request_id': str(uuid4()),
+                   'dataset_id': dataset_id, 'question': 'Total quantity?'}
+        created = client.post('/v1/requests', json=payload, headers=headers)
+        assert created.status_code == 201
+        retry = client.post('/v1/requests', json=payload, headers=headers)
+        assert retry.status_code == 200 and retry.json()['id'] == created.json()['id']
+        class Executor:
+            def submit(self, value):
+                return ExecutorResult(value.request_id, value.run_id, ExecutorStatus.ACCEPTED)
+            def status(self, request_id, run_id):
+                return ExecutorObservation(request_id, run_id, RunState.COMPLETED, CleanupState.PENDING)
+            def read_result(self, *args): return b'{"answer":2}'
+            def cleanup(self, *args): pass
+        model = SimpleNamespace(generate=lambda *a: [{'name': 'run_python', 'arguments': {'code': '# inert test code'}}],
+                                summarize=lambda q, r: (r, 'Two units.', None))
+        assert run_once(connection, tmp_path, model=model, executor=Executor()) == 'completed'
+        result = client.get('/v1/requests/' + created.json()['id']).json()
+        assert result['result'] == {'answer': 2} and result['answer'] == 'Two units.'
+        assert result['code'] == '# inert test code' and result['fake'] is False and result['run_id']
+    finally:
+        app.dependency_overrides.clear()

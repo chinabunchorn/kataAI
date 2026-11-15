@@ -1,5 +1,9 @@
 # Supervised native macOS MVP evidence — 2026-11-15
 
+Subsequent React integration and actual browser acceptance are recorded in
+[FRONTEND.md](FRONTEND.md), including both the retained model-code failure and
+the successful browser-to-Kata result. The original backend evidence below is historical and unchanged.
+
 **Verified:** real multipart uploads → PostgreSQL requests → actual local Qwen
 `run_python` calls → real Kubernetes Jobs using `kata-qemu-runtime-rs` → pinned
 Runner 0.1.1 JSON collection → Qwen sentence summaries → persisted HTTP responses.

@@ -28,7 +28,8 @@
   box-sizing: border-box;
 }
 
-body, html {
+body,
+html {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -36,7 +37,9 @@ body, html {
   overflow: hidden;
 }
 
-button, textarea, input {
+button,
+textarea,
+input {
   font: inherit;
 }
 
@@ -77,7 +80,9 @@ button {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   z-index: 30;
 }
@@ -400,9 +405,18 @@ button {
 }
 
 @keyframes pulse-dot {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 .status-text {
@@ -795,8 +809,12 @@ button {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Result Card */
@@ -827,6 +845,7 @@ button {
 }
 
 .json-header {
+  color: #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -939,7 +958,9 @@ button {
   flex-direction: column;
   gap: 8px;
   pointer-events: auto;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
 }
 
 .gemini-input-card:focus-within {
@@ -1200,4 +1221,9 @@ button {
 
 .preview-table tr:last-child td {
   border-bottom: none;
+}
+
+.execution-status {
+  padding: 12px 16px;
+  overflow-wrap: anywhere;
 }

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from typing import Literal
 from uuid import UUID
@@ -14,6 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.dataset_lifecycle_api import create_dataset_lifecycle_router
 from app.dataset_lookup_api import get_dataset_runtime, router as dataset_lookup_router
 from app.dataset_upload_api import create_upload_router
+from app.frontend import mount_frontend
 from app.local_security import LocalSecurityMiddleware, SecurityPolicy
 
 app = FastAPI(docs_url=None, redoc_url=None)
@@ -126,3 +128,6 @@ app.include_router(request_router)
 app.include_router(dataset_lookup_router)
 app.include_router(create_dataset_lifecycle_router(get_dataset_runtime))
 app.include_router(create_upload_router(get_dataset_runtime))
+
+# Register after API routes; keep Host/Origin and mutation-header enforcement.
+mount_frontend(app, Path(__file__).resolve().parents[2] / 'frontend' / 'dist')

@@ -1,123 +1,201 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
-
-describe('KataAI Gemini-style Chat UI', () => {
-  it('renders the welcome screen with KataAI brand and greeting', () => {
+import * as api from './lib/api'
+vi.mock('./lib/api', async (importOriginal) => ({
+  ...(await importOriginal<typeof api>()),
+  uploadDataset: vi.fn(),
+  createRequest: vi.fn(),
+  getRequest: vi.fn(),
+  getDataset: vi.fn(),
+}))
+const record = {
+  id: 'actual-request',
+  status: 'completed' as const,
+  fake: false,
+  run_id: 'actual-run',
+  answer: 'Actual model explanation',
+  code: 'actual generated code',
+  result: { answer: 770 },
+}
+beforeEach(() => {
+  localStorage.clear()
+  vi.clearAllMocks()
+  vi.mocked(api.uploadDataset).mockResolvedValue('actual-dataset')
+  vi.mocked(api.createRequest).mockResolvedValue(record)
+  vi.mocked(api.getDataset).mockResolvedValue({ dataset_id: 'actual-dataset' })
+})
+async function submit() {
+  const user = userEvent.setup()
+  await user.click(screen.getByTitle('Load sample sales data'))
+  await user.type(screen.getByRole('textbox'), 'Total revenue?')
+  await waitFor(() => expect(screen.getByTitle('Send question')).toBeEnabled())
+  await user.click(screen.getByTitle('Send question'))
+  return user
+}
+describe('real request UI', () => {
+  it('starts without fabricated history or answers', () => {
     render(<App />)
-    expect(screen.getAllByText('KataAI')[0]).toBeInTheDocument()
     expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
-    expect(
-      screen.getByText(/We will test and run the generated Python code inside an isolated/i),
-    ).toBeInTheDocument()
-    expect(screen.getByTitle('Attach CSV file')).toBeInTheDocument()
+    expect(screen.queryByText(/Notebook sales/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Memory:/)).not.toBeInTheDocument()
   })
-
-  it('populates sample CSV when clicking Use Sample Data and allows typing question', async () => {
-    const user = userEvent.setup()
+  it('renders backend code, JSON, answer and identities', async () => {
     render(<App />)
-    await user.click(screen.getByTitle('Load sample sales data'))
-    expect(screen.getByText('sales_q4.csv')).toBeInTheDocument()
-
-    const textarea = screen.getByPlaceholderText(/Ask a question about this CSV/i)
-    await user.type(textarea, 'Which product fell the most?')
-    expect(textarea).toHaveValue('Which product fell the most?')
-  })
-
-  it('runs the 5-step background pipeline and displays the answer and JSON result', async () => {
-    const user = userEvent.setup()
-    render(<App />)
-    await user.click(screen.getByTitle('Load sample sales data'))
-
-    const textarea = screen.getByPlaceholderText(/Ask a question about this CSV/i)
-    await user.type(
-      textarea,
-      'Which product had the largest absolute drop in sales from October to November?',
+    await submit()
+    expect(await screen.findByText('Actual model explanation')).toBeInTheDocument()
+    expect(screen.getByText('actual generated code')).toBeInTheDocument()
+    expect(screen.getByText(/"answer": 770/)).toBeInTheDocument()
+    expect(api.uploadDataset).toHaveBeenCalledWith(expect.any(File))
+    expect(api.createRequest).toHaveBeenCalledWith(
+      'actual-dataset',
+      'Total revenue?',
+      expect.any(String),
     )
-
-    const sendBtn = screen.getByTitle('Send question')
-    await user.click(sendBtn)
-
-    // The user's message should appear in chat
-    expect(
-      screen.getByText(
-        'Which product had the largest absolute drop in sales from October to November?',
-      ),
-    ).toBeInTheDocument()
-
-    // The pipeline container should appear showing execution steps
-    expect(await screen.findByText(/Running Sandbox Pipeline/i)).toBeInTheDocument()
-
-    // Wait for the simulated pipeline to finish and show the answer
-    await waitFor(
-      () => {
-        expect(screen.getByText(/Sandboxed Execution Complete/i)).toBeInTheDocument()
-        expect(screen.getByText(/Notebook sales dropped the most/i)).toBeInTheDocument()
-        expect(screen.getByText('Generated Python Code')).toBeInTheDocument()
-        expect(screen.getByText('Validated JSON Output')).toBeInTheDocument()
-      },
-      { timeout: 5000 },
+    const saved = localStorage.getItem('kata_sessions_v2')!
+    expect(saved).toContain('actual-request')
+    expect(saved).not.toContain('actual generated code')
+    expect(saved).not.toContain('order_id,region')
+  })
+  it.each(['failed', 'needs_clarification', 'cancelled', 'unknown', 'fake_completed'] as const)(
+    'handles %s honestly',
+    async (status) => {
+      vi.mocked(api.createRequest).mockResolvedValue({ id: 'actual-request', status })
+      render(<App />)
+      await submit()
+      expect(await screen.findByText(api.statusLabel(status))).toBeInTheDocument()
+      expect(screen.queryByText('Actual model explanation')).not.toBeInTheDocument()
+    },
+  )
+  it('distinguishes summary failure from execution failure', async () => {
+    vi.mocked(api.createRequest).mockResolvedValue({
+      ...record,
+      answer: null,
+      error_code: 'SUMMARY_UNAVAILABLE',
+    })
+    render(<App />)
+    await submit()
+    expect(await screen.findByText('Execution completed. Summary unavailable.')).toBeInTheDocument()
+    expect(screen.getByText(/"answer": 770/)).toBeInTheDocument()
+  })
+  it('retries ambiguous creation with the same identity and no duplicate upload', async () => {
+    vi.mocked(api.createRequest)
+      .mockRejectedValueOnce(new Error('network unavailable'))
+      .mockResolvedValueOnce(record)
+    render(<App />)
+    const user = await submit()
+    await user.click(await screen.findByRole('button', { name: 'Retry same request safely' }))
+    expect(await screen.findByText('Actual model explanation')).toBeInTheDocument()
+    expect(api.createRequest).toHaveBeenCalledTimes(2)
+    expect(vi.mocked(api.createRequest).mock.calls[0]).toEqual(
+      vi.mocked(api.createRequest).mock.calls[1],
     )
+    expect(api.uploadDataset).toHaveBeenCalledTimes(1)
   })
-
-  it('resets the chat and returns to welcome screen when clicking reset', async () => {
-    const user = userEvent.setup()
+  it('restores backend state without reconstructing CSVs', async () => {
+    localStorage.setItem(
+      'kata_sessions_v2',
+      JSON.stringify([
+        {
+          id: 'saved',
+          requestId: 'actual-request',
+          clientRequestId: 'client',
+          datasetId: 'actual-dataset',
+          question: 'Total?',
+        },
+      ]),
+    )
+    vi.mocked(api.getRequest).mockResolvedValue(record)
     render(<App />)
-    await user.click(screen.getByTitle('Load sample sales data'))
-    expect(screen.getByText('sales_q4.csv')).toBeInTheDocument()
-
-    await user.click(screen.getByTitle('Start new analysis'))
-    expect(screen.queryByText('sales_q4.csv')).not.toBeInTheDocument()
-    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+    await userEvent.click(screen.getByText('Saved analysis'))
+    expect(await screen.findByText('Actual model explanation')).toBeInTheDocument()
+    expect(api.uploadDataset).not.toHaveBeenCalled()
+    expect(screen.queryByText('sample-sales.csv')).not.toBeInTheDocument()
   })
-
-  it('toggles chat history sidebar and switches between sessions', async () => {
-    const user = userEvent.setup()
+  it('polls pending backend states', async () => {
+    vi.mocked(api.createRequest).mockResolvedValue({ id: 'actual-request', status: 'queued' })
+    vi.mocked(api.getRequest).mockResolvedValue(record)
     render(<App />)
-
-    // Initially in empty state
-    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
-
-    // Click the sidebar toggle button or KataAI button to open history
-    await user.click(screen.getByTitle('Click to toggle chat history'))
-
-    // Chat history items should be in the sidebar
-    expect(screen.getByText('Q4 Sales Drop Analysis')).toBeInTheDocument()
-    expect(screen.getByText('Understanding Kata Containers Analogy')).toBeInTheDocument()
-    expect(screen.getByText('Policy & Dataset Binding Limits')).toBeInTheDocument()
-
-    // Click on the past session
-    await user.click(screen.getByText('Q4 Sales Drop Analysis'))
-
-    // The session's question and answers should now be visible in the chat area
+    await submit()
+    expect(await screen.findByText('Queued')).toBeInTheDocument()
     expect(
-      screen.getByText(
-        'Which product had the largest absolute drop in sales from October to November?',
-      ),
+      await screen.findByText('Actual model explanation', {}, { timeout: 3000 }),
     ).toBeInTheDocument()
-    expect(screen.getByText(/Notebook sales dropped the most/i)).toBeInTheDocument()
-    expect(screen.getByText('Generated Python Code')).toBeInTheDocument()
-
-    // Click New Chat to start fresh
-    await user.click(screen.getByTitle('Start new chat'))
-    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+    expect(api.createRequest).toHaveBeenCalledTimes(1)
   })
-
-  it('persists chat sessions to localStorage across component mounts', () => {
-    localStorage.clear()
-    const { unmount } = render(<App />)
-
-    // Verify localStorage has been populated with default sessions
-    const stored = localStorage.getItem('kata_chat_sessions_v1')
-    expect(stored).toBeTruthy()
-    expect(stored).toContain('Q4 Sales Drop Analysis')
-    expect(stored).toContain('Understanding Kata Containers Analogy')
-
-    unmount()
-
-    // Remounting should read from localStorage cleanly
+  it('shows upload failure without creating a request', async () => {
+    vi.mocked(api.uploadDataset).mockRejectedValue(new Error('upload unavailable'))
     render(<App />)
-    expect(screen.getByText('What do you want to know?')).toBeInTheDocument()
+    await submit()
+    expect(await screen.findByRole('alert')).toHaveTextContent('upload unavailable')
+    expect(api.createRequest).not.toHaveBeenCalled()
   })
 })
+
+it('blocks duplicate submits while creation is in flight', async () => {
+  let resolve!: (value: api.RequestRecord) => void
+  vi.mocked(api.createRequest).mockReturnValue(
+    new Promise((r) => {
+      resolve = r
+    }),
+  )
+  render(<App />)
+  const user = await submit()
+  await user.type(screen.getByRole('textbox'), 'Total revenue?{Enter}{Enter}')
+  expect(api.createRequest).toHaveBeenCalledTimes(1)
+  resolve(record)
+  expect(await screen.findByText('Actual model explanation')).toBeInTheDocument()
+})
+it('retains identity through polling outage without resubmission', async () => {
+  vi.mocked(api.createRequest).mockResolvedValue({ id: 'retained-request', status: 'queued' })
+  vi.mocked(api.getRequest)
+    .mockRejectedValueOnce(new Error('network offline'))
+    .mockResolvedValueOnce(record)
+  render(<App />)
+  const user = await submit()
+  expect(await screen.findByRole('alert', {}, { timeout: 3000 })).toHaveTextContent(
+    'Request identity retained',
+  )
+  await user.click(screen.getByRole('button', { name: 'Refresh status' }))
+  expect(await screen.findByText('Actual model explanation')).toBeInTheDocument()
+  expect(api.getRequest).toHaveBeenCalledWith('retained-request')
+  expect(api.createRequest).toHaveBeenCalledTimes(1)
+})
+it('drops a missing historical dataset and requires original reupload', async () => {
+  localStorage.setItem(
+    'kata_sessions_v2',
+    JSON.stringify([
+      {
+        id: 'saved',
+        requestId: 'actual-request',
+        clientRequestId: 'client',
+        datasetId: 'missing-dataset',
+        question: 'Total?',
+      },
+    ]),
+  )
+  vi.mocked(api.getRequest).mockResolvedValue(record)
+  vi.mocked(api.getDataset).mockRejectedValue(new api.ApiError(404, 'DATASET_NOT_FOUND'))
+  render(<App />)
+  await userEvent.click(screen.getByText('Saved analysis'))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Reupload the original CSV')
+  await userEvent.type(screen.getByRole('textbox'), 'Another question')
+  expect(screen.getByTitle('Send question')).toBeDisabled()
+  expect(api.uploadDataset).not.toHaveBeenCalled()
+})
+it.each(['MODEL_GENERATION_FAILED', 'EXECUTION_REJECTED'])(
+  'shows %s honestly',
+  async (error_code) => {
+    vi.mocked(api.createRequest).mockResolvedValue({
+      id: 'actual-request',
+      status: 'failed',
+      error_code,
+    })
+    render(<App />)
+    await submit()
+    expect(await screen.findByRole('alert')).toHaveTextContent(error_code)
+    expect(screen.getByText('Generated code unavailable.')).toBeInTheDocument()
+    expect(screen.getByText('JSON output unavailable.')).toBeInTheDocument()
+  },
+)
