@@ -1043,14 +1043,6 @@ export default function App() {
             ))}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="sidebar-footer">
-          <div className="sidebar-status-pill">
-            <span className="status-dot live" />
-            <span>Kata MicroVM Online</span>
-          </div>
-        </div>
       </aside>
 
       {/* Main App Body */}
