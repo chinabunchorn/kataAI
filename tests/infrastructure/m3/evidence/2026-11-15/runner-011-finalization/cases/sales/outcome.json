@@ -1,0 +1,1 @@
+{"run_id":"m3-011-sales-1115a","job_uid":"a0b5d3cc-8791-42bc-a74a-6dc44811565b","pod_uid":"0ae5cb33-e4ee-4d83-8bfb-3aef6ad0f9cd","code":"OK","exit_code":0,"script_exit_code":0,"result":{"product":"Notebook","october_units":120,"november_units":80,"change_units":-40}}

@@ -1,0 +1,127 @@
+{
+  "verified_at_utc": "2026-11-15T12:02:43.261044+00:00",
+  "browser_origin": "http://127.0.0.1:8002",
+  "fixture_oracle_thb": "770",
+  "live_mocks": false,
+  "independent_guest_teardown_verified": false,
+  "records": [
+    {
+      "http": {
+        "id": "2330b749-a4e3-4b61-9843-eda187342131",
+        "status": "failed",
+        "provisional": true,
+        "fake": false,
+        "run_id": "96e1ebbf-dd71-44f3-a8ae-a92fdb6191d4",
+        "result": null,
+        "answer": null,
+        "error_code": "SCRIPT_FAILED",
+        "code": "import csv\nimport json\nfrom pathlib import Path\n\ndata_path = Path(\"/inputs/data.csv\")\nresult = {\"answer\": 0}\n\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    total_revenue = Decimal(\"0\")\n    \n    for row in reader:\n        quantity = int(row[\"quantity\"])\n        unit_price_thb = float(row[\"unit_price_thb\"])\n        total_revenue += Decimal(str(quantity)) * Decimal(str(unit_price_thb))\n    \n    result[\"answer\"] = float(total_revenue)\n\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+        "dataset_id": "7d5c4199-8c46-4f88-9cdb-2a5687cf8cde",
+        "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+        "created_at": "2026-11-15T18:57:35.987743+07:00"
+      },
+      "postgres_matches_http": true,
+      "journal": {
+        "request_id": "2330b749-a4e3-4b61-9843-eda187342131",
+        "run_id": "96e1ebbf-dd71-44f3-a8ae-a92fdb6191d4",
+        "code_hash": "eeafc3c5d652f177eee4b064b8451138f5c8eb7a9308a7b7b8cf50130566eca2",
+        "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "name": "ka-96e1ebbfdd7144f3a8aea92fdb6191d4",
+        "job_uid": "3e088764-13c8-49c3-953f-bef176b4f916",
+        "cm_uid": "4f519dc5-281f-4956-ac56-1f21570f5b14",
+        "pods": {
+          "d2ed6f74-8179-4ede-b7eb-fb37994f56f7": {
+            "name": "ka-96e1ebbfdd7144f3a8aea92fdb6191d4-hnrw5",
+            "node": "katavm",
+            "uid": "d2ed6f74-8179-4ede-b7eb-fb37994f56f7",
+            "phase": "Failed",
+            "containers": [
+              {
+                "name": "runner",
+                "containerID": "containerd://6d0a8bdc987cfb423595327a3ada844de26994d10365213726ee1c280b9e5a7b",
+                "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+              }
+            ]
+          }
+        },
+        "state": "failed",
+        "cleanup": "pending",
+        "outcome": {
+          "run_id": "ka-96e1ebbfdd7144f3a8aea92fdb6191d4",
+          "job_uid": "3e088764-13c8-49c3-953f-bef176b4f916",
+          "pod_uid": "d2ed6f74-8179-4ede-b7eb-fb37994f56f7",
+          "code": "SCRIPT_FAILED",
+          "exit_code": 10,
+          "script_exit_code": 1
+        },
+        "api_absent": true,
+        "guest_teardown_verified": false,
+        "last_error": null
+      },
+      "submitted_runtime_class": "kata-qemu-runtime-rs",
+      "independent_scoped_api_resources_absent": true
+    },
+    {
+      "http": {
+        "id": "82aa8333-4dec-4d99-99af-5f534cddcfa6",
+        "status": "completed",
+        "provisional": true,
+        "fake": false,
+        "run_id": "37b7e4f9-7e50-40ae-be20-7bb154d0ef5f",
+        "result": {
+          "answer": 770.0
+        },
+        "answer": "The total revenue calculated as the sum of quantity multiplied by unit price in THB across all orders is 770.0 THB.",
+        "error_code": null,
+        "code": "import csv\nimport json\nfrom decimal import Decimal\n\n# Read CSV file\nwith open('/inputs/data.csv', 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    rows = list(reader)\n\n# Calculate total revenue\ntotal_revenue = Decimal('0')\nfor row in rows:\n    quantity = int(row['quantity'])\n    unit_price = Decimal(row['unit_price_thb'])\n    total_revenue += quantity * unit_price\n\n# Write result\nresult = {\"answer\": float(total_revenue)}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+        "dataset_id": "28029ee0-d4f7-4f9e-95e5-49292c00cae4",
+        "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+        "created_at": "2026-11-15T18:59:31.218981+07:00"
+      },
+      "postgres_matches_http": true,
+      "journal": {
+        "request_id": "82aa8333-4dec-4d99-99af-5f534cddcfa6",
+        "run_id": "37b7e4f9-7e50-40ae-be20-7bb154d0ef5f",
+        "code_hash": "f43bc205da084441916f4eb465afe942474080b045f8e4b49b3bc28ff4101e34",
+        "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "name": "ka-37b7e4f97e5040aebe207bb154d0ef5f",
+        "job_uid": "78c76d77-d8d0-4505-923c-99a0f970ffda",
+        "cm_uid": "f3b36e7d-5093-49f2-91d8-9f3897d12d7d",
+        "pods": {
+          "3a48dd72-105b-4e0c-bb1f-b4ed63e0a429": {
+            "name": "ka-37b7e4f97e5040aebe207bb154d0ef5f-52n2d",
+            "node": "katavm",
+            "uid": "3a48dd72-105b-4e0c-bb1f-b4ed63e0a429",
+            "phase": "Succeeded",
+            "containers": [
+              {
+                "name": "runner",
+                "containerID": "containerd://60422175c6d794484104d54b6d2b40b602afab8bf1f47d61add2c05b54862931",
+                "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+              }
+            ]
+          }
+        },
+        "state": "completed",
+        "cleanup": "pending",
+        "outcome": {
+          "run_id": "ka-37b7e4f97e5040aebe207bb154d0ef5f",
+          "job_uid": "78c76d77-d8d0-4505-923c-99a0f970ffda",
+          "pod_uid": "3a48dd72-105b-4e0c-bb1f-b4ed63e0a429",
+          "code": "OK",
+          "exit_code": 0,
+          "script_exit_code": 0,
+          "result": {
+            "answer": 770.0
+          },
+          "result_bytes": "{\"answer\":770.0}"
+        },
+        "api_absent": true,
+        "guest_teardown_verified": false,
+        "last_error": null
+      },
+      "submitted_runtime_class": "kata-qemu-runtime-rs",
+      "independent_scoped_api_resources_absent": true
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# Python local environments and generated files
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.worktrees/
+# Local secrets
+.env
+.env.*
+!.env.example
+.m3-runs/
+infra/runner/build-metadata.json
+infra/runner/runner.oci.tar
+
+# Private local MVP data and journal
+.mvp-demo/

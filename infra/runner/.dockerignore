@@ -1,0 +1,10 @@
+*
+!Dockerfile
+!__init__.py
+!contract.py
+!validation.py
+!staging.py
+!report.py
+!scratch.py
+!supervisor.py
+!entrypoint.py

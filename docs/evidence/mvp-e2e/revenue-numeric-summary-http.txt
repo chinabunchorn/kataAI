@@ -1,0 +1,17 @@
+dataset_id=bcfc0680-bbc1-4880-a2db-2bc5a2c79f78 request_id=9606f7e5-c41b-4b6b-b758-7e399ac6d0b7
+{
+  "id": "9606f7e5-c41b-4b6b-b758-7e399ac6d0b7",
+  "status": "completed",
+  "provisional": true,
+  "fake": false,
+  "run_id": "acc24b77-44d1-4360-aa49-80265030625b",
+  "result": {
+    "answer": 770.0
+  },
+  "answer": "770.0",
+  "error_code": null,
+  "code": "import csv\nimport json\nfrom decimal import Decimal\n\ntotal_revenue = Decimal('0')\n\nwith open('/inputs/data.csv', 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row['quantity'])\n        unit_price_thb = Decimal(row['unit_price_thb'])\n        total_revenue += quantity * unit_price_thb\n\nresult = {\"answer\": float(total_revenue)}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+  "dataset_id": "bcfc0680-bbc1-4880-a2db-2bc5a2c79f78",
+  "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+  "created_at": "2026-11-15T18:10:22.675502+07:00"
+}

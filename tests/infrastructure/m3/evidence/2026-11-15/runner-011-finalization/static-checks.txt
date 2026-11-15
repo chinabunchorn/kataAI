@@ -1,0 +1,2 @@
+PowerShell build script syntax: PASS
+Trusted source AST: PASS (19 files); fixture programs excluded

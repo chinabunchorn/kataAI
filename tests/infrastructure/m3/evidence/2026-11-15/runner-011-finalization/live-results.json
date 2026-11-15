@@ -1,0 +1,2502 @@
+{
+  "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "counts": {
+    "passed": 30,
+    "failed": 0,
+    "not_run": 0
+  },
+  "cases": [
+    {
+      "case": "blank",
+      "run_id": "m3-011-blank-1115a",
+      "expected_code": "RESULT_EMPTY",
+      "job_uid": "7bb7464c-c2b9-429a-8d8d-764b4ac3803a",
+      "api_cleanup_absent": true,
+      "pod_uid": "ff7460a3-0191-4b5e-a998-2d0f102f246f",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://d5f987df8a5b6651142a43d6b9b375ac94b6b9e9fd69fbc6d1a46b72c11db973",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://d5f987df8a5b6651142a43d6b9b375ac94b6b9e9fd69fbc6d1a46b72c11db973",
+            "exitCode": 12,
+            "finishedAt": "2026-11-15T07:12:33Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-blank-1115a\",\"pod_uid\":\"ff7460a3-0191-4b5e-a998-2d0f102f246f\",\"code\":\"RESULT_EMPTY\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:12:31Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "86ad15ec676fb365fbb725e48c3478d2310ab1e0223c3df260ead602af6025cd",
+      "outcome": {
+        "run_id": "m3-011-blank-1115a",
+        "job_uid": "7bb7464c-c2b9-429a-8d8d-764b4ac3803a",
+        "pod_uid": "ff7460a3-0191-4b5e-a998-2d0f102f246f",
+        "code": "RESULT_EMPTY",
+        "exit_code": 12,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "collection",
+      "run_id": "m3-011-collection-1115a",
+      "expected_code": "RESULT_LIMIT",
+      "job_uid": "09808c94-2e76-4152-bdbc-9169a6133bf7",
+      "api_cleanup_absent": true,
+      "pod_uid": "7e050c97-1921-4e66-b313-5c2776e86c40",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://55f2a18250c57733e129799e4f13baf749aec87fda5c9d023c71d36a741e7c00",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://55f2a18250c57733e129799e4f13baf749aec87fda5c9d023c71d36a741e7c00",
+            "exitCode": 16,
+            "finishedAt": "2026-11-15T07:14:03Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-collection-1115a\",\"pod_uid\":\"7e050c97-1921-4e66-b313-5c2776e86c40\",\"code\":\"RESULT_LIMIT\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:14:01Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "412e31382a7603316b8a623be7b959800c1e34d50e1ed011e624f2db210a8a92",
+      "outcome": {
+        "run_id": "m3-011-collection-1115a",
+        "job_uid": "09808c94-2e76-4152-bdbc-9169a6133bf7",
+        "pod_uid": "7e050c97-1921-4e66-b313-5c2776e86c40",
+        "code": "RESULT_LIMIT",
+        "exit_code": 16,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "deep",
+      "run_id": "m3-011-deep-1115a",
+      "expected_code": "RESULT_LIMIT",
+      "job_uid": "97a4899d-2d4b-4a2e-9af4-255d70e5fcfd",
+      "api_cleanup_absent": true,
+      "pod_uid": "e005f5e6-6f4c-4410-9cb3-7a60448c6e7a",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://05a913580bcccb9bb219f404ee93f7863890f2ee79c15e20908477ee0a54e5dd",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://05a913580bcccb9bb219f404ee93f7863890f2ee79c15e20908477ee0a54e5dd",
+            "exitCode": 16,
+            "finishedAt": "2026-11-15T07:13:40Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-deep-1115a\",\"pod_uid\":\"e005f5e6-6f4c-4410-9cb3-7a60448c6e7a\",\"code\":\"RESULT_LIMIT\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:13:38Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "7bb2eb065fd76bc6f21e7e0f0db4ff30dd4d97fbe0acec8e76bcd7ab1d53befe",
+      "outcome": {
+        "run_id": "m3-011-deep-1115a",
+        "job_uid": "97a4899d-2d4b-4a2e-9af4-255d70e5fcfd",
+        "pod_uid": "e005f5e6-6f4c-4410-9cb3-7a60448c6e7a",
+        "code": "RESULT_LIMIT",
+        "exit_code": 16,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "diagnostics",
+      "run_id": "m3-011-diagnostics-1115a",
+      "expected_code": "DIAGNOSTIC_LIMIT",
+      "job_uid": "24f54f8f-2135-4f56-a795-8085350b5d61",
+      "api_cleanup_absent": true,
+      "pod_uid": "4ed2988e-799d-4bc0-a9c1-48dac4bfc57d",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://ee82951a1103e8946f49407f3a1381dd449c71324184d61976ae5de961405858",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://ee82951a1103e8946f49407f3a1381dd449c71324184d61976ae5de961405858",
+            "exitCode": 18,
+            "finishedAt": "2026-11-15T07:19:20Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-diagnostics-1115a\",\"pod_uid\":\"4ed2988e-799d-4bc0-a9c1-48dac4bfc57d\",\"code\":\"DIAGNOSTIC_LIMIT\",\"script_exit_code\":-9}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:19:19Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 8192,
+        "stderr": 0
+      },
+      "script_sha256": "03b636cced087ad95b768ad4f313beffb3082531eb059384dd9339a4b37c2748",
+      "outcome": {
+        "run_id": "m3-011-diagnostics-1115a",
+        "job_uid": "24f54f8f-2135-4f56-a795-8085350b5d61",
+        "pod_uid": "4ed2988e-799d-4bc0-a9c1-48dac4bfc57d",
+        "code": "DIAGNOSTIC_LIMIT",
+        "exit_code": 18,
+        "script_exit_code": -9
+      },
+      "status": "passed"
+    },
+    {
+      "case": "duplicate-key",
+      "run_id": "m3-011-duplicate-key-1115a",
+      "expected_code": "RESULT_JSON",
+      "job_uid": "0e406a74-3677-42ec-bd01-2b249024d509",
+      "api_cleanup_absent": true,
+      "pod_uid": "9e49bbb0-50f2-4990-ab3e-e92d0ccbc99a",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://bfa936f5ee537c952af67dfcbcaa59b2396318ee0e3dc70cf8432d95355e66c1",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://bfa936f5ee537c952af67dfcbcaa59b2396318ee0e3dc70cf8432d95355e66c1",
+            "exitCode": 14,
+            "finishedAt": "2026-11-15T07:16:16Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-duplicate-key-1115a\",\"pod_uid\":\"9e49bbb0-50f2-4990-ab3e-e92d0ccbc99a\",\"code\":\"RESULT_JSON\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:16:14Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "3ec7f41cb8364fa232f3be354f866216ed866372b816fde28530439fe6cfe194",
+      "outcome": {
+        "run_id": "m3-011-duplicate-key-1115a",
+        "job_uid": "0e406a74-3677-42ec-bd01-2b249024d509",
+        "pod_uid": "9e49bbb0-50f2-4990-ab3e-e92d0ccbc99a",
+        "code": "RESULT_JSON",
+        "exit_code": 14,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "empty",
+      "run_id": "m3-011-empty-1115a",
+      "expected_code": "RESULT_EMPTY",
+      "job_uid": "095fe85f-db39-4dbb-bb57-a2fe1c482138",
+      "api_cleanup_absent": true,
+      "pod_uid": "a7d30dfe-41d0-4f97-8bc0-9dc4087b0e38",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://10344bc9adfd5bb8f13da51bcbdfdcc91aeb5d93fe4e921726aa20ad8645200f",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://10344bc9adfd5bb8f13da51bcbdfdcc91aeb5d93fe4e921726aa20ad8645200f",
+            "exitCode": 12,
+            "finishedAt": "2026-11-15T07:12:13Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-empty-1115a\",\"pod_uid\":\"a7d30dfe-41d0-4f97-8bc0-9dc4087b0e38\",\"code\":\"RESULT_EMPTY\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:12:11Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "ae4ae0646c7666b74da2e47cc34fd08d66008489f89401949440d2c4b5135474",
+      "outcome": {
+        "run_id": "m3-011-empty-1115a",
+        "job_uid": "095fe85f-db39-4dbb-bb57-a2fe1c482138",
+        "pod_uid": "a7d30dfe-41d0-4f97-8bc0-9dc4087b0e38",
+        "code": "RESULT_EMPTY",
+        "exit_code": 12,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "infinite-number",
+      "run_id": "m3-011-infinite-number-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "77422891-be66-4cb7-aac0-7fd81fc1255b",
+      "api_cleanup_absent": true,
+      "pod_uid": "c84d7760-c19f-456e-9702-b80df24310ae",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://3ce69f26a8dda61ef3381f5fad4ad7629a62a4a3acb8b9141da665bacde1a9c4",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://3ce69f26a8dda61ef3381f5fad4ad7629a62a4a3acb8b9141da665bacde1a9c4",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:16:58Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-infinite-number-1115a\",\"pod_uid\":\"c84d7760-c19f-456e-9702-b80df24310ae\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:16:57Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "399398289c3dfed260d0678ffc7c9232a1cbcf81f23e62239a71aa2ac041449a",
+      "outcome": {
+        "run_id": "m3-011-infinite-number-1115a",
+        "job_uid": "77422891-be66-4cb7-aac0-7fd81fc1255b",
+        "pod_uid": "c84d7760-c19f-456e-9702-b80df24310ae",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "invalid-json",
+      "run_id": "m3-011-invalid-json-1115a",
+      "expected_code": "RESULT_JSON",
+      "job_uid": "a4577b6b-8e81-4370-bd44-de86dff78cae",
+      "api_cleanup_absent": true,
+      "pod_uid": "f98c4e8a-638a-4a2f-8902-86c14f3855d6",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://2a3d5ed49ff705149e948763bab9d43349daa633a3366d0eb4b69384a4a4a2f6",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://2a3d5ed49ff705149e948763bab9d43349daa633a3366d0eb4b69384a4a4a2f6",
+            "exitCode": 14,
+            "finishedAt": "2026-11-15T07:11:50Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-invalid-json-1115a\",\"pod_uid\":\"f98c4e8a-638a-4a2f-8902-86c14f3855d6\",\"code\":\"RESULT_JSON\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:11:48Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "a2269830a5e5aa461e27c8088e784d58c84ce14c0368d543ae660a37d1a0d3f4",
+      "outcome": {
+        "run_id": "m3-011-invalid-json-1115a",
+        "job_uid": "a4577b6b-8e81-4370-bd44-de86dff78cae",
+        "pod_uid": "f98c4e8a-638a-4a2f-8902-86c14f3855d6",
+        "code": "RESULT_JSON",
+        "exit_code": 14,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "missing",
+      "run_id": "m3-011-missing-1115a",
+      "expected_code": "RESULT_MISSING",
+      "job_uid": "d920f97b-c327-4d9b-b943-d45d70111e0c",
+      "api_cleanup_absent": true,
+      "pod_uid": "f35d14e3-311d-4e82-afef-8b1cd2e047c4",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://a73ef771116a4f5c6a568d7a8cc34be6d9c7f3cd71806df44a1c4c9ccf5fc817",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://a73ef771116a4f5c6a568d7a8cc34be6d9c7f3cd71806df44a1c4c9ccf5fc817",
+            "exitCode": 11,
+            "finishedAt": "2026-11-15T07:12:55Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-missing-1115a\",\"pod_uid\":\"f35d14e3-311d-4e82-afef-8b1cd2e047c4\",\"code\":\"RESULT_MISSING\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:12:54Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "8262df4c4d4c4a8ceab7cffbc5d37c6eaa874b7ca580a5fa3c4d10d23b2cd8cc",
+      "outcome": {
+        "run_id": "m3-011-missing-1115a",
+        "job_uid": "d920f97b-c327-4d9b-b943-d45d70111e0c",
+        "pod_uid": "f35d14e3-311d-4e82-afef-8b1cd2e047c4",
+        "code": "RESULT_MISSING",
+        "exit_code": 11,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "missing-runtime",
+      "run_id": "m3-011-missing-runtime-1115a",
+      "expected_code": "KATA_UNAVAILABLE",
+      "job_uid": "0e5585e2-eaad-4f12-8e70-f58f06c83686",
+      "api_cleanup_absent": true,
+      "events": [
+        {
+          "apiVersion": "v1",
+          "count": 5,
+          "eventTime": null,
+          "firstTimestamp": "2026-11-15T07:21:04Z",
+          "involvedObject": {
+            "apiVersion": "batch/v1",
+            "kind": "Job",
+            "name": "m3-011-missing-runtime-1115a",
+            "namespace": "kata-lab",
+            "resourceVersion": "652844",
+            "uid": "0e5585e2-eaad-4f12-8e70-f58f06c83686"
+          },
+          "kind": "Event",
+          "lastTimestamp": "2026-11-15T07:21:19Z",
+          "message": "Error creating: pods \"m3-011-missing-runtime-1115a-\" is forbidden: pod rejected: RuntimeClass \"m3-011-missing-runtime-1115a-absent\" not found",
+          "metadata": {
+            "creationTimestamp": "2026-11-15T07:21:04Z",
+            "name": "m3-011-missing-runtime-1115a.18e826f03c75a7a0",
+            "namespace": "kata-lab",
+            "resourceVersion": "652878",
+            "uid": "84789f3a-9806-4c2d-9880-084cf130648b"
+          },
+          "reason": "FailedCreate",
+          "reportingComponent": "job-controller",
+          "reportingInstance": "",
+          "source": {
+            "component": "job-controller"
+          },
+          "type": "Warning"
+        }
+      ],
+      "script_sha256": "79bad45b20f16a698141ea2636a565b07cd3998604b5a65046165eae8c60b6f3",
+      "outcome": {
+        "code": "KATA_UNAVAILABLE",
+        "no_pod_created": true
+      },
+      "status": "passed"
+    },
+    {
+      "case": "multiple",
+      "run_id": "m3-011-multiple-1115a",
+      "expected_code": "RESULT_JSON",
+      "job_uid": "3968c671-2111-4c75-8c5f-825f238f789f",
+      "api_cleanup_absent": true,
+      "pod_uid": "3be55898-8890-41fc-9d8e-8a7ae1e24be1",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://3a8a64ee28a6ac5a248c7a4fe7c11feacb45dee5e03b2205908c9fe53ae55b43",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://3a8a64ee28a6ac5a248c7a4fe7c11feacb45dee5e03b2205908c9fe53ae55b43",
+            "exitCode": 14,
+            "finishedAt": "2026-11-15T07:15:53Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-multiple-1115a\",\"pod_uid\":\"3be55898-8890-41fc-9d8e-8a7ae1e24be1\",\"code\":\"RESULT_JSON\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:15:52Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "6427b5340c9f3e09f6148b3fdc130f2d36df49a592fc27d15fed4c8956b7c84c",
+      "outcome": {
+        "run_id": "m3-011-multiple-1115a",
+        "job_uid": "3968c671-2111-4c75-8c5f-825f238f789f",
+        "pod_uid": "3be55898-8890-41fc-9d8e-8a7ae1e24be1",
+        "code": "RESULT_JSON",
+        "exit_code": 14,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "nan",
+      "run_id": "m3-011-nan-1115a",
+      "expected_code": "RESULT_JSON",
+      "job_uid": "e4b4283c-f1ce-40c3-98b0-f37bd730677f",
+      "api_cleanup_absent": true,
+      "pod_uid": "6a102bf0-3fcb-4694-900c-3a6d0ebe32f8",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://fead3c5931fdef428351dab75ede49f32c79f9edcaab3b3ba108ef9299200fc5",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://fead3c5931fdef428351dab75ede49f32c79f9edcaab3b3ba108ef9299200fc5",
+            "exitCode": 14,
+            "finishedAt": "2026-11-15T07:16:37Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-nan-1115a\",\"pod_uid\":\"6a102bf0-3fcb-4694-900c-3a6d0ebe32f8\",\"code\":\"RESULT_JSON\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:16:35Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "af086bbeba2b69d9f56411313b90685474da6320e7c9946176a1aede1df10857",
+      "outcome": {
+        "run_id": "m3-011-nan-1115a",
+        "job_uid": "e4b4283c-f1ce-40c3-98b0-f37bd730677f",
+        "pod_uid": "6a102bf0-3fcb-4694-900c-3a6d0ebe32f8",
+        "code": "RESULT_JSON",
+        "exit_code": 14,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "network",
+      "run_id": "m3-011-network-1115a",
+      "expected_code": "OK",
+      "job_uid": "60642de8-045c-4f88-993f-1e8af7d8fd16",
+      "api_cleanup_absent": true,
+      "pod_uid": "5cd9817d-8ce1-46ff-8e04-4eba4f744fe1",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://c8805da30f55a6ddb192c1a808972e85491be5220079eab7822668f6048d57c9",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://c8805da30f55a6ddb192c1a808972e85491be5220079eab7822668f6048d57c9",
+            "exitCode": 0,
+            "finishedAt": "2026-11-15T07:11:27Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-network-1115a\",\"pod_uid\":\"5cd9817d-8ce1-46ff-8e04-4eba4f744fe1\",\"code\":\"OK\",\"script_exit_code\":0,\"result\":[{\"target\":\"api\",\"connected\":false},{\"target\":\"node-api\",\"connected\":false},{\"target\":\"node-kubelet\",\"connected\":false},{\"target\":\"metadata\",\"connected\":false},{\"target\":\"internet\",\"connected\":false},{\"target\":\"dns-tcp\",\"connected\":false},{\"target\":\"controlled-peer\",\"connected\":false},{\"target\":\"dns-udp\",\"connected\":false}]}",
+            "reason": "Completed",
+            "startedAt": "2026-11-15T07:11:09Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "cd098d8e671d1448316942146f774870bb3ff29c9b6c9cc6da87f539b9e6748e",
+      "outcome": {
+        "run_id": "m3-011-network-1115a",
+        "job_uid": "60642de8-045c-4f88-993f-1e8af7d8fd16",
+        "pod_uid": "5cd9817d-8ce1-46ff-8e04-4eba4f744fe1",
+        "code": "OK",
+        "exit_code": 0,
+        "script_exit_code": 0,
+        "result": [
+          {
+            "target": "api",
+            "connected": false
+          },
+          {
+            "target": "node-api",
+            "connected": false
+          },
+          {
+            "target": "node-kubelet",
+            "connected": false
+          },
+          {
+            "target": "metadata",
+            "connected": false
+          },
+          {
+            "target": "internet",
+            "connected": false
+          },
+          {
+            "target": "dns-tcp",
+            "connected": false
+          },
+          {
+            "target": "controlled-peer",
+            "connected": false
+          },
+          {
+            "target": "dns-udp",
+            "connected": false
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "case": "null",
+      "run_id": "m3-011-null-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "59b0a398-8cfb-4b42-a3c2-3d32ab0d6aa5",
+      "api_cleanup_absent": true,
+      "pod_uid": "1522a55d-0e8e-4dbe-8534-df46e9e8a85f",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://47808bf78f6b93e7e7c9de3626bfb4e4f0ea8823af43c1329b89c260195d746c",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://47808bf78f6b93e7e7c9de3626bfb4e4f0ea8823af43c1329b89c260195d746c",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:15:09Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-null-1115a\",\"pod_uid\":\"1522a55d-0e8e-4dbe-8534-df46e9e8a85f\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:15:07Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "f39fc1cce69e56a5e5bb77ca96227d88eb477ae038ef5e0e31d70acac82a570e",
+      "outcome": {
+        "run_id": "m3-011-null-1115a",
+        "job_uid": "59b0a398-8cfb-4b42-a3c2-3d32ab0d6aa5",
+        "pod_uid": "1522a55d-0e8e-4dbe-8534-df46e9e8a85f",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "oversized",
+      "run_id": "m3-011-oversized-1115a",
+      "expected_code": "RESULT_LIMIT",
+      "job_uid": "a3991bb7-a4df-4c83-8b14-9b1e46be793a",
+      "api_cleanup_absent": true,
+      "pod_uid": "0a0d78c8-7606-4668-9577-1ce1f1e60640",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://ec7ca55cfee8da9e1c84f54db3873ba8c08e8c24080580b0a42c5849bb598b78",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://ec7ca55cfee8da9e1c84f54db3873ba8c08e8c24080580b0a42c5849bb598b78",
+            "exitCode": 16,
+            "finishedAt": "2026-11-15T07:13:19Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-oversized-1115a\",\"pod_uid\":\"0a0d78c8-7606-4668-9577-1ce1f1e60640\",\"code\":\"RESULT_LIMIT\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:13:17Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "93d76020e7e5ec722b366c28bd7a8f99b17a120ee28b18a0df772af361364c15",
+      "outcome": {
+        "run_id": "m3-011-oversized-1115a",
+        "job_uid": "a3991bb7-a4df-4c83-8b14-9b1e46be793a",
+        "pod_uid": "0a0d78c8-7606-4668-9577-1ce1f1e60640",
+        "code": "RESULT_LIMIT",
+        "exit_code": 16,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "result-fifo",
+      "run_id": "m3-011-result-fifo-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "eb0d377c-2fc6-4d96-ae35-aa8b837f0442",
+      "api_cleanup_absent": true,
+      "pod_uid": "d3f5a578-739b-431e-89ab-2ef142f8f9c8",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://c38e6829a1383704a59b4ffc57767e5a4dba29797af81b7eb2fffaef5dd9b4e6",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://c38e6829a1383704a59b4ffc57767e5a4dba29797af81b7eb2fffaef5dd9b4e6",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:20:28Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-result-fifo-1115a\",\"pod_uid\":\"d3f5a578-739b-431e-89ab-2ef142f8f9c8\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:20:27Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "8a90027aa279a46a8b1331874550dd732698582a5e24e3ed137506d67ee709c8",
+      "outcome": {
+        "run_id": "m3-011-result-fifo-1115a",
+        "job_uid": "eb0d377c-2fc6-4d96-ae35-aa8b837f0442",
+        "pod_uid": "d3f5a578-739b-431e-89ab-2ef142f8f9c8",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "result-symlink",
+      "run_id": "m3-011-result-symlink-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "d3f6992f-bd0b-4840-aa1f-f58e5dd7f34f",
+      "api_cleanup_absent": true,
+      "pod_uid": "774f1cc9-d391-4315-bdf3-7a02b6ef6318",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://65858072413534c919a60d920b22c639cf48de594a5907db3495459395b6d059",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://65858072413534c919a60d920b22c639cf48de594a5907db3495459395b6d059",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:20:05Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-result-symlink-1115a\",\"pod_uid\":\"774f1cc9-d391-4315-bdf3-7a02b6ef6318\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:20:04Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "c52331c0bab409b1f9e4b535949da4502fe31a0237f773419936b3095a24888f",
+      "outcome": {
+        "run_id": "m3-011-result-symlink-1115a",
+        "job_uid": "d3f6992f-bd0b-4840-aa1f-f58e5dd7f34f",
+        "pod_uid": "774f1cc9-d391-4315-bdf3-7a02b6ef6318",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "runtime",
+      "run_id": "m3-011-runtime-1115a",
+      "expected_code": "SCRIPT_FAILED",
+      "job_uid": "76d601dc-622e-42a7-90c0-9f2ec8370e20",
+      "api_cleanup_absent": true,
+      "pod_uid": "f70e0237-04f0-431c-8df2-9d7afbe5a45b",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://87b5ebd35e65264bff2d71eae1e0985d036aae6e23e76f9d85b1c52fd4081051",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://87b5ebd35e65264bff2d71eae1e0985d036aae6e23e76f9d85b1c52fd4081051",
+            "exitCode": 10,
+            "finishedAt": "2026-11-15T07:18:08Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-runtime-1115a\",\"pod_uid\":\"f70e0237-04f0-431c-8df2-9d7afbe5a45b\",\"code\":\"SCRIPT_FAILED\",\"script_exit_code\":1}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:18:06Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 171
+      },
+      "script_sha256": "d32a4e9fc9d34647dd85c99a27b5b2d15bd6b9c18a5a5a4d2113ba3c99df1cf0",
+      "outcome": {
+        "run_id": "m3-011-runtime-1115a",
+        "job_uid": "76d601dc-622e-42a7-90c0-9f2ec8370e20",
+        "pod_uid": "f70e0237-04f0-431c-8df2-9d7afbe5a45b",
+        "code": "SCRIPT_FAILED",
+        "exit_code": 10,
+        "script_exit_code": 1
+      },
+      "status": "passed"
+    },
+    {
+      "case": "sales",
+      "run_id": "m3-011-sales-1115a",
+      "expected_code": "OK",
+      "job_uid": "a0b5d3cc-8791-42bc-a74a-6dc44811565b",
+      "api_cleanup_absent": true,
+      "pod_uid": "0ae5cb33-e4ee-4d83-8bfb-3aef6ad0f9cd",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://e8608a3f21f5f321353a16bbf69ab1e0b03ba192ea9d015f6dee42867a7de640",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://e8608a3f21f5f321353a16bbf69ab1e0b03ba192ea9d015f6dee42867a7de640",
+            "exitCode": 0,
+            "finishedAt": "2026-11-15T07:09:57Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-sales-1115a\",\"pod_uid\":\"0ae5cb33-e4ee-4d83-8bfb-3aef6ad0f9cd\",\"code\":\"OK\",\"script_exit_code\":0,\"result\":{\"product\":\"Notebook\",\"october_units\":120,\"november_units\":80,\"change_units\":-40}}",
+            "reason": "Completed",
+            "startedAt": "2026-11-15T07:09:55Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 68,
+        "stderr": 0
+      },
+      "script_sha256": "f0f4fdc1b657a60fae181d8780e4007500715ce968f6b50234c2ef2774986daf",
+      "outcome": {
+        "run_id": "m3-011-sales-1115a",
+        "job_uid": "a0b5d3cc-8791-42bc-a74a-6dc44811565b",
+        "pod_uid": "0ae5cb33-e4ee-4d83-8bfb-3aef6ad0f9cd",
+        "code": "OK",
+        "exit_code": 0,
+        "script_exit_code": 0,
+        "result": {
+          "product": "Notebook",
+          "october_units": 120,
+          "november_units": 80,
+          "change_units": -40
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "case": "scalar",
+      "run_id": "m3-011-scalar-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "d97b4af1-3c05-4c36-950a-89013ddd72ef",
+      "api_cleanup_absent": true,
+      "pod_uid": "304caa51-f251-40c4-b70e-722987a053f7",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://a3345676558a7d80f7dbe5c43bb7190f47aba9cf85d9d1e4bc82575319dbed1c",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://a3345676558a7d80f7dbe5c43bb7190f47aba9cf85d9d1e4bc82575319dbed1c",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:14:46Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-scalar-1115a\",\"pod_uid\":\"304caa51-f251-40c4-b70e-722987a053f7\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:14:45Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "76220a290830c07771108708a77e746366a076a79e697230465ce6bd5022fcfe",
+      "outcome": {
+        "run_id": "m3-011-scalar-1115a",
+        "job_uid": "d97b4af1-3c05-4c36-950a-89013ddd72ef",
+        "pod_uid": "304caa51-f251-40c4-b70e-722987a053f7",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "scratch-layout",
+      "run_id": "m3-011-scratch-layout-1115a",
+      "expected_code": "OK",
+      "job_uid": "bb464f7e-82d6-4b09-9e99-8607a225b731",
+      "api_cleanup_absent": true,
+      "pod_uid": "3eb805d6-e1ec-4969-993b-797bf52c6c80",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://84251f88e616b0eb6003eba7bcee8670282b7868bcb5e66fba01610d3407eb3e",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://84251f88e616b0eb6003eba7bcee8670282b7868bcb5e66fba01610d3407eb3e",
+            "exitCode": 0,
+            "finishedAt": "2026-11-15T07:10:49Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-scratch-layout-1115a\",\"pod_uid\":\"3eb805d6-e1ec-4969-993b-797bf52c6c80\",\"code\":\"OK\",\"script_exit_code\":0,\"result\":{\"scratch_reported_bytes\":100691968,\"scratch_available_bytes\":100691968,\"mountinfo\":[\"107 99 0:41 / /tmp rw,relatime - tmpfs tmpfs rw\"]}}",
+            "reason": "Completed",
+            "startedAt": "2026-11-15T07:10:38Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 67,
+        "stderr": 0
+      },
+      "script_sha256": "f0858f8fa410390de146ed45139de7782a5dd28652cb854796b46edcc014a499",
+      "outcome": {
+        "run_id": "m3-011-scratch-layout-1115a",
+        "job_uid": "bb464f7e-82d6-4b09-9e99-8607a225b731",
+        "pod_uid": "3eb805d6-e1ec-4969-993b-797bf52c6c80",
+        "code": "OK",
+        "exit_code": 0,
+        "script_exit_code": 0,
+        "result": {
+          "scratch_reported_bytes": 100691968,
+          "scratch_available_bytes": 100691968,
+          "mountinfo": [
+            "107 99 0:41 / /tmp rw,relatime - tmpfs tmpfs rw"
+          ]
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "case": "security",
+      "run_id": "m3-011-security-1115a",
+      "expected_code": "OK",
+      "job_uid": "1bf66a13-e0a3-4e56-8932-dc484bd2941a",
+      "api_cleanup_absent": true,
+      "pod_uid": "dd08f322-e02a-4ca6-becc-2f9f6ff8646a",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://68afac2c7cd35e9f0428787d3ad51d71c87ffbffdf3c2d143ea1a19d5df3615a",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://68afac2c7cd35e9f0428787d3ad51d71c87ffbffdf3c2d143ea1a19d5df3615a",
+            "exitCode": 0,
+            "finishedAt": "2026-11-15T07:08:40Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-security-1115a\",\"pod_uid\":\"dd08f322-e02a-4ca6-becc-2f9f6ff8646a\",\"code\":\"OK\",\"script_exit_code\":0,\"result\":{\"uid\":10001,\"gid\":10001,\"guest_kernel\":\"6.18.56\",\"input_write_denied\":true,\"root_readonly\":true,\"serviceaccount_absent\":true,\"known_credentials_absent\":true,\"scratch_writable\":true}}",
+            "reason": "Completed",
+            "startedAt": "2026-11-15T07:08:28Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "9ee5cf42266c7dc1625c1543fa09864a9d2a4f08f3765439414c83f98a65da4e",
+      "outcome": {
+        "run_id": "m3-011-security-1115a",
+        "job_uid": "1bf66a13-e0a3-4e56-8932-dc484bd2941a",
+        "pod_uid": "dd08f322-e02a-4ca6-becc-2f9f6ff8646a",
+        "code": "OK",
+        "exit_code": 0,
+        "script_exit_code": 0,
+        "result": {
+          "uid": 10001,
+          "gid": 10001,
+          "guest_kernel": "6.18.56",
+          "input_write_denied": true,
+          "root_readonly": true,
+          "serviceaccount_absent": true,
+          "known_credentials_absent": true,
+          "scratch_writable": true
+        }
+      },
+      "status": "passed"
+    },
+    {
+      "case": "status-spoof",
+      "run_id": "m3-011-status-spoof-1115a",
+      "expected_code": "SCRIPT_FAILED",
+      "job_uid": "6553739c-500f-490d-8fec-97d9c4dfa635",
+      "api_cleanup_absent": true,
+      "pod_uid": "d7ec2cf2-7840-4146-8db6-5efcf9b3c486",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://50d56b1018425a97ed8f27a50b63bcf05d9d50bc1cee9c010826138005cd4430",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://50d56b1018425a97ed8f27a50b63bcf05d9d50bc1cee9c010826138005cd4430",
+            "exitCode": 10,
+            "finishedAt": "2026-11-15T07:20:49Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-status-spoof-1115a\",\"pod_uid\":\"d7ec2cf2-7840-4146-8db6-5efcf9b3c486\",\"code\":\"SCRIPT_FAILED\",\"script_exit_code\":1}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:20:48Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 197
+      },
+      "script_sha256": "f4f9450b207d1768f4af51f18cb1538598e6cb1674cb6df0ae0397a0b0114f1e",
+      "outcome": {
+        "run_id": "m3-011-status-spoof-1115a",
+        "job_uid": "6553739c-500f-490d-8fec-97d9c4dfa635",
+        "pod_uid": "d7ec2cf2-7840-4146-8db6-5efcf9b3c486",
+        "code": "SCRIPT_FAILED",
+        "exit_code": 10,
+        "script_exit_code": 1
+      },
+      "status": "passed"
+    },
+    {
+      "case": "stderr-diagnostics",
+      "run_id": "m3-011-stderr-diagnostics-1115a",
+      "expected_code": "DIAGNOSTIC_LIMIT",
+      "job_uid": "05854ea1-b5c1-4c88-a527-d8ad2e039511",
+      "api_cleanup_absent": true,
+      "pod_uid": "97f33efe-6d5c-4479-9617-af32dbbed7bb",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://1e780635d9a34a701665aec512ebe7e81108c7562872b8a1b083110f08abe956",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://1e780635d9a34a701665aec512ebe7e81108c7562872b8a1b083110f08abe956",
+            "exitCode": 18,
+            "finishedAt": "2026-11-15T07:19:43Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-stderr-diagnostics-1115a\",\"pod_uid\":\"97f33efe-6d5c-4479-9617-af32dbbed7bb\",\"code\":\"DIAGNOSTIC_LIMIT\",\"script_exit_code\":-9}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:19:42Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 8192
+      },
+      "script_sha256": "21a7535579df1bef60d0bee278db26efbc9daf8d7f6bd2f0d984ec5c7226de89",
+      "outcome": {
+        "run_id": "m3-011-stderr-diagnostics-1115a",
+        "job_uid": "05854ea1-b5c1-4c88-a527-d8ad2e039511",
+        "pod_uid": "97f33efe-6d5c-4479-9617-af32dbbed7bb",
+        "code": "DIAGNOSTIC_LIMIT",
+        "exit_code": 18,
+        "script_exit_code": -9
+      },
+      "status": "passed"
+    },
+    {
+      "case": "surrogate",
+      "run_id": "m3-011-surrogate-1115a",
+      "expected_code": "RESULT_SHAPE",
+      "job_uid": "0dfe0070-38c6-4332-bd58-269f9d8fefa7",
+      "api_cleanup_absent": true,
+      "pod_uid": "62fa40a1-f6ec-41d0-b05f-b9e76ab2b061",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://d4ce8c6d4c81c0b939b0175a04a191b911ec2f29a9b519deba73e63ce311b2f9",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://d4ce8c6d4c81c0b939b0175a04a191b911ec2f29a9b519deba73e63ce311b2f9",
+            "exitCode": 15,
+            "finishedAt": "2026-11-15T07:17:21Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-surrogate-1115a\",\"pod_uid\":\"62fa40a1-f6ec-41d0-b05f-b9e76ab2b061\",\"code\":\"RESULT_SHAPE\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:17:19Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "60e2b03645f1651c19a9ae7beda63ce6eedd7d59df5140a711990de939d56ec0",
+      "outcome": {
+        "run_id": "m3-011-surrogate-1115a",
+        "job_uid": "0dfe0070-38c6-4332-bd58-269f9d8fefa7",
+        "pod_uid": "62fa40a1-f6ec-41d0-b05f-b9e76ab2b061",
+        "code": "RESULT_SHAPE",
+        "exit_code": 15,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "syntax",
+      "run_id": "m3-011-syntax-1115a",
+      "expected_code": "SCRIPT_FAILED",
+      "job_uid": "d624df38-256a-472c-ac15-a15cf2a28f98",
+      "api_cleanup_absent": true,
+      "pod_uid": "f6bcabd2-32e6-4789-bb38-5b5c98e65c0b",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://6d8887e0a40c506b457691a8f79328b3efcee8db7a27632b42fb0a0862616613",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://6d8887e0a40c506b457691a8f79328b3efcee8db7a27632b42fb0a0862616613",
+            "exitCode": 10,
+            "finishedAt": "2026-11-15T07:17:43Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-syntax-1115a\",\"pod_uid\":\"f6bcabd2-32e6-4789-bb38-5b5c98e65c0b\",\"code\":\"SCRIPT_FAILED\",\"script_exit_code\":1}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:17:42Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 97
+      },
+      "script_sha256": "e5c39b5d9e483c96898f2970978fee4d8e5a3814e685d9ab37365a5aa333b5ad",
+      "outcome": {
+        "run_id": "m3-011-syntax-1115a",
+        "job_uid": "d624df38-256a-472c-ac15-a15cf2a28f98",
+        "pod_uid": "f6bcabd2-32e6-4789-bb38-5b5c98e65c0b",
+        "code": "SCRIPT_FAILED",
+        "exit_code": 10,
+        "script_exit_code": 1
+      },
+      "status": "passed"
+    },
+    {
+      "case": "timeout",
+      "run_id": "m3-011-timeout-1115a",
+      "expected_code": "RUN_TIMEOUT",
+      "job_uid": "dbed9a99-410b-4667-b846-064ffd58e760",
+      "api_cleanup_absent": true,
+      "pod_uid": "b0ec9754-26e6-4c46-9640-f3e176fd7b4a",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://eb027dbae4e52f4feaae25013e9c93aabd3a34a0679bd9bb0d6a915ddc2217db",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://eb027dbae4e52f4feaae25013e9c93aabd3a34a0679bd9bb0d6a915ddc2217db",
+            "exitCode": 17,
+            "finishedAt": "2026-11-15T07:18:58Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-timeout-1115a\",\"pod_uid\":\"b0ec9754-26e6-4c46-9640-f3e176fd7b4a\",\"code\":\"RUN_TIMEOUT\",\"script_exit_code\":-9}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:18:27Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "d8b5c4b6751d495e5ffef53e4af21891adb500da0df28dc19727ca0cda213d8b",
+      "outcome": {
+        "run_id": "m3-011-timeout-1115a",
+        "job_uid": "dbed9a99-410b-4667-b846-064ffd58e760",
+        "pod_uid": "b0ec9754-26e6-4c46-9640-f3e176fd7b4a",
+        "code": "RUN_TIMEOUT",
+        "exit_code": 17,
+        "script_exit_code": -9
+      },
+      "status": "passed"
+    },
+    {
+      "case": "total-items",
+      "run_id": "m3-011-total-items-1115a",
+      "expected_code": "RESULT_LIMIT",
+      "job_uid": "c39162ff-5c13-4705-b96d-5494bf91d69d",
+      "api_cleanup_absent": true,
+      "pod_uid": "4ec1baef-15f1-420e-872a-690f5f94c2e9",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://26fedd238da1fa9bca7efe1b96265ed3483203dda025161bc464df1a33847bcc",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://26fedd238da1fa9bca7efe1b96265ed3483203dda025161bc464df1a33847bcc",
+            "exitCode": 16,
+            "finishedAt": "2026-11-15T07:14:26Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-total-items-1115a\",\"pod_uid\":\"4ec1baef-15f1-420e-872a-690f5f94c2e9\",\"code\":\"RESULT_LIMIT\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:14:25Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "0f9d9792e17a5af4003bc8f38a0c0463a33788e630c1c787e0968399183ee84c",
+      "outcome": {
+        "run_id": "m3-011-total-items-1115a",
+        "job_uid": "c39162ff-5c13-4705-b96d-5494bf91d69d",
+        "pod_uid": "4ec1baef-15f1-420e-872a-690f5f94c2e9",
+        "code": "RESULT_LIMIT",
+        "exit_code": 16,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    },
+    {
+      "case": "totals",
+      "run_id": "m3-011-totals-1115a",
+      "expected_code": "OK",
+      "job_uid": "51ce672c-8b5f-4fc1-8207-a2c5f97cefdf",
+      "api_cleanup_absent": true,
+      "pod_uid": "66a6b4fe-786f-4a59-b29d-fd4b63303308",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://ce074ef744d9623ccfad22315a8c9dc2c4bd8c5f89927daa2cf24b1a741dad20",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://ce074ef744d9623ccfad22315a8c9dc2c4bd8c5f89927daa2cf24b1a741dad20",
+            "exitCode": 0,
+            "finishedAt": "2026-11-15T07:10:18Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-totals-1115a\",\"pod_uid\":\"66a6b4fe-786f-4a59-b29d-fd4b63303308\",\"code\":\"OK\",\"script_exit_code\":0,\"result\":[{\"month\":\"October\",\"units\":170},{\"month\":\"November\",\"units\":125}]}",
+            "reason": "Completed",
+            "startedAt": "2026-11-15T07:10:16Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "de2c66ba0c20e9447b3d8de18d025f2d3a097ecb218445f9c345cdbeaebdef7d",
+      "outcome": {
+        "run_id": "m3-011-totals-1115a",
+        "job_uid": "51ce672c-8b5f-4fc1-8207-a2c5f97cefdf",
+        "pod_uid": "66a6b4fe-786f-4a59-b29d-fd4b63303308",
+        "code": "OK",
+        "exit_code": 0,
+        "script_exit_code": 0,
+        "result": [
+          {
+            "month": "October",
+            "units": 170
+          },
+          {
+            "month": "November",
+            "units": 125
+          }
+        ]
+      },
+      "status": "passed"
+    },
+    {
+      "case": "utf8",
+      "run_id": "m3-011-utf8-1115a",
+      "expected_code": "RESULT_ENCODING",
+      "job_uid": "2ec67239-0ad6-41b8-b15a-34b227dd37e0",
+      "api_cleanup_absent": true,
+      "pod_uid": "0ca9e98f-14f9-4891-9437-ef51c6c80f1f",
+      "runtime_class": "kata-qemu-runtime-rs",
+      "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+      "container_status": {
+        "allocatedResources": {
+          "cpu": "100m",
+          "ephemeral-storage": "16Mi",
+          "memory": "128Mi"
+        },
+        "containerID": "containerd://ec04037e0f4fe875de3c3de1d5b457731a0a5c6d2b455eb7137e64931c566468",
+        "image": "docker.io/kataai/runner:0.1.1",
+        "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+        "lastState": {},
+        "name": "runner",
+        "ready": false,
+        "resources": {
+          "limits": {
+            "cpu": "1",
+            "ephemeral-storage": "64Mi",
+            "memory": "256Mi"
+          },
+          "requests": {
+            "cpu": "100m",
+            "ephemeral-storage": "16Mi",
+            "memory": "128Mi"
+          }
+        },
+        "restartCount": 0,
+        "started": false,
+        "state": {
+          "terminated": {
+            "containerID": "containerd://ec04037e0f4fe875de3c3de1d5b457731a0a5c6d2b455eb7137e64931c566468",
+            "exitCode": 13,
+            "finishedAt": "2026-11-15T07:15:31Z",
+            "message": "{\"protocol\":\"kataai.runner.v1\",\"run_id\":\"m3-011-utf8-1115a\",\"pod_uid\":\"0ca9e98f-14f9-4891-9437-ef51c6c80f1f\",\"code\":\"RESULT_ENCODING\",\"script_exit_code\":0}",
+            "reason": "Error",
+            "startedAt": "2026-11-15T07:15:30Z"
+          }
+        },
+        "user": {
+          "linux": {
+            "gid": 10001,
+            "supplementalGroups": [
+              10001
+            ],
+            "uid": 10001
+          }
+        },
+        "volumeMounts": [
+          {
+            "mountPath": "/inputs",
+            "name": "inputs",
+            "readOnly": true,
+            "recursiveReadOnly": "Disabled"
+          },
+          {
+            "mountPath": "/tmp",
+            "name": "scratch"
+          }
+        ]
+      },
+      "diagnostic_retained_bytes": {
+        "stdout": 0,
+        "stderr": 0
+      },
+      "script_sha256": "05b259d81143a315a8413c104225da9bea4376acf88dc510eba6b957e3b55a6d",
+      "outcome": {
+        "run_id": "m3-011-utf8-1115a",
+        "job_uid": "2ec67239-0ad6-41b8-b15a-34b227dd37e0",
+        "pod_uid": "0ca9e98f-14f9-4891-9437-ef51c6c80f1f",
+        "code": "RESULT_ENCODING",
+        "exit_code": 13,
+        "script_exit_code": 0
+      },
+      "status": "passed"
+    }
+  ],
+  "scope": "Active trusted fixture contract/API outcomes only; independent node evidence is required for VM correlation and teardown. Exact 16 MiB guest scratch capacity is excluded by the 2026-11-15 policy; historical failed/unrun quota evidence is preserved separately."
+}

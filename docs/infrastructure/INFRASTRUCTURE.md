@@ -2,7 +2,7 @@
 
 **Project:** Sandboxed AI Code Execution Using Kata Containers  
 **Document version:** 0.3.0
-**Last updated:** 2026-11-11  
+**Last updated:** 2026-11-15
 **Environment:** Development / University Course Laboratory  
 **Milestone:** M1 — Kubernetes and Kata Containers Infrastructure  
 **Status:** M1 feasibility acceptance Verified — trusted correlated execution, non-root I/O, tested network isolation, Windows operations and cleanup recorded; production hardening remains Pending
@@ -726,7 +726,11 @@ The application must fail closed when Kata is unavailable.
 
 ### 11.3 Data transport
 
-The precise production input and output transport mechanisms have not been selected.
+M3 selects a bounded immutable ConfigMap with exactly `script.py` and `data.csv`,
+read-only projection, and a bounded File termination report. See the
+[approved design](../milestone-3-design.md), [runner README](../../infra/runner/README.md)
+and [current release record](../../RELEASE_0.1.1.md). Durable application integration
+and larger/confidential datasets remain separate work. The original alternatives were:
 
 Candidate approaches include:
 
@@ -760,7 +764,8 @@ The retrieved output matched the expected JSON.
 
 This demonstrates the feasibility of staging input files and retrieving structured results through Kubernetes.
 
-The final production input/output transport, automated schema validation, output limits, and durable artifact handling remain undecided.
+M3 now implements strict bounded result validation and the selected transport.
+Application persistence/reconciliation and broader production acceptance remain M4–M8.
 
 ---
 
@@ -800,9 +805,9 @@ Kata provides a guest-kernel isolation boundary, but the security of the host, h
 | No Kubernetes API token | Disable automatic token mounting | Verified in test manifests; enforcement pending |
 | Read-only inputs | Required | Verified in trusted fixture |
 | Network restriction | Deny unapproved access | Default-deny tests passed; comprehensive hardening pending |
-| CPU and memory limits | Required | Test limits used; final values pending |
-| Execution deadline | Required | Configured in trusted Job; timeout behavior not verified |
-| Output size limit | Required | Pending |
+| CPU and memory limits | Required | M3 fixed requests/limits approved; abuse enforcement remains M6 |
+| Execution deadline | Required | M3 30 s script / 120 s Job; live timeout evidence in acceptance record |
+| Output size limit | Required | M3 2048-byte result / 3072-byte report; host and trusted Kata evidence in acceptance record |
 | Resource cleanup | Required | Kata Pod/VM teardown verified; full reconciliation pending |
 
 NetworkPolicy enforcement was tested with Calico and the Kata runtime.
@@ -1235,9 +1240,9 @@ After the infrastructure is installed, reboot testing should confirm:
 | D06 | Final Service CIDR | `10.96.0.0/12` verified |
 | D07 | Final Calico MTU | Verified 1400 in Installation status and vxlan.calico interface |
 | D08 | Kata Containers release | Verified 4.3.1; Helm chart kata-deploy-4.3.1, app 4.3.1, revision 1 |
-| D09 | Input staging strategy | ConfigMap tested successfully; final approach pending |
-| D10 | Result collection mechanism | JSON output retrieved; final mechanism pending |
-| D11 | Runner resource limits | Pending |
+| D09 | Input staging strategy | M3 immutable per-run ConfigMap, two fixed keys, strict input/request caps |
+| D10 | Result collection mechanism | M3 strict File termination report; no logs-as-result fallback |
+| D11 | Runner resource limits | Approved M3 fixed values; configured 16Mi tmpfs sizeLimit is not a verified guest quota |
 | D12 | Sandbox network restrictions | Calico default-deny tests passed; complete security policy pending |
 | D13 | Remote Kubernetes API access | Windows SSH tunnel and TLS verified |
 | D14 | Kubernetes application identity and RBAC | Temporary operator-only Windows write test verified and identity deleted; persistent application admission/credentials Pending |
@@ -1525,7 +1530,7 @@ As of this document version:
 4. The OpenStack private IP is DHCP-assigned.
 5. Remote SSH connectivity through `172.31.1.57` is verified, but the complete Neutron resource inventory has not been recorded.
 6. The Kubernetes Pod and Service CIDRs and Calico VXLAN MTU 1400 are Verified; broader MTU/path testing remains Pending.
-7. ConfigMap-based input staging and JSON output retrieval were tested using a trusted fixture. Final transport, limits, and cleanup reconciliation are not yet finalized.
+7. M3 selects bounded ConfigMap staging and File report retrieval; the existing KataExecutor adapter journals cleanup. Backend worker/store coordination and live application reconciliation remain M4/M5.
 8. Network isolation succeeded for tested endpoints. These tests do not establish complete protection against every network path or host-level attack.
 9. Read-only authentication and temporary operator-only Windows Job operations are Verified. Application credential lifecycle and enforced workload admission remain Pending/Blocked before untrusted submission.
 10. Fail-closed behavior was demonstrated for an unconfigured runtime handler, not for every possible Kata runtime failure.
@@ -1576,3 +1581,44 @@ These limitations must be revisited as the project progresses.
 ---
 
 **Maintenance requirement:** Update this document whenever infrastructure configuration, network addressing, software versions, runtime policies, or verified capabilities change. Keep secrets and credential material outside version control.
+
+## 20. M3 implementation handoff (2026-11-11)
+
+Current policy note (2026-11-15): the user chose the existing unmodified Kata
+runtime. Exact 16 MiB guest scratch enforcement is no longer a release gate;
+writable guest scratch and real candidate acceptance remain required. See
+[the amended acceptance record](M3_ACCEPTANCE.md). The handoff observations below
+remain historical; no installed runtime or cluster configuration changed.
+
+The user approved [M3 runner contract revision 1](../milestone-3-design.md).
+Runner, staging/result adapters, fixed Job construction and trusted test assets
+are now prepared; [M3 acceptance and build blockers](M3_ACCEPTANCE.md) are tracked
+separately. Read-only inspection reconfirmed the existing RuntimeClass/default-deny
+policy and identified the cached approved Python base as 3.12.16 (Debian trixie).
+No Kubernetes/containerd/Kata/Calico settings, RBAC or M1 test evidence were changed.
+New M3 actual-Kata tests passed non-root staging/result collection, bounded result
+validation, selected network probes and error paths; a live shim/QEMU/KVM was
+correlated and its teardown observed. **At that historical acceptance M3 was blocked:** the requested 16 MiB
+memory emptyDir allowed a bounded 20 MiB write, and a follow-up showed node mount
+`size=16384k` versus guest capacity 100,691,968 bytes. Do not infer storage
+enforcement from YAML or mark M3 complete. Exact passed/failed/unrun records are
+linked above; no M1 evidence or underlying infrastructure was overwritten.
+
+## 21. Runner 0.1.1 verification (2026-11-15)
+
+Standard Kata remains unchanged. Clean source `11d5465cb95d7ff78fd74f903813a1dba40f966e` produced
+`docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9`. Docker Desktop's existing Linux engine built/inspected the artifact;
+SSH/SCP and existing containerd image import distributed it without a registry.
+All 48 runner/39 executor host tests and 30 active trusted Kata cases passed.
+Security live Pod/sandbox/shim/QEMU/KVM correlation and independent teardown
+were captured; exact-UID API cleanup passed after every case. Stopped sandbox
+metadata briefly remained and was later garbage-collected, without manual deletion.
+Guest scratch capacity was 100,691,968 bytes; exact 16 MiB enforcement remains
+an accepted standard-Kata limitation, not a release gate. Historical quota failure
+above remains unchanged. No configuration, RBAC, policy or VM allocation changed.
+
+Preflight found node Ready, containerd active, 4 allocatable CPUs, about 7.66 GiB
+allocatable memory and 13 GiB free root disk. RuntimeClass/default-deny UIDs and
+shim hash matched historical values. The full current evidence and final user
+approval status are in [the release record](../../RELEASE_0.1.1.md) and
+[acceptance](M3_ACCEPTANCE.md). M4/M5 worker integration and M6/M8 remain open.

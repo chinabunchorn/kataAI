@@ -1,0 +1,118 @@
+{
+  "http": {
+    "id": "628de9e2-8cfc-4c60-9045-ed86b4a5ac5f",
+    "status": "completed",
+    "provisional": true,
+    "fake": false,
+    "run_id": "6529365d-5691-4df1-a784-c782ce3ff38c",
+    "result": {
+      "answer": 770.0
+    },
+    "answer": "The total revenue calculated as the sum of quantity times unit_price_thb for all orders is 770.0 THB.",
+    "error_code": null,
+    "code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path('/inputs/data.csv')\nrows = []\nwith open(csv_path, 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        # Convert numeric columns to appropriate types\n        quantity = int(row['quantity'])\n        unit_price_thb = float(row['unit_price_thb'])\n        rows.append({'quantity': quantity, 'unit_price_thb': unit_price_thb})\n\n# Calculate total revenue\ntotal_revenue = sum(row['quantity'] * row['unit_price_thb'] for row in rows)\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+    "dataset_id": "561b11b0-3b00-4cc4-9421-eb726e1a94e6",
+    "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+    "created_at": "2026-11-15T19:17:14.982190+07:00",
+    "execution_stages": [
+      {
+        "name": "queued",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:14.982190+07:00",
+        "duration_ms": 615,
+        "finished_at": "2026-11-15T19:17:15.597036+07:00",
+        "elapsed_ms": 615
+      },
+      {
+        "name": "preparing_input",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:15.597036+07:00",
+        "duration_ms": 3,
+        "finished_at": "2026-11-15T19:17:15.600205+07:00",
+        "elapsed_ms": 3
+      },
+      {
+        "name": "generating_code",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:15.600205+07:00",
+        "duration_ms": 23716,
+        "finished_at": "2026-11-15T19:17:39.316603+07:00",
+        "elapsed_ms": 23716
+      },
+      {
+        "name": "validating_code",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:39.316603+07:00",
+        "duration_ms": 5,
+        "finished_at": "2026-11-15T19:17:39.321607+07:00",
+        "elapsed_ms": 5
+      },
+      {
+        "name": "starting_execution",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:39.321607+07:00",
+        "duration_ms": 1596,
+        "finished_at": "2026-11-15T19:17:40.917766+07:00",
+        "elapsed_ms": 1596
+      },
+      {
+        "name": "waiting_for_container",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:40.917766+07:00",
+        "duration_ms": 9041,
+        "finished_at": "2026-11-15T19:17:49.958956+07:00",
+        "elapsed_ms": 9041
+      },
+      {
+        "name": "running_in_kata",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:49.958956+07:00",
+        "duration_ms": 3442,
+        "finished_at": "2026-11-15T19:17:53.401175+07:00",
+        "elapsed_ms": 3442
+      },
+      {
+        "name": "collecting_result",
+        "outcome": "finished",
+        "started_at": "2026-11-15T19:17:53.401175+07:00",
+        "duration_ms": 3,
+        "finished_at": "2026-11-15T19:17:53.404088+07:00",
+        "elapsed_ms": 3
+      },
+      {
+        "name": "summarizing",
+        "outcome": "completed",
+        "started_at": "2026-11-15T19:17:53.404088+07:00",
+        "duration_ms": 2581,
+        "finished_at": "2026-11-15T19:17:55.985340+07:00",
+        "elapsed_ms": 2581
+      }
+    ],
+    "observed_at": "2026-11-15T12:18:44.439051+00:00"
+  },
+  "stages_match_postgres": true,
+  "provider": {
+    "job_uid": "1ae0ad7b-8409-4b4d-9344-433d15a629cd",
+    "pods": {
+      "bbe799d3-56f2-42ea-b86f-b379d963cc99": {
+        "name": "ka-6529365d56914df1a784c782ce3ff38c-c2pjc",
+        "node": "katavm",
+        "uid": "bbe799d3-56f2-42ea-b86f-b379d963cc99",
+        "phase": "Succeeded",
+        "containers": [
+          {
+            "name": "runner",
+            "containerID": "containerd://b6774241594d75119d352b55609c8bed978f0a40bc9df6177a0231feefec34a1",
+            "imageID": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9"
+          }
+        ]
+      }
+    },
+    "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+    "state": "completed",
+    "api_absent": true,
+    "guest_teardown_verified": false,
+    "cleanup": "pending"
+  },
+  "independent_api_resources_absent": true
+}

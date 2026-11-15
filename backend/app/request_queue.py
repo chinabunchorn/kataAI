@@ -1,0 +1,304 @@
+"""Transactional PostgreSQL request queue.
+
+Callers own commit/rollback. Per-client advisory locks last until transaction end;
+keep transactions short. Recovery additionally requires the worker session lock.
+"""
+from dataclasses import dataclass, field
+import json
+from datetime import datetime
+from uuid import UUID, uuid4
+
+import sqlalchemy as sa
+from sqlalchemy.exc import SQLAlchemyError
+
+from .dataset_store import DatasetNotFound
+from .ready_dataset import DatasetUnavailable
+from .model_adapter import MAX_RESULT_BYTES, MAX_SUMMARY_BYTES, ModelAdapterError, _json_value, _text
+from .proposals import MAX_CODE_BYTES
+
+
+def validate_fake_result(value):
+    """Validate/copy an explicitly supplied fake envelope; never evaluate code."""
+    if type(value) is not dict or not {'code', 'result'} <= value.keys() or (
+        value.keys() - {'code', 'result', 'summary', 'warning', 'fake', 'metrics'}
+    ):
+        raise InvalidRequest()
+    if ('fake' in value and value['fake'] is not True) or (
+        'metrics' in value and value['metrics'] is not None
+    ):
+        raise InvalidRequest()
+    try:
+        _text(value['code'], MAX_CODE_BYTES)
+        _json_value(value['result'], MAX_RESULT_BYTES)
+        for key in ('summary', 'warning'):
+            if value.get(key) is not None:
+                _text(value[key], MAX_SUMMARY_BYTES)
+        envelope = {'code': value['code'], 'result': value['result'],
+                    'summary': value.get('summary'), 'warning': value.get('warning'),
+                    'fake': True, 'metrics': None}
+        return json.loads(_json_value(envelope, 65_536))
+    except ModelAdapterError:
+        raise InvalidRequest() from None
+
+
+class InvalidRequest(ValueError):
+    def __init__(self):
+        super().__init__('INVALID_REQUEST')
+
+
+class IdempotencyConflict(Exception):
+    def __init__(self):
+        super().__init__('IDEMPOTENCY_CONFLICT')
+
+
+class RequestStorageError(Exception):
+    def __init__(self):
+        super().__init__('REQUEST_STORAGE_ERROR')
+
+
+@dataclass(frozen=True)
+class RequestRecord:
+    id: UUID
+    client_request_id: UUID
+    dataset_id: UUID
+    question: str = field(repr=False)
+    status: str
+    claim_token: UUID | None
+    created_at: datetime
+    updated_at: datetime
+    fake_result: dict | None = field(default=None, repr=False)
+    run_id: UUID | None = None
+    real_result: dict | list | None = field(default=None, repr=False)
+    generated_code: str | None = field(default=None, repr=False)
+    answer: str | None = field(default=None, repr=False)
+    error_code: str | None = None
+    execution_stages: list = field(default_factory=list, repr=False)
+
+
+_COLUMNS = 'id, client_request_id, dataset_id, question, status, claim_token, created_at, updated_at, fake_result, run_id, real_result, generated_code, answer, error_code, execution_stages'
+
+
+class RequestQueue:
+    def __init__(self, connection):
+        self._connection = connection
+
+    def get(self, request_id):
+        if not isinstance(request_id, UUID):
+            raise InvalidRequest()
+        try:
+            row = self._connection.execute(sa.text(
+                f'SELECT {_COLUMNS} FROM request_intents WHERE id = :id AND hidden_at IS NULL'),
+                {'id': request_id}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def history(self, limit, before=None):
+        if type(limit) is not int or not 1 <= limit <= 100:
+            raise InvalidRequest()
+        if before is not None and (not isinstance(before, tuple) or len(before) != 2
+                                   or not isinstance(before[0], datetime) or before[0].utcoffset() is None
+                                   or not isinstance(before[1], UUID)):
+            raise InvalidRequest()
+        try:
+            cursor = ' AND (created_at, id) < (:created_at, :cursor_id)' if before else ''
+            params: dict[str, object] = {'limit': limit}
+            if before:
+                params.update(created_at=before[0], cursor_id=before[1])
+            rows = self._connection.execute(sa.text(
+                f'SELECT {_COLUMNS} FROM request_intents WHERE hidden_at IS NULL{cursor} '
+                'ORDER BY created_at DESC, id DESC LIMIT :limit'), params)
+            return [RequestRecord(*row) for row in rows]
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def cancel(self, request_id):
+        """Cancel queued work or request cooperative cancellation; return current row.
+
+        Terminal and unknown records are unchanged. The caller commits. Row-level
+        update locking linearizes this operation against claim and finish.
+        """
+        if not isinstance(request_id, UUID):
+            raise InvalidRequest()
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET status=CASE status WHEN 'queued' THEN 'cancelled' "
+                "WHEN 'running' THEN 'cancel_requested' ELSE status END, "
+                "updated_at=CASE WHEN status IN ('queued','running') THEN clock_timestamp() ELSE updated_at END "
+                f'WHERE id=:id AND hidden_at IS NULL RETURNING {_COLUMNS}'), {'id': request_id}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def hide_history(self, request_id):
+        if not isinstance(request_id, UUID):
+            raise InvalidRequest()
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET hidden_at=CASE WHEN status IN ('cancelled','fake_completed') "
+                "THEN clock_timestamp() ELSE hidden_at END "
+                f'WHERE id=:id AND hidden_at IS NULL RETURNING {_COLUMNS}'),
+                {'id': request_id}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def claim_next(self, token):
+        if not isinstance(token, UUID):
+            raise InvalidRequest()
+        try:
+            # Serialize claimers even if they do not share the worker session lock.
+            self._connection.execute(sa.text('SELECT pg_advisory_xact_lock(1262571873, 3)'))
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET status='running', claim_token=:token, updated_at=clock_timestamp() "
+                "WHERE id = (SELECT id FROM request_intents WHERE status='queued' "
+                "AND NOT EXISTS (SELECT 1 FROM request_intents WHERE status IN ('running','cancel_requested')) "
+                'ORDER BY created_at, id LIMIT 1 FOR UPDATE) '
+                f'RETURNING {_COLUMNS}'), {'token': token}).one_or_none()
+            return RequestRecord(*row) if row is not None else None
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def complete_fake(self, request_id, token, result=None):
+        if not isinstance(request_id, UUID) or not isinstance(token, UUID):
+            raise InvalidRequest()
+        encoded = None if result is None else json.dumps(validate_fake_result(result), ensure_ascii=False)
+        try:
+            row = self._connection.execute(sa.text(
+                "UPDATE request_intents SET status=CASE WHEN status='cancel_requested' THEN 'cancelled' "
+                "ELSE 'fake_completed' END, "
+                "fake_result=CASE WHEN status='cancel_requested' THEN NULL ELSE CAST(:result AS jsonb) END, "
+                "claim_token=NULL, updated_at=clock_timestamp() "
+                "WHERE id=:id AND status IN ('running','cancel_requested') AND claim_token=:token RETURNING status"),
+                {'id': request_id, 'token': token, 'result': encoded}).one_or_none()
+            return row[0] if row is not None else False
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def set_stage(self, request_id, token, name):
+        from .execution_stages import advance_stage
+        if type(request_id) is not UUID or type(token) is not UUID:
+            raise InvalidRequest()
+        row = self._connection.execute(sa.text(
+            "SELECT execution_stages, created_at, clock_timestamp() FROM request_intents "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') FOR UPDATE"),
+            {'id': request_id, 'token': token}).one_or_none()
+        if row is None:
+            return False
+        stages = advance_stage(row[0], name, row[2], row[1])
+        if stages != row[0]:
+            self._connection.execute(sa.text(
+                "UPDATE request_intents SET execution_stages=CAST(:stages AS jsonb) WHERE id=:id"),
+                {'id': request_id, 'stages': json.dumps(stages)})
+        return True
+
+    def _close_stages(self, request_id, token, outcome):
+        from .execution_stages import close_stage
+        row = self._connection.execute(sa.text(
+            "SELECT execution_stages, clock_timestamp() FROM request_intents "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') FOR UPDATE"),
+            {'id': request_id, 'token': token}).one_or_none()
+        if row is not None and row[0]:
+            self._connection.execute(sa.text(
+                "UPDATE request_intents SET execution_stages=CAST(:stages AS jsonb) WHERE id=:id"),
+                {'id': request_id, 'stages': json.dumps(close_stage(row[0], row[1], outcome))})
+
+    def bind_run(self, request_id, token, run_id, code):
+        if any(type(v) is not UUID for v in (request_id, token, run_id)):
+            raise InvalidRequest()
+        _text(code, MAX_CODE_BYTES)
+        row = self._connection.execute(sa.text(
+            "UPDATE request_intents SET run_id=:run, generated_code=:code, updated_at=clock_timestamp() "
+            "WHERE id=:id AND claim_token=:token AND status='running' AND run_id IS NULL RETURNING id"),
+            {'id': request_id, 'token': token, 'run': run_id, 'code': code}).one_or_none()
+        return row is not None
+
+    def finish_real(self, request_id, token, status, *, result=None, answer=None, error_code=None):
+        if (type(request_id) is not UUID or type(token) is not UUID
+                or status not in {'completed', 'failed', 'needs_clarification', 'unknown'}):
+            raise InvalidRequest()
+        if status == 'completed':
+            if type(result) not in (dict, list):
+                raise InvalidRequest()
+            encoded = _json_value(result, 2048).decode('utf-8')
+        else:
+            if result is not None:
+                raise InvalidRequest()
+            encoded = None
+        if answer is not None:
+            _text(answer, MAX_SUMMARY_BYTES)
+        if error_code is not None:
+            import re
+            if not isinstance(error_code, str) or not re.fullmatch(r'[A-Z][A-Z0-9_]{0,63}', error_code):
+                raise InvalidRequest()
+        self._close_stages(request_id, token, status)
+        row = self._connection.execute(sa.text(
+            "UPDATE request_intents SET status=:status, real_result=CAST(:result AS jsonb), "
+            "answer=:answer, error_code=:error, claim_token=NULL, updated_at=clock_timestamp() "
+            "WHERE id=:id AND claim_token=:token AND status IN ('running','cancel_requested') RETURNING status"),
+            {'id': request_id, 'token': token, 'status': status, 'result': encoded,
+             'answer': answer, 'error': error_code}).one_or_none()
+        return row[0] if row is not None else False
+
+    def mark_unknown_running(self):
+        """Caller must hold the exclusive worker session lock throughout recovery."""
+        try:
+            rows = self._connection.execute(sa.text(
+                "SELECT id, claim_token FROM request_intents WHERE status IN ('running','cancel_requested') FOR UPDATE")).all()
+            for request_id, token in rows:
+                self._close_stages(request_id, token, 'unknown')
+            result = self._connection.execute(sa.text(
+                "UPDATE request_intents SET status='unknown', claim_token=NULL, updated_at=clock_timestamp() "
+                "WHERE status IN ('running','cancel_requested')"))
+            return result.rowcount
+        except SQLAlchemyError:
+            raise RequestStorageError() from None
+
+    def create(self, client_request_id, dataset_id, question, validate_input=None):
+        if (not isinstance(client_request_id, UUID) or not isinstance(dataset_id, UUID)
+                or not isinstance(question, str) or not 1 <= len(question) <= 4096
+                or not question.strip() or '\x00' in question):
+            raise InvalidRequest()
+        try:
+            question.encode('utf-8', errors='strict')
+        except UnicodeEncodeError:
+            raise InvalidRequest() from None
+        try:
+            # Serialize the same idempotency key before checking either record or readiness.
+            self._connection.execute(sa.text('SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))'),
+                                     {'key': str(client_request_id)})
+            existing = self._connection.execute(sa.text(
+                f'SELECT {_COLUMNS} FROM request_intents WHERE client_request_id = :key'),
+                {'key': client_request_id}).one_or_none()
+            if existing is not None:
+                record = RequestRecord(*existing)
+                if record.dataset_id != dataset_id or record.question != question:
+                    raise IdempotencyConflict()
+                return record, False
+            dataset = self._connection.execute(sa.text(
+                'SELECT lifecycle, publication_state, storage_key FROM datasets WHERE id = :id FOR SHARE'),
+                {'id': dataset_id}).one_or_none()
+            if dataset is None or dataset.lifecycle != 'active':
+                raise DatasetNotFound()
+            if dataset.publication_state != 'ready':
+                raise DatasetUnavailable()
+            # File validation may block while both transaction locks are held. Keep
+            # the transaction open: deletion cannot race this readiness check.
+            if validate_input is not None:
+                validate_input(dataset.storage_key)
+            row = self._connection.execute(sa.text(
+                'INSERT INTO request_intents (id, client_request_id, dataset_id, question) '
+                'VALUES (:id, :key, :dataset, :question) '
+                f'ON CONFLICT (client_request_id) DO NOTHING RETURNING {_COLUMNS}'),
+                {'id': uuid4(), 'key': client_request_id, 'dataset': dataset_id, 'question': question}).one_or_none()
+            if row is None:
+                row = self._connection.execute(sa.text(
+                    f'SELECT {_COLUMNS} FROM request_intents WHERE client_request_id = :key'),
+                    {'key': client_request_id}).one()
+                record = RequestRecord(*row)
+                if record.dataset_id != dataset_id or record.question != question:
+                    raise IdempotencyConflict()
+                return record, False
+            return RequestRecord(*row), True
+        except SQLAlchemyError:
+            raise RequestStorageError() from None

@@ -1,0 +1,17 @@
+dataset_id=24379a8e-3a68-48c4-a7b6-7a74bd14aeb3 request_id=720c62a4-0adf-468b-942d-0d0d654de614
+{
+  "id": "720c62a4-0adf-468b-942d-0d0d654de614",
+  "status": "completed",
+  "provisional": true,
+  "fake": false,
+  "run_id": "c4787a19-5818-4f53-882f-af0dd8242692",
+  "result": {
+    "answer": 6
+  },
+  "answer": null,
+  "error_code": "SUMMARY_UNAVAILABLE",
+  "code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read CSV file\ndata_path = Path(\"/inputs/data.csv\")\nrows = []\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        rows.append(row)\n\n# Filter for East region and sum quantity\ntotal_quantity = 0\nfor row in rows:\n    if row[\"region\"] == \"East\":\n        total_quantity += int(row[\"quantity\"])\n\n# Write result\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+  "dataset_id": "24379a8e-3a68-48c4-a7b6-7a74bd14aeb3",
+  "question": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?",
+  "created_at": "2026-11-15T18:05:09.195578+07:00"
+}

@@ -1,0 +1,1 @@
+{"run_id":"m3-011-scratch-layout-1115a","job_uid":"bb464f7e-82d6-4b09-9e99-8607a225b731","pod_uid":"3eb805d6-e1ec-4969-993b-797bf52c6c80","code":"OK","exit_code":0,"script_exit_code":0,"result":{"scratch_reported_bytes":100691968,"scratch_available_bytes":100691968,"mountinfo":["107 99 0:41 / /tmp rw,relatime - tmpfs tmpfs rw"]}}

@@ -1,0 +1,6 @@
+[
+  {"id":"total_revenue_en","question":"What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?","expected_kind":"proposal","expected_result":{"answer":770}},
+  {"id":"east_units_th","question":"จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?","expected_kind":"proposal","expected_result":{"answer":6}},
+  {"id":"missing_profit","question":"What is the total profit in THB?","expected_kind":"clarification","reason":"Cost or profit data is absent; do not invent it."},
+  {"id":"ambiguous_total","question":"What is the total?","expected_kind":"clarification","reason":"The metric is unspecified: quantity and revenue are plausible."}
+]

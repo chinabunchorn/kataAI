@@ -1,0 +1,15 @@
+dataset_id=18c58a3a-666a-4668-8f24-53f3f9bab7aa request_id=c35bd54f-92ef-4536-94f8-fa54138038f9
+{
+  "id": "c35bd54f-92ef-4536-94f8-fa54138038f9",
+  "status": "needs_clarification",
+  "provisional": true,
+  "fake": false,
+  "run_id": null,
+  "result": null,
+  "answer": "The available columns are: order_id, region, quantity, unit_price_thb. To calculate profit, I need cost information (either total cost or cost per unit), but this column is missing from the dataset.\n\nCould you please clarify:\n1. Is there a cost column I should be using?\n2. If not, would you like the total revenue instead (quantity × unit_price_thb)?",
+  "error_code": null,
+  "code": null,
+  "dataset_id": "18c58a3a-666a-4668-8f24-53f3f9bab7aa",
+  "question": "What is the total profit?",
+  "created_at": "2026-11-15T18:08:05.533620+07:00"
+}

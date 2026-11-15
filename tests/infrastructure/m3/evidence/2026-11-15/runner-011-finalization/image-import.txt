@@ -1,0 +1,11 @@
+3b3b90076419f21648a175cb5dc764dc38718bb049500e2662772b64eca35a2f  /tmp/kataai-runner-011-20261115-0705/runner.oci.tar
+import 2026 11 15@sha256:d3a5f37d08a8e8e	saved	
+application/vnd.oci.image.index.v1+json sha256:d3a5f37d08a8e8e88597c5cba276f13f461f94aa05258e2bc5bb23a227d50d59
+Importing	elapsed: 1.8 s	total:   0.0 B	(0.0 B/s)	
+import 2026 11 15@sha256:d3a5f37d08a8e8e	saved	
+docker.io/kataai/runner:0.1.1           	saved	
+application/vnd.oci.image.index.v1+json sha256:d3a5f37d08a8e8e88597c5cba276f13f461f94aa05258e2bc5bb23a227d50d59
+application/vnd.oci.image.manifest.v1+json sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9
+Importing	elapsed: 1.8 s	total:   0.0 B	(0.0 B/s)	
+docker.io/kataai/runner:0.1.1                                                                                      application/vnd.oci.image.manifest.v1+json                sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9 41.3 MiB  linux/amd64                                                                                                         io.cri-containerd.image=managed                                 
+sha256:19e8bd4750d918f4c21daaea258434eeec3f080a61ae3821181cc1925245af12                                            application/vnd.oci.image.manifest.v1+json                sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9 41.3 MiB  linux/amd64                                                                                                         io.cri-containerd.image=managed                                 

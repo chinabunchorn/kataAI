@@ -1,0 +1,1 @@
+{"run_id":"m3-011-security-1115a","job_uid":"1bf66a13-e0a3-4e56-8932-dc484bd2941a","pod_uid":"dd08f322-e02a-4ca6-becc-2f9f6ff8646a","code":"OK","exit_code":0,"script_exit_code":0,"result":{"uid":10001,"gid":10001,"guest_kernel":"6.18.56","input_write_denied":true,"root_readonly":true,"serviceaccount_absent":true,"known_credentials_absent":true,"scratch_writable":true}}

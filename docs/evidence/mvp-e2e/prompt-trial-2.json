@@ -1,0 +1,40 @@
+{
+  "generated_code_executed": false,
+  "note": "Superseded prompt trial. Revenue code multiplies CSV strings before conversion: incorrect; not a pass. No code was repaired or executed locally.",
+  "cases": [
+    {
+      "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+      "proposal": [
+        {
+          "name": "run_python",
+          "arguments": {
+            "code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ndata_path = Path('/inputs/data.csv')\nwith open(data_path, 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    rows = list(reader)\n\n# Calculate total revenue: sum of quantity * unit_price_thb for all orders\ntotal_revenue = sum(float(row['quantity'] * row['unit_price_thb']) for row in rows)\n\n# Write result to JSON file\nresult = {\"answer\": total_revenue}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)\n\nprint(f\"Total revenue: {total_revenue}\")"
+          }
+        }
+      ],
+      "seconds": 26.005
+    },
+    {
+      "question": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?",
+      "proposal": [
+        {
+          "name": "run_python",
+          "arguments": {
+            "code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ndata_path = Path('/inputs/data.csv')\ntotal_quantity = 0\n\nwith open(data_path, encoding='utf-8-sig', newline='') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        if row['region'] == 'East':\n            quantity = int(row['quantity'])\n            total_quantity += quantity\n\n# Write result to JSON\nresult = {\"answer\": total_quantity}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f, ensure_ascii=False)\n\nprint(f\"Total quantity in East region: {total_quantity}\")"
+          }
+        }
+      ],
+      "seconds": 25.541
+    },
+    {
+      "question": "What is the total profit?",
+      "text": "The question asks for total profit, but the available columns are: [\"order_id\", \"region\", \"quantity\", \"unit_price_thb\"]. \n\nTo calculate profit, I need both revenue (quantity × unit_price) AND cost information. There's no cost column in the data. \n\nCould you clarify:\n1. Is there a cost per unit or total cost that should be used?\n2. Or should I calculate total revenue instead (quantity × unit_price_thb)?\n\nPlease specify which measure you'd like me to total.",
+      "seconds": 25.03
+    },
+    {
+      "question": "What is the total?",
+      "text": "The question \"What is the total?\" is ambiguous because there are multiple numeric columns that could be totaled:\n\n- **quantity** - total number of items\n- **unit_price_thb** - sum of unit prices\n- **quantity × unit_price_thb** - total revenue/value\n\nCould you clarify which measure you'd like totaled? For example:\n- \"total quantity\"\n- \"total revenue\" (quantity × unit_price_thb)\n- \"sum of unit prices\"",
+      "seconds": 70.033
+    }
+  ]
+}

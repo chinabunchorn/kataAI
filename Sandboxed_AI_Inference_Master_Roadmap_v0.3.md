@@ -5,17 +5,27 @@
 **Context:** Third-year virtualization course project  
 **Roadmap version:** 0.3 (11 November 2026)
 
-> **Decision policy:** The team has chosen the **split development/demo topology**: the **web client, FastAPI backend, llama.cpp inference server, and application dataset/run state run on the local developer laptop**; a **team-provisioned OpenStack Linux VM** runs Kubernetes/containerd/Kata and the disposable Kata guest VMs. FastAPI communicates with the remote cluster via a **secure Kubernetes API connection**. This is the target topology, **not proof that nested virtualization, cluster networking, or remote API access work on the available OpenStack flavor**. The exact Linux image, VM resources, cluster distribution, secure transport (VPN vs SSH tunnel or another approved private path), frontend framework, model, local database technology, staging/result channel, numerical limits, and access method remain **TBD**. Do not invent values or relax execution isolation. A single user successfully completing the workflow is sufficient for the functional MVP; controlled authorization/isolation tests are still required.
+**Verification update (2026-11-15):** M1 feasibility is verified. Runner 0.1.1
+uses the approved M3 contract and standard unmodified Kata Containers; current
+artifact and acceptance evidence is in [the release record](RELEASE_0.1.1.md).
+**M3 is complete; Runner 0.1.1 was released with user approval on 2026-11-15.**
+The existing `infra/executor/KataExecutor` adapter is implemented and host-tested.
+M4/M5 application worker wiring, PostgreSQL coordination, application credentials
+and live adapter recovery tests remain incomplete. M6/M8 still gate generated code.
+The original planning questions below must be read against the updated decision
+register; approved runner choices are no longer undecided.
+
+> **Decision policy:** The team has chosen the **split development/demo topology**: the **web client, FastAPI backend, llama.cpp inference server, and application dataset/run state run on the local developer laptop**; a **team-provisioned OpenStack Linux VM** runs Kubernetes/containerd/Kata and the disposable Kata guest VMs. FastAPI communicates with the remote cluster via a **secure Kubernetes API connection**. This is the target topology, **not proof that nested virtualization, cluster networking, or remote API access work on the available OpenStack flavor**. The lab stack and runner contract are recorded in the current decision register. Frontend/model choices, application credentials, worker/store coordination and application budgets remain open. Do not invent values or relax execution isolation. A single user successfully completing the workflow is sufficient for the functional MVP; controlled authorization/isolation tests are still required.
 
 ## 0. Confirmed decisions and remaining boundaries
 
 | Topic | Confirmed decision | Still open / not implied |
 |---|---|---|
-| Execution deployment | **OpenStack VM provisioned by the team; Linux Kubernetes/containerd/Kata node remotely** | Image/flavor, CPU/RAM/disk, `/dev/kvm` and nested-virtualization availability, cluster distribution, CNI, networking and staging feasibility |
+| Execution deployment | **OpenStack VM provisioned by the team; Linux Kubernetes/containerd/Kata node remotely** | Lab Ubuntu/KVM/Kubernetes/Calico and staging verified; flavor metadata and broader M6 isolation pending |
 | Application | **FastAPI backend + web client both on local laptop**, not on the Kata VM | Frontend framework, endpoint URLs/status transport, process boundaries and the secure remote-cluster API access method |
 | Model serving | **llama.cpp on local laptop**, alongside the app; **model not selected** | Model weights/quantization/context/budgets, llama.cpp version/endpoint, measured laptop CPU/RAM and structured-output behavior |
 | Audience | **One-user end-to-end MVP** (team-only demo) | Local-access exposure and authentication mechanism; owner-scoped dataset/request checks and controlled negative test identities remain required |
-| Runner output | **Generic, bounded JSON for different questions** | Permitted top-level JSON types, max bytes, nesting, collection sizes and schema/version envelope; no single task-specific output shape is mandated |
+| Runner output | **Generic, bounded JSON for different questions** | Runner v1 types/limits approved; backend interface alignment pending; no task-specific schema |
 | Benchmark | **Kata vs `runc` comparison optional** | Whether to conduct the optional study, its scope and measurements; not an MVP blocker |
 | Application state | **Stored locally with the FastAPI application** | Storage engine/schema, retention, restart behavior, staging handoff to OpenStack |
 | Cluster connection | **Local FastAPI controls remote OpenStack Kubernetes through its API** | Secure reachability and tunnel/VPN strategy, TLS verification, RBAC identity, kubeconfig secret handling, outage/reconnection behavior |
@@ -24,8 +34,8 @@
 
 ### Build gating summary
 
-1. **Before M1:** inventory the **team-accessible OpenStack flavors and Linux images**, SSH/admin access, nested virtualization (`vmx`/`svm`, usable `/dev/kvm`), and lab budget. A VM can be created, but Kata feasibility is unverified. If unavailable, pause the execution path and revisit deployment **explicitly**; never silently substitute `runc`.
-2. **Before M2 contract freeze:** approve the generic JSON result rules and API error/status envelope. FastAPI is local and the remote Kubernetes API boundary is fixed; the transport method, data/staging interfaces, and numeric limits are not.
+1. **M1 verified:** the existing Ubuntu lab supports nested Kata/QEMU/KVM and approved operator access. Flavor metadata and broader M6 security remain follow-up work. Never silently substitute `runc`.
+2. **M2/M4 alignment:** runner JSON rules, staging and limits are approved in M3. Align the backend's API/error/status envelope, prompt and decoder with that contract before dispatch.
 3. **Before M3–M6 implementation:** choose, based on tested Kata feasibility, cluster/runtime/CNI, staging/result channel between local app and remote Job, fixed Python environment, limits and **local** persistent-state implementation. Verify Kubernetes connectivity with TLS and least-privilege RBAC.
 4. **Before M7–M9 live use:** approve the local-demo exposure/authentication model and retention, configure **local llama.cpp** and choose/test a model, and prove the web → local FastAPI → remote Kata → local llama.cpp return path. No public API exposure is implied.
 5. **Before M11:** choose whether to execute the optional trusted-code `runc` comparison; do not retroactively make it an MVP requirement.
@@ -40,12 +50,12 @@ flowchart TB
         WEB[Web client — framework TBD]
         API[FastAPI — user API / request coordinator / execution-service logic]
         LLM[llama.cpp server — model TBD]
-        STORE[(Local dataset, run-state and result store — technology TBD)]
+        STORE[(Local application store + adapter journal)]
         WEB --> API
         API <--> LLM
         API <--> STORE
     end
-    subgraph OPENSTACK[Team-provisioned OpenStack Linux VM — infrastructure feasibility pending]
+    subgraph OPENSTACK[Existing OpenStack Linux VM — Kata feasibility verified]
         K8S[Kubernetes API + containerd / Kata runtime]
         JOB[Kubernetes Job — approved Kata RuntimeClass]
         GUEST[Disposable Kata guest VM — fixed Python runner + authorized CSV]
@@ -59,12 +69,12 @@ flowchart TB
 **Remote boundary and operational invariants:**
 
 1. Local FastAPI uses Kubernetes client/API credentials to manage **only approved Jobs and their staging/cleanup resources** in a dedicated namespace, with TLS verification and least privilege. Choose and test a **private, secure route** (such as an approved VPN or SSH tunnel); do not publicly expose an unauthenticated Kubernetes API or place kubeconfig credentials in the frontend/guest.
-2. Upload and durable request/result records stay local. The executor transfers **only one authorized CSV, generated script, and minimal metadata** to a run-scoped input channel supported by the Kata worker. The guest produces one bounded generic JSON result via a guest-network-independent collection channel. **Transport technologies, caps, and retention are still undecided.**
+2. Upload and durable request/result records stay local. The executor transfers **only one authorized CSV, generated script, and minimal metadata** to a run-scoped input channel supported by the Kata worker. The guest produces one bounded generic JSON result via a guest-network-independent collection channel. M3 fixes bounded ConfigMap staging and File report transport; application retention remains undecided.
 3. A transient loss of the laptop↔OpenStack connection does not trigger local execution or a second untracked Job. The local reconciler persists run state, detects uncertain remote outcomes when connectivity returns, and only publishes a terminal result after validation. Define behavior if the laptop shuts down mid-run and verify resume/reconciliation before the MVP is declared reliable.
 4. Web UI visibly distinguishes local **model generation/summarization** from remote **Job scheduling, Kata guest execution, result collection and teardown**. Do not claim a workload ran under Kata solely from a UI status; capture Job/Pod/guest evidence.
 5. **Single-user acceptance:** one operator can start the local web client and services, submit the canonical CSV question, and receive an explained result backed by a confirmed Kata execution. No user-registration/production multi-tenancy is required, but local exposure control and authorization/security negatives remain explicit tests.
 
-**Connection and feasibility decision gates:** We have **not** selected OpenStack Linux image/flavor, nested KVM availability, Kubernetes distribution, secure API transport, local store, frontend framework or llama.cpp model. Their choices must follow explicit approval or measured feasibility. In particular, availability of an OpenStack VM does not prove `/dev/kvm` exists inside it.
+**Connection and application gates:** The existing Ubuntu/Kubernetes/containerd/Kata/Calico stack and nested KVM are verified. The operator SSH/TLS route is verified. Application credentials, frontend/model choices, store coordination and retention remain open; operator access does not imply application dispatch authorization.
 
 ## 1. Product boundary and invariant requirements
 
@@ -79,9 +89,9 @@ A **single operator using a web client and FastAPI on their local laptop**, with
 - The model may generate Python, but **cannot** choose dataset identity, runtime handler, Job spec, storage location, network destination, or privileges.
 - `run_python` is the only tool in the MVP. The generation call may propose this tool; summarization has tools disabled.
 - Run inputs comprise the script, one authorized CSV, and minimal run metadata. The fixed runner environment has pinned dependencies and a bounded writable scratch area.
-- Outputs are one **generic, bounded** UTF-8 JSON value (approved JSON types/limits still TBD) plus server-owned exit/outcome metadata. Diagnostics are separate; guest-supplied text is untrusted. The canonical example demonstrates one possible object, not a universal result schema.
+- Outputs are one **generic, bounded** UTF-8 JSON value (approved runner v1 types/limits in the M3 design) plus server-owned exit/outcome metadata. Diagnostics are separate; guest-supplied text is untrusted. The canonical example demonstrates one possible object, not a universal result schema.
 - Persist state and outcome in the approved **local application store**; distinguish user request, logical run, and Kubernetes Pod attempt. Commit at most one outcome for the logical run.
-- Limit queue time, active execution, total request time, CPU, memory, storage, output, and concurrency. **Values are TBD.**
+- Limit queue time, active execution, total request time, CPU, memory, storage, output, and concurrency. Runner limits are approved in M3; application queue/request/admission budgets remain open.
 - Enforce dataset ownership and access control. No model/provider or Kubernetes credential is exposed inside the guest.
 - Block guest access to external networks, DNS, controlled peers, Kubernetes API, and sensitive node endpoints; test effective enforcement on the chosen stack.
 - Cleanup is observable after success, failure, timeout, and cancellation. A deleted API object alone is not proof of guest-VM teardown.
@@ -110,13 +120,13 @@ Expected computed result for **this example only** (the general result contract 
 {"product":"Notebook","october_units":120,"november_units":80,"change_units":-40}
 ```
 
-### Generic JSON output contract — agreed intent, details pending
+### Generic JSON output contract — approved runner v1; application alignment pending
 
 - Each Python run produces one bounded UTF-8 JSON value through the approved, guest-network-independent result channel; the JSON's content is determined by the user question, **not** forced to use the sales-example field names.
 - Server-owned run status, error codes, `run_id`, and cleanup state must be maintained **separately** from the guest's arbitrary JSON data. A guest cannot declare its own run successful by placing status fields in its output.
-- The executor validates parseability, allowed JSON types, size, nesting/collection bounds and result origin **using team-approved limits**. Decide whether scalars, arrays, objects and `null` are accepted before M2 exits; do not assume an object-only result or unrestricted values.
+- The executor validates parseability, shape, size, depth/items and origin using approved runner v1 limits: object/array roots, nested standard JSON values, 2048 raw bytes, depth 16, 128 entries per collection and 256 total. Scalar/null roots are rejected. Backend decoder alignment remains required.
 - The UI renders this result as untrusted data, alongside the answer, and handles different accepted shapes without silently dropping content. The model summarizer receives the validated result as **data**, never as an instruction.
-- Additional fixtures must prove the generic contract beyond the canonical sales object; select those fixtures and exact allowable shapes after contract approval.
+- The trusted totals array and canonical sales object prove distinct accepted shapes; the active catalog also checks invalid/disallowed/bounded outputs. New application fixtures must preserve the approved contract.
 
 **Evidence convention:** Every milestone ends with (a) versioned implementation, (b) executable tests or reproducible demo steps, (c) captured observations/logs where runtime behavior matters, and (d) a short decision/status record. A completed code change without passing exit criteria is **not** a completed milestone.
 
@@ -241,30 +251,57 @@ flowchart TD
 
 ## M3 — Harden the fixed Python runner and its staging/result channels
 
+**Policy amendment (2026-11-15):** Use the existing unmodified Kata runtime.
+Exact 16 MiB guest scratch capacity and quota exhaustion are no longer release
+requirements. Require writable guest tmpfs and record actual capacity; preserve
+the historical failure below. Runner 0.1.1 now has a clean-source inspected artifact, 48 passing runner host
+tests and 30/30 active trusted Kata cases with independent VM/cleanup evidence.
+**M3 COMPLETE — Runner 0.1.1 RELEASED with user approval on 2026-11-15**,
+under the [revised criteria](docs/infrastructure/M3_ACCEPTANCE.md).
+
+**Implementation update (2026-11-11):** Runner contract defaults were explicitly
+approved in [M3 design revision 1](docs/milestone-3-design.md). Implementation,
+image release and actual-Kata observations are tracked in
+[M3 acceptance](docs/infrastructure/M3_ACCEPTANCE.md). **M3 complete; release and milestone closure approved by the user.**
+Current 0.1.1 acceptance is independent of historical 0.1.0.
+The historical 16 MiB quota probe failed and remains preserved; it is excluded
+from current release gates under the amendment. No runtime patch is required.
+
 **Definition:** Produce the exact, versioned runtime artifact and file channels that a Kata Job can use **without guest network access**. Execute only trusted fixture code at this stage.
 
 **Tasks**
 - **M3-T01 — Runner artifact:** Build a team-controlled Python runner image, pin versions/dependencies and image digest, and document the fixed tool environment.
 - **M3-T02 — Input paths:** Make the script and one dataset available at fixed paths (for example `/inputs/script.py`, `/inputs/data.csv` as proposed in the specification). Make inputs read-only, with no extra datasets or secrets.
 - **M3-T03 — Staging mechanism:** Implement the M1-approved, run-scoped staging method; enforce the selected maximum input size and reject invalid/unsafe payloads before creating a Job.
-- **M3-T04 — Non-root execution:** Run with a non-root user, bounded scratch storage, and supported read-only root filesystem settings; test file permissions on Kata rather than trusting container-only tests.
+- **M3-T04 — Non-root execution:** Run with a non-root user, suitable writable guest scratch and supported read-only root filesystem settings; retain declared resource limits without claiming an exact guest scratch quota. Test file permissions on Kata rather than trusting container-only tests.
 - **M3-T05 — Generic JSON result channel:** Implement the approved network-independent result channel; emit exactly one **generic bounded UTF-8 JSON** value and keep stdout/stderr diagnostics independent and bounded. The runner must not hard-code any analysis-specific result fields.
 - **M3-T06 — Result validation:** Reject missing, malformed, **disallowed JSON types**, excessive nesting/collections, invalid UTF-8, and oversized results according to the approved generic contract; associate accepted data with the originating run/Pod. Keep the server outcome separate from user-controlled JSON keys.
 - **M3-T07 — Exit mapping:** Distinguish successful output, script failure, signal/timeout, and invalid result using stable internal outcome codes.
-- **M3-T08 — Tests:** Cover canonical output, a different approved JSON shape, invalid JSON, no output, oversized/deep output, syntax error, read-only input access, and scratch-limit behavior.
+- **M3-T08 — Tests:** Cover canonical output, a different approved JSON shape, invalid JSON, no output, oversized/deep output, syntax error, read-only input access, scratch writes and observed capacity. Preserve historical quota-test failures without requiring exact 16 MiB enforcement for release.
 
 **Deliverables:** Pinned runner image/digest, staging and result adapters, runner contract tests, environment dependency manifest.
 
 **Acceptance criteria**
-- [ ] Trusted code inside a fresh Kata VM reads **only** the staged CSV and yields the expected parsed JSON.
-- [ ] The executor can identify the run and distinguish result data from diagnostics.
-- [ ] Two approved task outputs with different JSON contents/shapes are accepted; invalid/missing/oversized/deep or disallowed-type outputs are rejected with stable errors.
-- [ ] The guest runs without application or Kubernetes credentials, with a tested non-root filesystem layout.
-- [ ] The input/output paths work while workload network access is denied.
+- [x] Trusted code inside a fresh Kata VM reads **only** the staged CSV and yields the expected parsed JSON.
+- [x] The executor can identify the run and distinguish result data from diagnostics.
+- [x] Two approved task outputs with different JSON contents/shapes are accepted; invalid/missing/oversized/deep or disallowed-type outputs are rejected with stable errors.
+- [x] The guest runs without application or Kubernetes credentials, with a tested non-root filesystem layout.
+- [x] The input/output paths work while workload network access is denied.
 
-**Blocking decisions:** Runner Python version/packages; input staging; result transport; approved JSON types and byte/depth caps. Python as the runner language is already fixed by scope.
+**Approved contract:** Python 3.12.16 stdlib, immutable per-run ConfigMap, bounded
+File termination report, JSON object/array and the limits in the approved design.
+Artifact/Kata/cleanup evidence and final user review passed. M3-T01–M3-T08
+are complete. Backend application integration proceeds in M4/M5; M6/M8 continue
+to gate model-generated execution.
 
 ## M4 — Build the execution service and deterministic Kata Job dispatch
+
+**Implementation status (2026-11-15):** The existing [KataExecutor adapter](infra/executor/README.md)
+provides deterministic staging/submission, observation, collection, fail-closed
+preflight and bounded TLS transport. Its 39 host tests pass with fake APIs.
+Application workers still use the historical fake path until explicitly wired;
+dataset authorization, release/image callbacks, scoped credentials, admission
+and live application acceptance remain required. This task does not implement them.
 
 **Definition:** Implement the trusted execution-service logic **on the local laptop alongside FastAPI**, using a narrowly scoped secure remote connection to the **OpenStack Kubernetes API**. Logical privilege separation is mandatory; whether the executor has its own local process is **TBD**. It takes server-authorized code and dataset references, creates a fixed Kata Job, observes completion, validates results, and produces a structured outcome.
 
@@ -289,9 +326,16 @@ flowchart TD
 - [ ] Remote Job submission, observation, result retrieval and deletion work **from the local FastAPI-side executor** over the approved secure Kubernetes API path.
 - [ ] Deadline and error cases produce the intended stable codes.
 
-**Blocking decisions:** Internal service layout, persistence backend, numeric limits, approved Job template.
+**Remaining integration decisions:** application service layout, PostgreSQL/journal coordination, application credentials and queue/request/admission budgets. Runner limits/template are approved.
 
 ## M5 — Durable lifecycle, cancellation, idempotency, and cleanup
+
+**Implementation status (2026-11-15):** The adapter's SQLite journal, durable
+intent, cancellation, reconciliation and exact-UID cleanup exist and are
+host-tested. PostgreSQL remains authoritative for requests; the backend must
+coordinate request/run identities and both stores, schedule reconciliation,
+provide independent guest observations and test real restart/link/cancel races.
+These are application integration gates, separate from M3 harness acceptance.
 
 **Definition:** Ensure that asynchronous Job creation, duplicate Pod attempts, restarts, and cancellation cannot produce extra accepted results or leave unmanaged resources undetected.
 
@@ -316,7 +360,7 @@ flowchart TD
 - [ ] The run record retains a reliable cleanup status independent of user answer status.
 - [ ] After local process restart or temporary laptop↔OpenStack disconnection, the reconciler resumes without local script execution, duplicate accepted results, or falsely confirmed teardown.
 
-**Blocking decisions:** Durable run-store implementation and retention period.
+**Remaining integration decisions:** coordinate the existing SQLite journal with PostgreSQL, schedule recovery and select retention periods.
 
 ## M6 — Security controls and proof of effective isolation
 
@@ -520,34 +564,38 @@ Any choice that changes the security boundary (guest networking, dynamic depende
 
 | ID | Confirmed choice | Applies to | Consequence |
 |---|---|---|---|
-| **C01** | **OpenStack** access permits team-created VMs; **remote Linux VM** is the intended Kubernetes/Kata host | M0–M1 | Actual image/flavor and nested KVM are **unverified**, so M1 remains a hard feasibility gate |
+| **C01** | Existing OpenStack Ubuntu node is the Kubernetes/Kata host | M0–M1 | Nested QEMU/KVM and trusted execution verified; flavor/compute inventory remains administrative follow-up |
 | **C02** | **FastAPI + web client run on local developer laptop** | M2, M7, M9 | No remote web/backend deployment required for MVP; frontend framework TBD |
 | **C03** | **llama.cpp runs locally**, model **not selected** | M8 | Use CPU-capable model candidates, test prompt/tool reliability and laptop resource use; no remote inference required |
 | **C04** | **Single-user functional MVP / team-only demonstration** | M7, M9 | One operator completes a whole flow; do not require registration/production multi-user features, but retain access boundaries and security tests |
-| **C05** | **Generic bounded JSON result** for different questions | M2–M3, M8–M10 | No sales-specific global JSON schema; approve types, byte/depth/collection caps |
+| **C05** | Generic bounded JSON object/array | M2–M3, M8–M10 | Approved runner v1 limits; backend prompt/decoder intersection must align |
 | **C06** | **`runc` comparison optional** | M11 | Not a critical-path requirement; any comparison uses team-controlled trusted code |
-| **C07** | **Local FastAPI communicates remotely with OpenStack Kubernetes API** | M1, M2, M4–M6 | Secure route, verified TLS and least-privilege kubeconfig required; route method TBD |
-| **C08** | **Local application data and run state; remote per-run Kata inputs/outputs** | M3–M7 | Local store technology and staging/result channels TBD; remote temporary resources must be cleaned |
+| **C07** | Local FastAPI communicates remotely with OpenStack Kubernetes API | M1, M2, M4–M6 | Operator SSH/TLS path verified; persistent application identity and credential lifecycle pending |
+| **C08** | Local application state; remote per-run Kata inputs/outputs | M3–M7 | ConfigMap/File report selected; adapter SQLite journal exists, PostgreSQL coordination and retention pending |
 | **C09** | **No local execution of model-generated Python** | All milestones | Only the remote Kata Job may execute untrusted code; fail closed on any outage |
 
 ### 4.2 Remaining engineering decisions (D01–D12)
 
 | ID | Remaining question / detail | Earliest gate | Status |
 |---|---|---|---|
-| **D01** | Which **OpenStack image/flavor**, guest Linux version, CPU/RAM/storage and SSH/admin capabilities are available? Does nested KVM work (`/dev/kvm`)? | **Before/during M1** | **Partial:** OpenStack VM creation available; actual environment and nested virtualization **unverified** |
+| **D01** | OpenStack image/flavor and nested KVM | Before/during M1 | Ubuntu 24.04.3, 4 vCPU, about 8 GiB RAM, SSH and nested KVM verified; flavor identity pending |
 | **D02** | Team roles, deadline, demonstration setting, remaining rubric constraints | M0 planning | **Partial:** one-user MVP and optional comparison confirmed; timing/team details **open** |
-| **D03** | Kubernetes distribution, containerd/Kata version, hypervisor, CNI, network/node-path isolation strategy | M1 exit/M6 | **Evidence-gated** on OpenStack VM tests |
+| **D03** | Runtime stack and isolation strategy | M1 exit/M6 | Kubernetes 1.37.2, containerd 2.4.2, standard Kata 4.3.1/QEMU/KVM, Calico 3.33.0 verified; broader M6 controls pending |
 | **D04** | How does local FastAPI securely reach Kubernetes (VPN/SSH tunnel/other approved private method)? How are kubeconfig credentials protected? Does execution-service logic need a separate local process? | M1/M2/M4 | **Partial:** API boundary and placement **confirmed**; transport and process isolation **open** |
 | **D05** | Web frontend framework, UI implementation, status transport (polling/streaming), local service startup | M9 | **Partial:** laptop-hosted web client **confirmed**; framework/progress mechanism **open** |
 | **D06** | Final **llama.cpp-compatible model weights**, quantization, context, server version, localhost binding and inference budgets | M8 | **Partial:** llama.cpp + local CPU inference **confirmed**; model/config details **open** |
-| **D07** | Python runner version and pinned allowed packages | M3 | **Partial:** Python confirmed; version and dependencies **open** |
-| **D08** | Generic JSON accepted top-level types, byte/depth/collection caps, response envelope, CSV/code size/headers | M2/M3/M7 | **Partial:** bounded generic JSON confirmed; numeric/type limits **open** |
-| **D09** | Remote input staging (e.g., approved ConfigMap/volume) and network-independent result collection (e.g., termination message/approved artifact channel) | M1/M3 | **Evidence-gated** on actual Kata and secure local→remote path |
+| **D07** | Runner artifact and packages | M3 | Runner 0.1.1, Python 3.12.16 stdlib, pinned base; actual digest in release record |
+| **D08** | JSON and input limits | M2/M3/M7 | Runner v1 approved: 2048-byte object/array, depth 16, 128/256 entries; script 32 KiB, CSV 512 KiB; backend alignment pending |
+| **D09** | Input staging/result transport | M1/M3 | Immutable ConfigMap with exactly two files; 3072-byte File termination report; application lifecycle integration pending |
 | **D10** | **Local** durable dataset/run-store technology, retention/expiry, access exposure and team-demo identity/authentication mechanism | M4/M5/M7 | **Partial:** local location and single-user scope confirmed; mechanisms **open** |
-| **D11** | Queue/run/request deadlines, CPU/RAM/scratch/log/output/concurrency limits, laptop and OpenStack resource budgets | M3/M4/M6 | **Open**, informed by hardware feasibility and performance |
+| **D11** | Deadlines/resources/admission | M3/M4/M6 | Runner 30 s, Job 120 s and fixed resources/diagnostic caps approved; guest tmpfs quota unverified and excluded; application queue/request/admission budgets pending |
 | **D12** | Additional question types, acceptance thresholds, measurement repetitions, optional trusted-code `runc` comparison | M10/M11 | **Partial:** baseline optional; evaluation depth **open** |
 
-### 4.3 Questions in the order they block implementation
+### 4.3 Original planning questions and remaining application choices
+
+Questions 1–5 have partial or completed M1/M3 answers in the decision register.
+They are retained as planning context, not instructions to reopen approved runner
+choices. Application identity, store coordination, retention and M6/M8 remain gates.
 
 **Required for the real OpenStack/Kata lab (M1):**
 

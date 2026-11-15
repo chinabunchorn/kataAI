@@ -1,0 +1,193 @@
+[
+  {
+    "id": "eb8f2f02-a88a-44be-8ca3-8dbfce9176b4",
+    "client_request_id": "5039f362-444d-4310-8419-c414b1b75dfa",
+    "dataset_id": "a90825dc-d50a-4c1b-ad98-a449d6040aaf",
+    "question": "Trusted hand-written synthetic CSV smoke",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:01:36.340247+07:00",
+    "updated_at": "2026-11-15 18:01:50.597157+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "7dc86571-1351-4b27-9e4e-19f5d5dcbbea",
+    "real_result": {
+      "rows": 4,
+      "columns": [
+        "order_id",
+        "region",
+        "quantity",
+        "unit_price_thb"
+      ]
+    },
+    "generated_code": "import csv, json\nwith open('/inputs/data.csv', encoding='utf-8-sig', newline='') as f:\n    rows = list(csv.DictReader(f))\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump({'rows': len(rows), 'columns': list(rows[0]) if rows else []}, f)\n",
+    "answer": null,
+    "error_code": "SUMMARY_UNAVAILABLE",
+    "dataset_state": "ready",
+    "storage_key": "99a7d419-f340-474f-b3bc-0d954c89aa0c"
+  },
+  {
+    "id": "f1dd6a6e-acc6-4b76-b380-e45833364129",
+    "client_request_id": "0200cca7-7a9f-4650-b684-9083a10d8c8e",
+    "dataset_id": "3d6227a5-78c4-41d5-9ec6-7f96fb3db5cc",
+    "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:03:07.680781+07:00",
+    "updated_at": "2026-11-15 18:05:08.800610+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "a8997e47-0352-444e-a66a-3e0b9f7cbc77",
+    "real_result": {
+      "answer": 770.0
+    },
+    "generated_code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path(\"/inputs/data.csv\")\norders = []\n\nwith open(csv_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row[\"quantity\"])\n        unit_price_thb = float(row[\"unit_price_thb\"])\n        revenue = quantity * unit_price_thb\n        orders.append(revenue)\n\n# Calculate total revenue\ntotal_revenue = sum(orders)\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+    "answer": null,
+    "error_code": "SUMMARY_UNAVAILABLE",
+    "dataset_state": "ready",
+    "storage_key": "2c249c40-eb82-431a-874c-326271433df8"
+  },
+  {
+    "id": "720c62a4-0adf-468b-942d-0d0d654de614",
+    "client_request_id": "92ff79da-6736-4a22-9061-202bb8414a1a",
+    "dataset_id": "24379a8e-3a68-48c4-a7b6-7a74bd14aeb3",
+    "question": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:05:09.195578+07:00",
+    "updated_at": "2026-11-15 18:08:05.300533+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "c4787a19-5818-4f53-882f-af0dd8242692",
+    "real_result": {
+      "answer": 6
+    },
+    "generated_code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read CSV file\ndata_path = Path(\"/inputs/data.csv\")\nrows = []\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        rows.append(row)\n\n# Filter for East region and sum quantity\ntotal_quantity = 0\nfor row in rows:\n    if row[\"region\"] == \"East\":\n        total_quantity += int(row[\"quantity\"])\n\n# Write result\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)",
+    "answer": null,
+    "error_code": "SUMMARY_UNAVAILABLE",
+    "dataset_state": "ready",
+    "storage_key": "b7b61c27-a1d3-4f35-b3e3-9a423f17e016"
+  },
+  {
+    "id": "c35bd54f-92ef-4536-94f8-fa54138038f9",
+    "client_request_id": "968eda9c-84f1-4446-9032-3ea09f905173",
+    "dataset_id": "18c58a3a-666a-4668-8f24-53f3f9bab7aa",
+    "question": "What is the total profit?",
+    "status": "needs_clarification",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:08:05.533620+07:00",
+    "updated_at": "2026-11-15 18:08:53.601893+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": null,
+    "real_result": null,
+    "generated_code": null,
+    "answer": "The available columns are: order_id, region, quantity, unit_price_thb. To calculate profit, I need cost information (either total cost or cost per unit), but this column is missing from the dataset.\n\nCould you please clarify:\n1. Is there a cost column I should be using?\n2. If not, would you like the total revenue instead (quantity × unit_price_thb)?",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "e4a4fd77-efd9-40f8-af5c-5a88ef9efb4b"
+  },
+  {
+    "id": "338c057b-dc6c-4ab3-b5c4-54d2f7eb243d",
+    "client_request_id": "91777429-a63e-4d48-bc27-86563ce64664",
+    "dataset_id": "76b333b1-9e1f-49e3-a275-2e1c5c95b321",
+    "question": "What is the total?",
+    "status": "needs_clarification",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:08:54.608684+07:00",
+    "updated_at": "2026-11-15 18:09:34.703429+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": null,
+    "real_result": null,
+    "generated_code": null,
+    "answer": "The question \"What is the total?\" is ambiguous given the available columns. There are two numeric columns:\n\n- **quantity** \n- **unit_price_thb**\n\nCould you please specify which measure you'd like me to total? For example:\n- Total quantity across all orders?\n- Total unit_price_thb across all orders?\n- Total revenue (quantity × unit_price_thb)?",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "f4c26517-618d-45b8-a2a9-7dcf163dee9d"
+  },
+  {
+    "id": "9606f7e5-c41b-4b6b-b758-7e399ac6d0b7",
+    "client_request_id": "4bfedd7f-e930-430c-a401-a25acd48effc",
+    "dataset_id": "bcfc0680-bbc1-4880-a2db-2bc5a2c79f78",
+    "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:10:22.675502+07:00",
+    "updated_at": "2026-11-15 18:11:03.004076+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "acc24b77-44d1-4360-aa49-80265030625b",
+    "real_result": {
+      "answer": 770.0
+    },
+    "generated_code": "import csv\nimport json\nfrom decimal import Decimal\n\ntotal_revenue = Decimal('0')\n\nwith open('/inputs/data.csv', 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row['quantity'])\n        unit_price_thb = Decimal(row['unit_price_thb'])\n        total_revenue += quantity * unit_price_thb\n\nresult = {\"answer\": float(total_revenue)}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+    "answer": "770.0",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "f60447b1-5146-4454-9fbe-80f47a1ed58c"
+  },
+  {
+    "id": "9ce50b09-30f9-4851-b0bf-9f72219047d9",
+    "client_request_id": "1d9ccdeb-cbcf-4ab9-ba90-62b74e6ad251",
+    "dataset_id": "f5636448-ba41-4565-b8f9-60424edd0b3c",
+    "question": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:11:03.769047+07:00",
+    "updated_at": "2026-11-15 18:11:42.574197+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "5e3c4476-c41b-4f6a-8672-379e6c6461e9",
+    "real_result": {
+      "answer": 6
+    },
+    "generated_code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ndata_path = Path(\"/inputs/data.csv\")\nwith open(data_path, \"r\", encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    rows = list(reader)\n\n# Filter for East region and sum quantity\ntotal_quantity = 0\nfor row in rows:\n    if row[\"region\"] == \"East\":\n        total_quantity += int(row[\"quantity\"])\n\n# Write result to JSON\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)\n\nprint(f\"Total quantity in East region: {total_quantity}\")",
+    "answer": "6",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "18d6b0c2-3df0-4078-841b-8a49015ce4d3"
+  },
+  {
+    "id": "266a6d1f-62c3-4e8b-a867-56f90b28f6e3",
+    "client_request_id": "ff124d91-93fc-44e2-b99d-9b4fbc4657ea",
+    "dataset_id": "e803c9c6-6f2a-448d-b135-f06e4fc2fa9d",
+    "question": "What is total revenue in THB, defined as the sum of quantity times unit_price_thb for all orders?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:12:36.561598+07:00",
+    "updated_at": "2026-11-15 18:13:17.550380+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "c597574a-7b3c-4d91-a5e3-74827f9f93a3",
+    "real_result": {
+      "answer": 770.0
+    },
+    "generated_code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read CSV file\ncsv_path = Path('/inputs/data.csv')\ntotal_revenue = 0.0\n\nwith open(csv_path, 'r', encoding='utf-8-sig') as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        quantity = int(row['quantity'])\n        unit_price_thb = float(row['unit_price_thb'])\n        total_revenue += quantity * unit_price_thb\n\n# Write result to JSON\nresult = {\"answer\": total_revenue}\nwith open('/tmp/result.json', 'w', encoding='utf-8') as f:\n    json.dump(result, f)",
+    "answer": "The total revenue is 770.0 THB.",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "ab02e283-8db8-4a9f-843f-9c3875723fc7"
+  },
+  {
+    "id": "1a3b5b53-ceb4-4d53-b67e-98e75c93dbbd",
+    "client_request_id": "10c2190f-0516-4376-b2ca-3801db8cab41",
+    "dataset_id": "19db9029-cf0d-43d9-8704-8d36d783b716",
+    "question": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดกี่ชิ้น (รวม quantity)?",
+    "status": "completed",
+    "claim_token": null,
+    "created_at": "2026-11-15 18:13:18.611960+07:00",
+    "updated_at": "2026-11-15 18:14:03.707087+07:00",
+    "hidden_at": null,
+    "fake_result": null,
+    "run_id": "6f3a2941-e747-406e-8432-4cbe1053187a",
+    "real_result": {
+      "answer": 6
+    },
+    "generated_code": "import csv\nimport json\nfrom pathlib import Path\n\n# Read the CSV file\ncsv_path = Path(\"/inputs/data.csv\")\ntotal_quantity = 0\n\nwith open(csv_path, encoding=\"utf-8-sig\") as f:\n    reader = csv.DictReader(f)\n    for row in reader:\n        if row[\"region\"] == \"East\":\n            quantity = int(row[\"quantity\"])\n            total_quantity += quantity\n\n# Write result to JSON\nresult = {\"answer\": total_quantity}\nwith open(\"/tmp/result.json\", \"w\", encoding=\"utf-8\") as f:\n    json.dump(result, f)\n\nprint(f\"Total quantity sold in East region: {total_quantity}\")",
+    "answer": "จำนวนสินค้าที่ขายในภูมิภาค East รวมทั้งหมดเป็น 6 ชิ้น",
+    "error_code": null,
+    "dataset_state": "ready",
+    "storage_key": "dc90e3d4-f109-45b5-ad1a-510f6d3f7a6c"
+  }
+]

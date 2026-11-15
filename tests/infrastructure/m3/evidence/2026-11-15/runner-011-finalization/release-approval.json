@@ -1,0 +1,12 @@
+{
+  "date": "2026-11-15",
+  "timezone": "Asia/Bangkok",
+  "runner_version": "0.1.1",
+  "image": "docker.io/kataai/runner@sha256:6a682ed00f47fc27c18eb3abd9e3448960133433265ec6442339c9484d246bf9",
+  "release_status": "RELEASED",
+  "milestone": "M3",
+  "milestone_status": "COMPLETE",
+  "authorization": "I approve runner 0.1.1 Commit the changes, close M3 in the master roadmap and push the commits",
+  "authorized_git_branch": "kata-infra",
+  "scope": "User approval follows the completed technical verification; commit/push authorized, no merge, Git tag or registry publication requested. Original build/test records and pre-approval final-validation.json remain unchanged."
+}

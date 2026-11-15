@@ -1,0 +1,29 @@
+{
+  "runner_version": "0.1.0",
+  "platform": "linux/amd64",
+  "built_at": "2026-11-11T10:41:00.7974531Z",
+  "source_revision": "81ba4d54d88bdd5fced9c3744b6f9df4e4d175f5",
+  "source_sha256": {
+    "Dockerfile": "f68f15144a42a712068af3f4c303f88aaaef89366b1513797674d01313386434",
+    "__init__.py": "28105e4af31fe9536221e1525744e1209f34901a58b7cf6b0918b8164e3a65ae",
+    "contract.py": "86a14d0abed0afe0e6a5f1fbeceb410cf24cf7cc8b00e15613a82b43064be93b",
+    "validation.py": "32745d06b3618396b00f1f698bce0edc12f6f05ca74e61286c61558500a8e7f4",
+    "staging.py": "063bc5f3aa198b0daf32273fe356a8ba5681883ca98f9032a5e78e01032909bd",
+    "report.py": "17d053f65f0a4ba2ee621aef1ea753236b0d85915a7514b04694a58563a9a8d9",
+    "supervisor.py": "9d7929b84737245bebf20ff20a05d5652e45b8b37e4f1e2eb80feb9571e157f8",
+    "entrypoint.py": "d6469e21d1f1e582654df1998cd8aeba6a3acaf42536ac89a5a44fcd8463b5bf",
+    ".dockerignore": "7c335ac5e14faad65850942f9b33ede439c530d7d4c3dcccbb3aad8bfdbd27ed",
+    "requirements.txt": "ff8fe93c0a2fab55bfc2ca97beb25722bc0b1778e8e8908699cd5f6e796202a1",
+    "build.ps1": "ea10c46695ce5ecfb74d6b69a90b8f6525c41164d0c865aa1b99a83556c2a0ed",
+    "verify_artifact.py": "866cff92bd9333cc03f447dd105078fe4e84985ebb5fb8aa7116d3ca69cce7db"
+  },
+  "builder": "github.com/docker/buildx v0.35.0-desktop.2 b554ce1decd8b509893b1e7c6227eabfb923d094",
+  "base_image": "docker.io/library/python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+  "base_python_metadata": "3.12.16",
+  "base_os_metadata": "Debian trixie",
+  "image": "kataai/runner@sha256:3fe4d6049f25c44d3b126f6b9de7462dfb019d3164bada7e775921a1b13abba8",
+  "archive_sha256": "da773c8d9e8ea387e6df9545bee592ee493d8f2c3fdf4a6f257f25c3925958ed",
+  "build_command": "docker buildx build --platform linux/amd64 --provenance=false --tag <repository>:0.1.0 --output type=oci,dest=<archive> --metadata-file <metadata> --file infra/runner/Dockerfile infra/runner",
+  "candidate_execution_performed": false,
+  "live_kata_acceptance_verified": false
+}

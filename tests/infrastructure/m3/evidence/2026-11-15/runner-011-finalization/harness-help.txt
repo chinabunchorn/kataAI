@@ -1,0 +1,18 @@
+usage: run.py [-h]
+              --case {blank,collection,deep,diagnostics,duplicate-key,empty,infinite-number,invalid-json,missing,missing-runtime,multiple,nan,network,null,oversized,result-fifo,result-symlink,runtime,sales,scalar,scratch-layout,security,status-spoof,stderr-diagnostics,surrogate,syntax,timeout,total-items,totals,utf8}
+              --run-id RUN_ID --image IMAGE [--execute]
+              [--kubeconfig KUBECONFIG] [--context CONTEXT]
+              [--ssh-host SSH_HOST]
+
+Opt-in trusted fixture harness. Rendering performs no cluster mutation.
+
+options:
+  -h, --help            show this help message and exit
+  --case {blank,collection,deep,diagnostics,duplicate-key,empty,infinite-number,invalid-json,missing,missing-runtime,multiple,nan,network,null,oversized,result-fifo,result-symlink,runtime,sales,scalar,scratch-layout,security,status-spoof,stderr-diagnostics,surrogate,syntax,timeout,total-items,totals,utf8}
+  --run-id RUN_ID
+  --image IMAGE         built runner repository@sha256:digest
+  --execute             create ONLY this trusted case in Kata
+  --kubeconfig KUBECONFIG
+  --context CONTEXT
+  --ssh-host SSH_HOST   existing trusted-operator SSH alias; test-only
+                        alternative transport
