@@ -40,16 +40,29 @@ git branch --show-current
 git status --short
 ```
 
-Use `integration/mvp-e2e`. If needed, switch with a clean working tree:
+Use `main` for the merged MVP. The `integration/mvp-e2e` branch retains the integration history. If needed, switch with a clean working tree:
 
 ```zsh
-git switch integration/mvp-e2e
+git switch main
 ```
 
-The frontend integration and timing changes were committed locally and have not
-been pushed as part of this work. A fresh clone from GitHub may therefore lack
-these changes until publication is separately approved. Use this checkout or an
-approved transfer of the same revision. Confirm these files exist:
+For a new checkout after the MVP merge, clone the main branch:
+
+```zsh
+git clone --branch main https://github.com/chinabunchorn/kataAI.git
+cd kataAI
+```
+
+For an existing checkout, fetch the merged branch and update only by fast-forward
+with a clean working tree:
+
+```zsh
+git fetch origin main
+git switch main
+git merge --ff-only origin/main
+```
+
+Confirm these files exist:
 
 ```zsh
 test -f frontend/src/lib/api.ts
